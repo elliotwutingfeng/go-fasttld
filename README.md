@@ -139,6 +139,12 @@ res = extractor.Extract(fasttld.UrlParams{Url: url, ConvertURLToPunyCode: false}
 go test -v -coverprofile=test_coverage.out && go tool cover -html=test_coverage.out -o test_coverage.html
 ```
 
+## Benchmarking
+
+```sh
+go test -bench=.
+```
+
 ## Acknowledgements
 
 - [fasttld (Python)](https://github.com/jophy/fasttld)

@@ -1,3 +1,5 @@
+github.com/joeguo/tldextract v0.0.0-20220411225532-7e064860e89c h1:Gy4SNnjFVAzUymOWGy0LMhu7vP/+vVMeEIjOJeEgeDQ=
+github.com/joeguo/tldextract v0.0.0-20220411225532-7e064860e89c/go.mod h1:oGfutRjaB95239mjFVwofaOPTwuS3vb71ZLIGCEb36g=
 golang.org/x/net v0.0.0-20220407224826-aac1ed45d8e3 h1:EN5+DfgmRMvRUrMGERW2gQl3Vc+Z7ZMnI/xdEpPSf0c=
 golang.org/x/net v0.0.0-20220407224826-aac1ed45d8e3/go.mod h1:CfG3xpIq0wQ8r1q4Su4UZFWDARRcnwPjda9FqA0JpMk=
 golang.org/x/sys v0.0.0-20210615035016-665e8c7367d1/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=

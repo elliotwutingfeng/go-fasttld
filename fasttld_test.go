@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/joeguo/tldextract"
 )
 
 func getTestPSLFilePath() string {
@@ -214,15 +216,25 @@ func TestExtract(t *testing.T) {
 
 }
 
-/*
-func BenchmarkAdd(b *testing.B) {
+const benchmarkURL = "https://baidu.com.cn"
+
+func BenchmarkFastTld(b *testing.B) {
+	extractorWithoutPrivateSuffix, _ := New(SuffixListParams{
+		CacheFilePath:        getTestPSLFilePath(),
+		IncludePrivateSuffix: false,
+	})
+	extractor := extractorWithoutPrivateSuffix
 	for i := 0; i < b.N; i++ {
-		Add(4, 6)
+		extractor.Extract(UrlParams{
+			Url: benchmarkURL})
 	}
 }
 
-func ExampleAdd() {
-	fmt.Println(Add(4, 6))
-	// Output: 10
+func BenchmarkTldExtract(b *testing.B) {
+	cache := "/tmp/tld.cache"
+	extract, _ := tldextract.New(cache, false)
+
+	for i := 0; i < b.N; i++ {
+		extract.Extract(benchmarkURL)
+	}
 }
-*/
