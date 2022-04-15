@@ -78,17 +78,14 @@ func reverse(input []string) {
 }
 
 // Format string as punycode
-func formatAsPunycode(s string) (string, bool) {
-	wasIDN := false
+func formatAsPunycode(s string) string {
 	asPunyCode, err := idna.ToASCII(strings.ToLower(strings.TrimSpace(s)))
 	if err != nil {
 		log.Println(strings.SplitAfterN(err.Error(), "idna: invalid label", 2)[0])
-		return "", wasIDN
+		return ""
 	}
 
-	wasIDN = s != asPunyCode
-
-	return asPunyCode, wasIDN
+	return asPunyCode
 }
 
 // Construct a compressed trie to store Public Suffix List TLDs split at "." in reverse-order
@@ -143,21 +140,30 @@ func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 	urlParts.Suffix = ""
 	urlParts.RegisteredDomain = ""
 
-	labelsWasIDN := false
 	if e.ConvertURLToPunyCode {
-		e.Url, labelsWasIDN = formatAsPunycode(e.Url)
+		e.Url = formatAsPunycode(e.Url)
 	}
 
 	// Remove URL scheme and everything after the URL host subcomponent
+	// Credits: https://github.com/mjd2021usa/tldextract/blob/main/tldextract.go
 	netloc := e.Url
 	netloc = schemeRegex.ReplaceAllString(netloc, "")
-	netloc = strings.SplitN(netloc, "/", 2)[0]
-	netloc = strings.SplitN(netloc, "?", 2)[0]
-	netloc = strings.SplitN(netloc, "#", 2)[0]
-	netloc = netloc[strings.LastIndex(netloc, "@")+1:]
-	netloc = strings.SplitN(netloc, ":", 2)[0]
-	netloc = strings.TrimSpace(netloc)
-	netloc = strings.TrimRight(netloc, ".")
+
+	atIdx := strings.Index(netloc, "@")
+	if atIdx != -1 {
+		netloc = netloc[atIdx+1:]
+	}
+
+	index := strings.IndexFunc(netloc, func(r rune) bool {
+		switch r {
+		case '&', '/', '?', ':', '#':
+			return true
+		}
+		return false
+	})
+	if index != -1 {
+		netloc = netloc[0:index]
+	}
 
 	// Determine if url is an IPv4 address
 	if looksLikeIPv4Address(netloc) {
@@ -169,63 +175,65 @@ func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 	labels := strings.Split(netloc, ".")
 	reverse(labels)
 
-	var node interface{}
+	var node dict
 	// define the root node
 	node = f.TldTrie
 
 	var suffix []string
 	for idx, label := range labels {
-		if node_, isBool := node.(bool); isBool && node_ == true {
-			// this node is an end node.
-			urlParts.Domain = label
-			break
-		}
-		if node_, ok := node.(dict); ok {
-			// this node has sub-nodes and maybe an end-node.
-			// eg. cn -> (cn, gov.cn)
-			if _, ok := node_["_END"]; ok {
-				// check if there is a sub node
-				// eg. gov.cn
-				if val, ok := node_[label]; ok {
-					suffix = append(suffix, label)
-					if val, ok := val.(dict); ok {
-						node = val
-						continue
-					} else {
-						urlParts.Domain = labels[idx+1]
-						break
-					}
-				}
-			}
-
-			if _, ok := node_["*"]; ok {
-				// check if there is a sub node
-				// e.g. www.ck
-				var sb strings.Builder
-				sb.Grow(1 + len(label))
-				sb.WriteString("!")
-				sb.WriteString(label)
-				if _, ok := node_[sb.String()]; ok {
-					urlParts.Domain = label
-				} else {
-					suffix = append(suffix, label)
-				}
+		/*
+			if node_, isBool := node.(bool); isBool && node_ == true {
+				// this node is an end node.
+				urlParts.Domain = label
 				break
 			}
+		*/
 
-			// check if TLD in Public Suffix List
-			if val, ok := node_[label]; ok {
+		// this node has sub-nodes and maybe an end-node.
+		// eg. cn -> (cn, gov.cn)
+		if _, ok := node["_END"]; ok {
+			// check if there is a sub node
+			// eg. gov.cn
+			if val, ok := node[label]; ok {
 				suffix = append(suffix, label)
-				if val_, ok := val.(dict); ok {
-					node = val_
+				if val, ok := val.(dict); ok {
+					node = val
+					continue
 				} else {
 					urlParts.Domain = labels[idx+1]
 					break
 				}
-			} else {
-				break
 			}
 		}
+
+		if _, ok := node["*"]; ok {
+			// check if there is a sub node
+			// e.g. www.ck
+			var sb strings.Builder
+			sb.Grow(1 + len(label))
+			sb.WriteString("!")
+			sb.WriteString(label)
+			if _, ok := node[sb.String()]; ok {
+				urlParts.Domain = label
+			} else {
+				suffix = append(suffix, label)
+			}
+			break
+		}
+
+		// check if TLD in Public Suffix List
+		if val, ok := node[label]; ok {
+			suffix = append(suffix, label)
+			if val_, ok := val.(dict); ok {
+				node = val_
+			} else {
+				urlParts.Domain = labels[idx+1]
+				break
+			}
+		} else {
+			break
+		}
+
 	}
 
 	reverse(labels)
@@ -236,21 +244,14 @@ func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 	if 0 < len_suffix && len_suffix < len_labels {
 		urlParts.Domain = labels[len_labels-len_suffix-1]
 		if !e.IgnoreSubDomains && (len(labels)-len(suffix)) >= 2 {
-			urlParts.SubDomain = strings.Join(labels[0:len(labels)-len(suffix)-1], ".")
+			urlParts.SubDomain = netloc[:len(netloc)-len(urlParts.Domain)-len(urlParts.Suffix)-2]
+			//urlParts.SubDomain = strings.Join(labels[0:len(labels)-len(suffix)-1], ".")
 		}
 	}
 	len_url_domain := len(urlParts.Domain)
 	len_url_suffix := len(urlParts.Suffix)
 	if len_url_domain > 0 && len_url_suffix > 0 {
 		urlParts.RegisteredDomain = urlParts.Domain + "." + urlParts.Suffix
-	}
-
-	if labelsWasIDN && !e.ConvertURLToPunyCode {
-		p := idna.New()
-		urlParts.SubDomain, _ = p.ToUnicode(urlParts.SubDomain)
-		urlParts.Domain, _ = p.ToUnicode(urlParts.Domain)
-		urlParts.Suffix, _ = p.ToUnicode(urlParts.Suffix)
-		urlParts.RegisteredDomain, _ = p.ToUnicode(urlParts.RegisteredDomain)
 	}
 
 	return &urlParts

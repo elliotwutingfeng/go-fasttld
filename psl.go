@@ -13,7 +13,6 @@ import (
 	"runtime"
 	"strings"
 	"time"
-	"unicode"
 
 	"golang.org/x/net/idna"
 )
@@ -28,13 +27,6 @@ var schemeRegex = regexp.MustCompile("^[A-Za-z0-9+-.]+://")
 
 // Return true if `maybeIPv4Address` is an IPv4 address
 func looksLikeIPv4Address(maybeIPv4Address string) bool {
-	if len(maybeIPv4Address) == 0 {
-		return false
-	}
-	first_character := []rune(maybeIPv4Address)[0:1][0]
-	if !unicode.IsDigit(first_character) {
-		return false
-	}
 	return net.ParseIP(maybeIPv4Address) != nil
 }
 

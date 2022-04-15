@@ -86,7 +86,7 @@ var punyCodeTests = []punyCodeTest{
 
 func TestPunyCode(t *testing.T) {
 	for _, test := range punyCodeTests {
-		converted, _ := formatAsPunycode(test.url)
+		converted := formatAsPunycode(test.url)
 		if output := reflect.DeepEqual(converted, test.expected); !output {
 			t.Errorf("Output %q not equal to expected %q", converted, test.expected)
 		}
@@ -216,7 +216,7 @@ func TestExtract(t *testing.T) {
 
 }
 
-const benchmarkURL = "https://user:pass@foo.myhost.com:999/some/path?param1=value1&param2=value2"
+const benchmarkURL = "我的家.com.hk"
 
 func BenchmarkFastTld(b *testing.B) {
 	extractorWithoutPrivateSuffix, _ := New(SuffixListParams{
