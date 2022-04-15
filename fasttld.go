@@ -85,9 +85,9 @@ func formatAsPunycode(s string) (string, bool) {
 		log.Println(strings.SplitAfterN(err.Error(), "idna: invalid label", 2)[0])
 		return "", wasIDN
 	}
-	if strings.HasPrefix(asPunyCode, "xn--") {
-		wasIDN = s != asPunyCode
-	}
+
+	wasIDN = s != asPunyCode
+
 	return asPunyCode, wasIDN
 }
 
@@ -106,6 +106,7 @@ func trieConstruct(includePrivateSuffix bool, cacheFilePath string) dict {
 		// public suffixes AND private suffixes
 		SuffixList = suffixLists[2]
 	}
+
 	for _, suffix := range SuffixList {
 		if strings.Contains(suffix, ".") {
 			sp := strings.Split(suffix, ".")
@@ -142,6 +143,11 @@ func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 	urlParts.Suffix = ""
 	urlParts.RegisteredDomain = ""
 
+	labelsWasIDN := false
+	if e.ConvertURLToPunyCode {
+		e.Url, labelsWasIDN = formatAsPunycode(e.Url)
+	}
+
 	// Remove URL scheme and everything after the URL host subcomponent
 	netloc := e.Url
 	netloc = schemeRegex.ReplaceAllString(netloc, "")
@@ -154,7 +160,7 @@ func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 	netloc = strings.TrimRight(netloc, ".")
 
 	// Determine if url is an IPv4 address
-	if len(netloc) != 0 && looksLikeIPv4Address(netloc) {
+	if looksLikeIPv4Address(netloc) {
 		urlParts.Domain = netloc
 		urlParts.RegisteredDomain = netloc
 		return &urlParts
@@ -162,14 +168,6 @@ func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 
 	labels := strings.Split(netloc, ".")
 	reverse(labels)
-
-	// For each label, if it was an IDN, flag as true
-	var labelsWasIDN []bool
-	for idx, label := range labels {
-		var wasIDN bool
-		labels[idx], wasIDN = formatAsPunycode(label)
-		labelsWasIDN = append(labelsWasIDN, wasIDN)
-	}
 
 	var node interface{}
 	// define the root node
@@ -230,23 +228,6 @@ func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 		}
 	}
 
-	// IDN in punycode + ConvertURLToPunyCode -> IDN in punycode
-	// IDN + ConvertURLToPunyCode -> IDN in punycode
-	// IDN in punycode + !ConvertURLToPunyCode -> IDN in punycode
-	// IDN + !ConvertURLToPunyCode -> IDN
-
-	if !e.ConvertURLToPunyCode {
-		for idx, elem := range labels {
-			if labelsWasIDN[idx] {
-				p := idna.New()
-				if elemInUniCode, err := p.ToUnicode(elem); err == nil {
-					labels[idx] = elemInUniCode
-				}
-			}
-		}
-	}
-
-	reverse(suffix)
 	reverse(labels)
 	len_suffix := len(suffix)
 	len_labels := len(labels)
@@ -254,19 +235,22 @@ func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 
 	if 0 < len_suffix && len_suffix < len_labels {
 		urlParts.Domain = labels[len_labels-len_suffix-1]
-		if !e.IgnoreSubDomains && (len(labels)-len(suffix)-1) >= 1 {
+		if !e.IgnoreSubDomains && (len(labels)-len(suffix)) >= 2 {
 			urlParts.SubDomain = strings.Join(labels[0:len(labels)-len(suffix)-1], ".")
 		}
 	}
 	len_url_domain := len(urlParts.Domain)
 	len_url_suffix := len(urlParts.Suffix)
 	if len_url_domain > 0 && len_url_suffix > 0 {
-		var sb strings.Builder
-		sb.Grow(len_url_domain + 1 + len_url_suffix)
-		sb.WriteString(urlParts.Domain)
-		sb.WriteString(".")
-		sb.WriteString(urlParts.Suffix)
-		urlParts.RegisteredDomain = sb.String()
+		urlParts.RegisteredDomain = urlParts.Domain + "." + urlParts.Suffix
+	}
+
+	if labelsWasIDN && !e.ConvertURLToPunyCode {
+		p := idna.New()
+		urlParts.SubDomain, _ = p.ToUnicode(urlParts.SubDomain)
+		urlParts.Domain, _ = p.ToUnicode(urlParts.Domain)
+		urlParts.Suffix, _ = p.ToUnicode(urlParts.Suffix)
+		urlParts.RegisteredDomain, _ = p.ToUnicode(urlParts.RegisteredDomain)
 	}
 
 	return &urlParts

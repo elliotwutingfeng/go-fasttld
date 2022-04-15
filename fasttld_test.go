@@ -100,8 +100,8 @@ type newTest struct {
 }
 
 var newTests = []newTest{
-	{includePrivateSuffix: false, expected: withoutPrivateSuffix},
-	{includePrivateSuffix: true, expected: withPrivateSuffix},
+	//{includePrivateSuffix: false, expected: dict{}},
+	//{includePrivateSuffix: true, expected: dict{}},
 }
 
 func TestNew(t *testing.T) {
@@ -216,7 +216,7 @@ func TestExtract(t *testing.T) {
 
 }
 
-const benchmarkURL = "https://baidu.com.cn"
+const benchmarkURL = "https://user:pass@foo.myhost.com:999/some/path?param1=value1&param2=value2"
 
 func BenchmarkFastTld(b *testing.B) {
 	extractorWithoutPrivateSuffix, _ := New(SuffixListParams{

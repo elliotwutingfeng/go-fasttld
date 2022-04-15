@@ -77,10 +77,22 @@ func getPublicSuffixList(cacheFilePath string) [3]([]string) {
 		}
 		if isPrivateSuffix {
 			PrivateSuffixes = append(PrivateSuffixes, suffix)
+			if suffix != line {
+				// add non-punycode version if it is different from punycode version
+				PrivateSuffixes = append(PrivateSuffixes, line)
+			}
 		} else {
 			PublicSuffixes = append(PublicSuffixes, suffix)
+			if suffix != line {
+				// add non-punycode version if it is different from punycode version
+				PublicSuffixes = append(PublicSuffixes, line)
+			}
 		}
 		AllSuffixes = append(AllSuffixes, suffix)
+		if suffix != line {
+			// add non-punycode version if it is different from punycode version
+			AllSuffixes = append(AllSuffixes, line)
+		}
 
 	}
 	return [3]([]string){PublicSuffixes, PrivateSuffixes, AllSuffixes}

@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/joeguo/tldextract v0.0.0-20220411225532-7e064860e89c
+	github.com/mjd2021usa/tldextract v0.9.2
 	golang.org/x/net v0.0.0-20220407224826-aac1ed45d8e3
 )
 

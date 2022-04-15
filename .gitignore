@@ -20,3 +20,5 @@
 # Exclude all PSL .dat except for those in test folder
 *.dat
 !test/*.dat
+
+sandbox/
