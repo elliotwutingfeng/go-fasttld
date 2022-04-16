@@ -146,6 +146,13 @@ var extraExtractTests = []extractTest{
 			SubDomain: "brb.i.am.going.to", Domain: "be", Suffix: "blogspot.com",
 			RegisteredDomain: "be.blogspot.com",
 		}, description: "Include Private Suffix"},
+	{includePrivateSuffix: true,
+		urlParams: UrlParams{Url: "global.prod.fastly.net",
+			IgnoreSubDomains: false, ConvertURLToPunyCode: false},
+		expected: &ExtractResult{
+			SubDomain: "", Domain: "", Suffix: "global.prod.fastly.net",
+			RegisteredDomain: "",
+		}, description: "Include Private Suffix | Suffix only"},
 }
 
 // test cases ported from https://github.com/mjd2021usa/tldextract
@@ -165,7 +172,7 @@ var tldExtractGoTests = []extractTest{
 	{urlParams: UrlParams{Url: "git+ssh://www.github.com/"}, expected: &ExtractResult{SubDomain: "www", Domain: "github", Suffix: "com", RegisteredDomain: "github.com"}, description: "Full git+ssh URL with subdomain"},
 	// {urlParams: UrlParams{Url: "git+ssh://www.!github.com/"}, expected: &ExtractResult{SubDomain: "", Domain: "", Suffix: "", RegisteredDomain: ""}, description: "Full git+ssh URL with bad domain"},
 	{urlParams: UrlParams{Url: "ssh://server.domain.com/"}, expected: &ExtractResult{SubDomain: "server", Domain: "domain", Suffix: "com", RegisteredDomain: "domain.com"}, description: "Full ssh URL with subdomain"},
-	// {urlParams: UrlParams{Url: "//server.domain.com/path"}, expected: &ExtractResult{SubDomain: "server", Domain: "domain", Suffix: "com", RegisteredDomain: "domain.com"}, description: "Missing protocol URL with subdomain"},
+	{urlParams: UrlParams{Url: "//server.domain.com/path"}, expected: &ExtractResult{SubDomain: "server", Domain: "domain", Suffix: "com", RegisteredDomain: "domain.com"}, description: "Missing protocol URL with subdomain"},
 	{urlParams: UrlParams{Url: "server.domain.com/path"}, expected: &ExtractResult{SubDomain: "server", Domain: "domain", Suffix: "com", RegisteredDomain: "domain.com"}, description: "Full ssh URL with subdomain"},
 	{urlParams: UrlParams{Url: "10.10.10.10"}, expected: &ExtractResult{SubDomain: "", Domain: "10.10.10.10", Suffix: "", RegisteredDomain: "10.10.10.10"}, description: "Basic IPv4 Address"},
 	{urlParams: UrlParams{Url: "http://10.10.10.10"}, expected: &ExtractResult{SubDomain: "", Domain: "10.10.10.10", Suffix: "", RegisteredDomain: "10.10.10.10"}, description: "Basic IPv4 Address URL"},
@@ -173,7 +180,7 @@ var tldExtractGoTests = []extractTest{
 	{urlParams: UrlParams{Url: "http://godaddy.godaddy"}, expected: &ExtractResult{SubDomain: "", Domain: "godaddy", Suffix: "godaddy", RegisteredDomain: "godaddy.godaddy"}, description: "Basic URL"},
 	{urlParams: UrlParams{Url: "http://godaddy.godaddy.godaddy"}, expected: &ExtractResult{SubDomain: "godaddy", Domain: "godaddy", Suffix: "godaddy", RegisteredDomain: "godaddy.godaddy"}, description: "Basic URL with subdomain"},
 	{urlParams: UrlParams{Url: "http://godaddy.godaddy.co.uk"}, expected: &ExtractResult{SubDomain: "godaddy", Domain: "godaddy", Suffix: "co.uk", RegisteredDomain: "godaddy.co.uk"}, description: "Basic URL with subdomain"},
-	// {urlParams: UrlParams{Url: "http://godaddy"}, expected: &ExtractResult{SubDomain: "", Domain: "", Suffix: "", RegisteredDomain: ""}, description: "Basic URL with TLD only"},
+	{urlParams: UrlParams{Url: "http://godaddy"}, expected: &ExtractResult{SubDomain: "", Domain: "", Suffix: "godaddy", RegisteredDomain: ""}, description: "Basic URL with TLD only"},
 	{urlParams: UrlParams{Url: "http://godaddy.cannon-fodder"}, expected: &ExtractResult{SubDomain: "", Domain: "", Suffix: "", RegisteredDomain: ""}, description: "Basic URL with bad TLD"},
 	{urlParams: UrlParams{Url: "http://godaddy.godaddy.cannon-fodder"}, expected: &ExtractResult{SubDomain: "", Domain: "", Suffix: "", RegisteredDomain: ""}, description: "Basic URL with subdomainand bad TLD"},
 

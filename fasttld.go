@@ -13,7 +13,7 @@ import (
 const defaultPSLFileName string = "public_suffix_list.dat"
 
 // Extract URL scheme from string
-var schemeRegex = regexp.MustCompile("^[A-Za-z0-9+-.]+://")
+var schemeRegex = regexp.MustCompile("^([A-Za-z0-9+-.]+:)?//")
 
 // Hashmap with keys as strings
 type dict map[string]interface{}
@@ -165,6 +165,8 @@ func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 		netloc = netloc[0:index]
 	}
 
+	netloc = strings.Trim(netloc, ". \n\t\r")
+
 	// Determine if url is an IPv4 address
 	if looksLikeIPv4Address(netloc) {
 		urlParts.Domain = netloc
@@ -184,13 +186,6 @@ func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 	for idx := range labels {
 		label := labels[lenLabels-idx-1]
 		labelLength := len(label)
-		/*
-			if node_, isBool := node.(bool); isBool && node_ == true {
-				// this node is an end node.
-				urlParts.Domain = label
-				break
-			}
-		*/
 
 		// this node has sub-nodes and maybe an end-node.
 		// eg. cn -> (cn, gov.cn)
@@ -229,7 +224,6 @@ func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 			if val_, ok := val.(dict); ok {
 				node = val_
 			} else {
-				urlParts.Domain = labels[idx-1]
 				break
 			}
 		} else {
