@@ -1,6 +1,7 @@
 package fasttld
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -172,10 +173,11 @@ func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 	}
 
 	// extract port and path if any
-	if len(afterHost) != 0 {
+	if lenAfterHost := len(afterHost); lenAfterHost != 0 {
 		var maybePort string
 		hasPort := afterHost[0] == ':'
 		pathStartIndex := strings.Index(afterHost, "/")
+		var invalidPort bool
 		if hasPort {
 			if pathStartIndex == -1 {
 				maybePort = afterHost[1:]
@@ -184,8 +186,12 @@ func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 			}
 			if port, err := strconv.Atoi(maybePort); !(err == nil && 0 <= port && port <= 65535) {
 				maybePort = ""
+				invalidPort = true
 			}
 			urlParts.Port = maybePort
+		}
+		if !invalidPort && pathStartIndex != -1 && pathStartIndex != lenAfterHost {
+			fmt.Println(afterHost[pathStartIndex+1:])
 		}
 	}
 
