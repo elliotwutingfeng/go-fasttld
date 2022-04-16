@@ -126,6 +126,7 @@ func trieConstruct(includePrivateSuffix bool, cacheFilePath string) dict {
 			}
 		}
 	}
+
 	return tldTrie
 }
 
@@ -199,12 +200,12 @@ func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 			if val, ok := node[label]; ok {
 				lenSuffix += 1
 				suffixCharCount += labelLength
-				if val, ok := val.(dict); ok {
-					node = val
-					continue
-				} else {
+				if val, ok := val.(dict); !ok {
 					urlParts.Domain = labels[idx-1]
 					break
+				} else {
+					node = val
+					continue
 				}
 			}
 		}
@@ -212,15 +213,11 @@ func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 		if _, ok := node["*"]; ok {
 			// check if there is a sub node
 			// e.g. www.ck
-			var sb strings.Builder
-			sb.Grow(1 + len(label))
-			sb.WriteString("!")
-			sb.WriteString(label)
-			if _, ok := node[sb.String()]; ok {
-				urlParts.Domain = label
-			} else {
+			if _, ok := node["!"+label]; !ok {
 				lenSuffix += 1
 				suffixCharCount += labelLength
+			} else {
+				urlParts.Domain = label
 			}
 			break
 		}

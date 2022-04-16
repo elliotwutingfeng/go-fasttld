@@ -130,6 +130,12 @@ var extraExtractTests = []extractTest{
 			RegisteredDomain: "google.com.sg",
 		}, description: "Ignore SubDomains",
 	},
+	{urlParams: UrlParams{Url: "https://brb.i.am.going.to.be.a.fk"},
+		expected: &ExtractResult{
+			SubDomain: "brb.i.am.going.to", Domain: "be", Suffix: "a.fk",
+			RegisteredDomain: "be.a.fk",
+		}, description: "Asterisk",
+	},
 	{includePrivateSuffix: true,
 		urlParams: UrlParams{Url: "https://brb.i.am.going.to.be.blogspot.com:5000/a/b/c/d.txt?id=42",
 			IgnoreSubDomains: false, ConvertURLToPunyCode: false},
@@ -208,7 +214,7 @@ func TestExtract(t *testing.T) {
 
 }
 
-const benchmarkURL = "我的家.com.hk"
+const benchmarkURL = "https://maps.google.com/a/b/c/d/e?id=42"
 
 func BenchmarkFastTld(b *testing.B) {
 	extractorWithoutPrivateSuffix, _ := New(SuffixListParams{
@@ -216,6 +222,8 @@ func BenchmarkFastTld(b *testing.B) {
 		IncludePrivateSuffix: false,
 	})
 	extractor := extractorWithoutPrivateSuffix
+
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		extractor.Extract(UrlParams{
 			Url: benchmarkURL})
@@ -226,6 +234,7 @@ func BenchmarkTldExtract(b *testing.B) {
 	cache := "/tmp/tld.cache"
 	extract, _ := tldextract.New(cache, false)
 
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		extract.Extract(benchmarkURL)
 	}
