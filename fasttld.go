@@ -175,9 +175,11 @@ func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 	node = f.TldTrie
 
 	lenSuffix := 0
+	suffixCharCount := 0
 	lenLabels := len(labels)
 	for idx := range labels {
 		label := labels[lenLabels-idx-1]
+		labelLength := len(label)
 		/*
 			if node_, isBool := node.(bool); isBool && node_ == true {
 				// this node is an end node.
@@ -193,6 +195,7 @@ func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 			// eg. gov.cn
 			if val, ok := node[label]; ok {
 				lenSuffix += 1
+				suffixCharCount += labelLength
 				if val, ok := val.(dict); ok {
 					node = val
 					continue
@@ -214,6 +217,7 @@ func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 				urlParts.Domain = label
 			} else {
 				lenSuffix += 1
+				suffixCharCount += labelLength
 			}
 			break
 		}
@@ -221,6 +225,7 @@ func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 		// check if TLD in Public Suffix List
 		if val, ok := node[label]; ok {
 			lenSuffix += 1
+			suffixCharCount += labelLength
 			if val_, ok := val.(dict); ok {
 				node = val_
 			} else {
@@ -233,7 +238,10 @@ func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 
 	}
 
-	urlParts.Suffix = strings.Join(labels[lenLabels-lenSuffix:], ".")
+	netlocLen := len(netloc)
+	if lenSuffix != 0 {
+		urlParts.Suffix = netloc[netlocLen-suffixCharCount-lenSuffix+1:]
+	}
 
 	len_url_suffix := len(urlParts.Suffix)
 	len_url_domain := 0
@@ -242,8 +250,8 @@ func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 		urlParts.Domain = labels[lenLabels-lenSuffix-1]
 		len_url_domain = len(urlParts.Domain)
 		if !e.IgnoreSubDomains && (lenLabels-lenSuffix) >= 2 {
-			urlParts.SubDomain = netloc[:len(netloc)-len_url_domain-len_url_suffix-2]
-			//urlParts.SubDomain = strings.Join(labels[0:lenLabels-lenSuffix-1], ".")
+			urlParts.SubDomain = netloc[:netlocLen-len_url_domain-len_url_suffix-2]
+			// urlParts.SubDomain = strings.Join(labels[0:lenLabels-lenSuffix-1], ".")
 		}
 	}
 

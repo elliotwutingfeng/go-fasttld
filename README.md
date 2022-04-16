@@ -142,7 +142,7 @@ go test -v -coverprofile=test_coverage.out && go tool cover -html=test_coverage.
 ## Benchmarking
 
 ```sh
-go test -bench=.
+go test -bench=. -benchmem
 ```
 
 ## Acknowledgements
