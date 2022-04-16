@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"golang.org/x/net/idna"
@@ -24,7 +25,7 @@ type FastTLD struct {
 }
 
 type ExtractResult struct {
-	SubDomain, Domain, Suffix, RegisteredDomain string
+	SubDomain, Domain, Suffix, Port, RegisteredDomain string
 }
 
 type SuffixListParams struct {
@@ -144,28 +145,49 @@ func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 		e.Url = formatAsPunycode(e.Url)
 	}
 
-	// Remove URL scheme and everything after the URL host subcomponent
+	// Remove URL scheme
 	// Credits: https://github.com/mjd2021usa/tldextract/blob/main/tldextract.go
 	netloc := e.Url
 	netloc = schemeRegex.ReplaceAllString(netloc, "")
+	netloc = strings.Trim(netloc, ". \n\t\r")
+	var afterHost string
 
+	// Remove URL userinfo
 	atIdx := strings.Index(netloc, "@")
 	if atIdx != -1 {
 		netloc = netloc[atIdx+1:]
 	}
 
-	index := strings.IndexFunc(netloc, func(r rune) bool {
+	// Separate URL host from subcomponents thereafter
+	hostEndIndex := strings.IndexFunc(netloc, func(r rune) bool {
 		switch r {
 		case ':', '/', '?', '&', '#':
 			return true
 		}
 		return false
 	})
-	if index != -1 {
-		netloc = netloc[0:index]
+	if hostEndIndex != -1 {
+		afterHost = netloc[hostEndIndex:]
+		netloc = netloc[0:hostEndIndex]
 	}
 
-	netloc = strings.Trim(netloc, ". \n\t\r")
+	// extract port and path if any
+	if len(afterHost) != 0 {
+		var maybePort string
+		hasPort := afterHost[0] == ':'
+		pathStartIndex := strings.Index(afterHost, "/")
+		if hasPort {
+			if pathStartIndex == -1 {
+				maybePort = afterHost[1:]
+			} else {
+				maybePort = afterHost[1:pathStartIndex]
+			}
+			if port, err := strconv.Atoi(maybePort); !(err == nil && 0 <= port && port <= 65535) {
+				maybePort = ""
+			}
+			urlParts.Port = maybePort
+		}
+	}
 
 	// Determine if url is an IPv4 address
 	if looksLikeIPv4Address(netloc) {
