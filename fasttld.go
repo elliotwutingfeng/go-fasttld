@@ -4,12 +4,16 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"golang.org/x/net/idna"
 )
 
 const defaultPSLFileName string = "public_suffix_list.dat"
+
+// Extract URL scheme from string
+var schemeRegex = regexp.MustCompile("^[A-Za-z0-9+-.]+://")
 
 // Hashmap with keys as strings
 type dict map[string]interface{}
@@ -37,12 +41,11 @@ type UrlParams struct {
 // credits: https://stackoverflow.com/questions/13687924 and https://github.com/jophy/fasttld
 func nestedDict(dic dict, keys []string) {
 	if len(keys) == 0 {
-
 	} else if len(keys) == 1 {
 		dic[keys[0]] = true
-
 	} else {
 		keys_ := keys[0 : len(keys)-1]
+		len_keys := len(keys)
 
 		var dic_ interface{}
 
@@ -59,13 +62,13 @@ func nestedDict(dic dict, keys []string) {
 					} else {
 						// it's a boolean
 						dic_ = dic_bk
-						dic_bk[keys[len(keys)-2]] = dict{"_END": true, keys[len(keys)-1]: true}
+						dic_bk[keys[len_keys-2]] = dict{"_END": true, keys[len_keys-1]: true}
 					}
 				}
 			}
 		}
 		if val, isDict := dic_.(dict); isDict {
-			val[keys[len(keys)-1]] = true
+			val[keys[len_keys-1]] = true
 		}
 	}
 }

@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"regexp"
 	"runtime"
 	"strings"
 	"time"
@@ -21,9 +20,6 @@ const (
 	publicSuffixListSource         string = "https://publicsuffix.org/list/public_suffix_list.dat"
 	publicSuffixListSourceFallback string = "https://raw.githubusercontent.com/publicsuffix/list/master/public_suffix_list.dat"
 )
-
-// Extract URL scheme from string
-var schemeRegex = regexp.MustCompile("^[A-Za-z0-9+-.]+://")
 
 // Return true if `maybeIPv4Address` is an IPv4 address
 func looksLikeIPv4Address(maybeIPv4Address string) bool {

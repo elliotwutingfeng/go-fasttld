@@ -19,14 +19,6 @@ func getTestPSLFilePath() string {
 	return sb.String()
 }
 
-type urlTest struct {
-	url, subDomain, domain, suffix, registeredDomain string
-}
-
-var urlTests = []urlTest{
-	{"https://maps.google.com", "maps", "google", "com", "google.com"},
-}
-
 type nestedDictTest struct {
 	originalDict dict
 	keys         []string
