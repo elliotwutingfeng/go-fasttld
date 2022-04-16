@@ -6,7 +6,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/joeguo/tldextract"
+	tlde "github.com/M507/tlde/src"
+	joeguotldextract "github.com/joeguo/tldextract"
+	tld "github.com/jpillora/go-tld"
+	mjd2021usatldextract "github.com/mjd2021usa/tldextract"
 )
 
 func getTestPSLFilePath() string {
@@ -214,8 +217,9 @@ func TestExtract(t *testing.T) {
 
 }
 
-const benchmarkURL = "https://maps.google.com/a/b/c/d/e?id=42"
+const benchmarkURL = "https://maps.google.com/a/b/c/d/e/f/e/f/sa/s/s/s/sd/asd/asd/sad/sad/as/dsa/das/dsa/das/da/sd/asd/asd/asd/a?id=42"
 
+// this module
 func BenchmarkFastTld(b *testing.B) {
 	extractorWithoutPrivateSuffix, _ := New(SuffixListParams{
 		CacheFilePath:        getTestPSLFilePath(),
@@ -230,12 +234,67 @@ func BenchmarkFastTld(b *testing.B) {
 	}
 }
 
-func BenchmarkTldExtract(b *testing.B) {
+// github.com/jpillora/go-tld
+func BenchmarkGoTld(b *testing.B) {
+	// this module also provides the PORT and PATH subcomponents
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		tld.Parse(benchmarkURL)
+	}
+}
+
+// github.com/joeguo/tldextract
+func BenchmarkJoeGuoTldExtract(b *testing.B) {
 	cache := "/tmp/tld.cache"
-	extract, _ := tldextract.New(cache, false)
+	extract, _ := joeguotldextract.New(cache, false)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		extract.Extract(benchmarkURL)
 	}
 }
+
+// github.com/mjd2021usa/tldextract
+func BenchmarkMjd2021USATldExtract(b *testing.B) {
+	cache := "/tmp/tld.cache"
+	extract, _ := mjd2021usatldextract.New(cache, false)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		extract.Extract(benchmarkURL)
+	}
+}
+
+// "github.com/M507/tlde/src"
+func BenchmarkTlde(b *testing.B) {
+	// Appears to be the same as github.com/joeguo/tldextract
+	cache := "/tmp/tld.cache"
+	extract, _ := tlde.New(cache, false)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		extract.Extract(benchmarkURL)
+	}
+}
+
+/*
+// github.com/weppos/publicsuffix-go
+func BenchmarkPublicSuffixGo(b *testing.B) {
+	// this module cannot handle full URLs with scheme (i.e. https:// ftp:// etc.)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		publicsuffix.Parse(benchmarkURL)
+	}
+}
+*/
+
+/*
+// github.com/forease/gotld
+func BenchmarkGoTldForeEase(b *testing.B) {
+	// does not extract subdomain properly
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		gotld.GetSubdomain(benchmarkURL, 2048)
+	}
+}
+*/
