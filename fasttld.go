@@ -135,10 +135,6 @@ func trieConstruct(includePrivateSuffix bool, cacheFilePath string) dict {
 //  registered domain: maps.google.com.ua
 func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 	urlParts := ExtractResult{}
-	urlParts.SubDomain = ""
-	urlParts.Domain = ""
-	urlParts.Suffix = ""
-	urlParts.RegisteredDomain = ""
 
 	if e.ConvertURLToPunyCode {
 		e.Url = formatAsPunycode(e.Url)
@@ -156,7 +152,7 @@ func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 
 	index := strings.IndexFunc(netloc, func(r rune) bool {
 		switch r {
-		case '&', '/', '?', ':', '#':
+		case ':', '/', '?', '&', '#':
 			return true
 		}
 		return false
@@ -173,14 +169,15 @@ func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 	}
 
 	labels := strings.Split(netloc, ".")
-	reverse(labels)
 
 	var node dict
 	// define the root node
 	node = f.TldTrie
 
-	var suffix []string
-	for idx, label := range labels {
+	lenSuffix := 0
+	lenLabels := len(labels)
+	for idx := range labels {
+		label := labels[lenLabels-idx-1]
 		/*
 			if node_, isBool := node.(bool); isBool && node_ == true {
 				// this node is an end node.
@@ -195,12 +192,12 @@ func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 			// check if there is a sub node
 			// eg. gov.cn
 			if val, ok := node[label]; ok {
-				suffix = append(suffix, label)
+				lenSuffix += 1
 				if val, ok := val.(dict); ok {
 					node = val
 					continue
 				} else {
-					urlParts.Domain = labels[idx+1]
+					urlParts.Domain = labels[idx-1]
 					break
 				}
 			}
@@ -216,18 +213,18 @@ func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 			if _, ok := node[sb.String()]; ok {
 				urlParts.Domain = label
 			} else {
-				suffix = append(suffix, label)
+				lenSuffix += 1
 			}
 			break
 		}
 
 		// check if TLD in Public Suffix List
 		if val, ok := node[label]; ok {
-			suffix = append(suffix, label)
+			lenSuffix += 1
 			if val_, ok := val.(dict); ok {
 				node = val_
 			} else {
-				urlParts.Domain = labels[idx+1]
+				urlParts.Domain = labels[idx-1]
 				break
 			}
 		} else {
@@ -236,20 +233,20 @@ func (f *FastTLD) Extract(e UrlParams) *ExtractResult {
 
 	}
 
-	reverse(labels)
-	len_suffix := len(suffix)
-	len_labels := len(labels)
-	urlParts.Suffix = strings.Join(labels[len(labels)-len(suffix):], ".")
+	urlParts.Suffix = strings.Join(labels[lenLabels-lenSuffix:], ".")
 
-	if 0 < len_suffix && len_suffix < len_labels {
-		urlParts.Domain = labels[len_labels-len_suffix-1]
-		if !e.IgnoreSubDomains && (len(labels)-len(suffix)) >= 2 {
-			urlParts.SubDomain = netloc[:len(netloc)-len(urlParts.Domain)-len(urlParts.Suffix)-2]
-			//urlParts.SubDomain = strings.Join(labels[0:len(labels)-len(suffix)-1], ".")
+	len_url_suffix := len(urlParts.Suffix)
+	len_url_domain := 0
+
+	if 0 < lenSuffix && lenSuffix < lenLabels {
+		urlParts.Domain = labels[lenLabels-lenSuffix-1]
+		len_url_domain = len(urlParts.Domain)
+		if !e.IgnoreSubDomains && (lenLabels-lenSuffix) >= 2 {
+			urlParts.SubDomain = netloc[:len(netloc)-len_url_domain-len_url_suffix-2]
+			//urlParts.SubDomain = strings.Join(labels[0:lenLabels-lenSuffix-1], ".")
 		}
 	}
-	len_url_domain := len(urlParts.Domain)
-	len_url_suffix := len(urlParts.Suffix)
+
 	if len_url_domain > 0 && len_url_suffix > 0 {
 		urlParts.RegisteredDomain = urlParts.Domain + "." + urlParts.Suffix
 	}
