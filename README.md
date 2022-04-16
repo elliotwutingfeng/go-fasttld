@@ -46,6 +46,7 @@ fmt.Println(res.SubDomain)        // a.long.subdomain
 fmt.Println(res.Domain)           // ox
 fmt.Println(res.Suffix)           // ac.uk
 fmt.Println(res.RegisteredDomain) // ox.ac.uk
+fmt.Println(res.Port) // 5000
 ```
 
 ## Public Suffix List options
@@ -87,7 +88,7 @@ extractor, _ := fasttld.New(fasttld.SuffixListParams{})
 url := "https://google.blogspot.com"
 res := extractor.Extract(fasttld.UrlParams{Url: url})
 
-// res.SubDomain = google , res.Domain = blogspot , res.Suffix = com , res.RegisteredDomain = blogspot.com
+// res.SubDomain = google , res.Domain = blogspot , res.Suffix = com , res.RegisteredDomain = blogspot.com , res.Port = <no output>
 ```
 
 You can _include_ private domains by setting `IncludePrivateSuffix = true`
@@ -98,7 +99,7 @@ extractor, _ := fasttld.New(fasttld.SuffixListParams{IncludePrivateSuffix: true}
 url := "https://google.blogspot.com"
 res := extractor.Extract(fasttld.UrlParams{Url: url})
 
-// res.SubDomain = <no output> , res.Domain = google , res.Suffix = blogspot.com , res.RegisteredDomain = google.blogspot.com
+// res.SubDomain = <no output> , res.Domain = google , res.Suffix = blogspot.com , res.RegisteredDomain = google.blogspot.com , res.Port = <no output>
 ```
 
 ## Extraction options
@@ -113,7 +114,7 @@ extractor, _ := fasttld.New(fasttld.SuffixListParams{})
 url := "https://maps.google.com"
 res := extractor.Extract(fasttld.UrlParams{Url: url, IgnoreSubDomains: true})
 
-// res.SubDomain = <no output> , res.Domain = google , res.Suffix = com , res.RegisteredDomain = google.com
+// res.SubDomain = <no output> , res.Domain = google , res.Suffix = com , res.RegisteredDomain = google.com , res.Port = <no output>
 ```
 
 ### Punycode
@@ -126,11 +127,11 @@ extractor, _ := fasttld.New(fasttld.SuffixListParams{})
 url := "https://hello.世界.com"
 res := extractor.Extract(fasttld.UrlParams{Url: url, ConvertURLToPunyCode: true})
 
-// res.SubDomain = hello , res.Domain = xn--rhqv96g , res.Suffix = com , res.RegisteredDomain = xn--rhqv96g.com
+// res.SubDomain = hello , res.Domain = xn--rhqv96g , res.Suffix = com , res.RegisteredDomain = xn--rhqv96g.com , res.Port = <no output>
 
 res = extractor.Extract(fasttld.UrlParams{Url: url, ConvertURLToPunyCode: false})
 
-// res.SubDomain = hello , res.Domain = 世界 , res.Suffix = com , res.RegisteredDomain = 世界.com
+// res.SubDomain = hello , res.Domain = 世界 , res.Suffix = com , res.RegisteredDomain = 世界.com , res.Port = <no output>
 ```
 
 ## Testing
