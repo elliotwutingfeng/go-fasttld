@@ -98,7 +98,7 @@ func trieConstruct(includePrivateSuffix bool, cacheFilePath string) *trie {
 	tldTrie := &trie{matches: make(map[string]*trie)}
 	suffixLists := getPublicSuffixList(cacheFilePath)
 
-	SuffixList := []string{}
+	var SuffixList []string
 	if !includePrivateSuffix {
 		// public suffixes only
 		SuffixList = suffixLists[0]
