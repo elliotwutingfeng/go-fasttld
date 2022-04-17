@@ -22,34 +22,7 @@ func getTestPSLFilePath() string {
 	return sb.String()
 }
 
-type nestedDictTest struct {
-	originalDict dict
-	keys         []string
-	expected     dict
-}
-
-var nestedDictTests = []nestedDictTest{
-	{dict{"a": dict{"b": true}}, []string{},
-		dict{"a": dict{"b": true}}},
-	{dict{"a": dict{"b": true}}, []string{"a"},
-		dict{"a": true}},
-	{dict{"a": dict{"b": true}}, []string{"c", "d"},
-		dict{"a": dict{"b": true}, "c": dict{"d": true}}},
-	{dict{"a": dict{"b": dict{"c": true}}}, []string{"a", "b", "c", "d"},
-		dict{"a": dict{"b": dict{"c": dict{"_END": true, "d": true}, "d": true}}}},
-}
-
 func TestNestedDict(t *testing.T) {
-
-	for _, test := range nestedDictTests {
-		OldNestedDict(test.originalDict, test.keys)
-		if output := reflect.DeepEqual(test.originalDict, test.expected); !output {
-			t.Errorf("Output %q not equal to expected %q", test.originalDict, test.expected)
-		}
-	}
-}
-
-func TestNestedDict2(t *testing.T) {
 	originalDict := &trie{matches: map[string]*trie{}}
 	keysSequence := []([]string){{"a"}, {"a", "d"}, {"a", "b"}, {"a", "b", "c"}, {"c"}, {"c", "b"}, {"d", "f"}}
 	for _, keys := range keysSequence {
@@ -192,12 +165,12 @@ func TestPunyCode(t *testing.T) {
 type newTest struct {
 	cacheFilePath        string
 	includePrivateSuffix bool
-	expected             dict
+	expected             int
 }
 
 var newTests = []newTest{
-	//{includePrivateSuffix: false, expected: dict{}},
-	//{includePrivateSuffix: true, expected: dict{}},
+	{cacheFilePath: "test/public_suffix_list.dat", includePrivateSuffix: false, expected: 1656},
+	{cacheFilePath: "test/public_suffix_list.dat", includePrivateSuffix: true, expected: 1674},
 }
 
 func TestNew(t *testing.T) {
@@ -210,11 +183,8 @@ func TestNew(t *testing.T) {
 			CacheFilePath:        cacheFilePath,
 			IncludePrivateSuffix: test.includePrivateSuffix,
 		})
-
-		if output := reflect.DeepEqual(extractor.OldTldTrie,
-			test.expected); !output {
-			t.Errorf("Output %q not equal to expected %q",
-				extractor.OldTldTrie, test.expected)
+		if numTopLevelKeys := len(extractor.TldTrie.matches); numTopLevelKeys != test.expected {
+			t.Errorf("Expected number of top level keys to be %d. Got %d.", test.expected, numTopLevelKeys)
 		}
 	}
 }
@@ -271,7 +241,6 @@ var tldExtractGoTests = []extractTest{
 	{urlParams: UrlParams{Url: "https://duckduckgo.co.uk/path?param1=value1&param2=value2&param3=value3&param4=value4&src=https%3A%2F%2Fwww.yahoo.com%2F"}, expected: &ExtractResult{SubDomain: "", Domain: "duckduckgo", Suffix: "co.uk", RegisteredDomain: "duckduckgo.co.uk", Port: ""}, description: "Full HTTPS URL with no subdomain"},
 	{urlParams: UrlParams{Url: "ftp://peterparker:multipass@mail.duckduckgo.co.uk:666/path?param1=value1&param2=value2&param3=value3&param4=value4&src=https%3A%2F%2Fwww.yahoo.com%2F"}, expected: &ExtractResult{SubDomain: "mail", Domain: "duckduckgo", Suffix: "co.uk", RegisteredDomain: "duckduckgo.co.uk", Port: "666"}, description: "Full ftp URL with subdomain"},
 	{urlParams: UrlParams{Url: "git+ssh://www.github.com/"}, expected: &ExtractResult{SubDomain: "www", Domain: "github", Suffix: "com", RegisteredDomain: "github.com", Port: ""}, description: "Full git+ssh URL with subdomain"},
-	// {urlParams: UrlParams{Url: "git+ssh://www.!github.com/"}, expected: &ExtractResult{SubDomain: "", Domain: "", Suffix: "", RegisteredDomain: "", Port: ""}, description: "Full git+ssh URL with bad domain"},
 	{urlParams: UrlParams{Url: "ssh://server.domain.com/"}, expected: &ExtractResult{SubDomain: "server", Domain: "domain", Suffix: "com", RegisteredDomain: "domain.com", Port: ""}, description: "Full ssh URL with subdomain"},
 	{urlParams: UrlParams{Url: "//server.domain.com/path"}, expected: &ExtractResult{SubDomain: "server", Domain: "domain", Suffix: "com", RegisteredDomain: "domain.com", Port: ""}, description: "Missing protocol URL with subdomain"},
 	{urlParams: UrlParams{Url: "server.domain.com/path"}, expected: &ExtractResult{SubDomain: "server", Domain: "domain", Suffix: "com", RegisteredDomain: "domain.com", Port: ""}, description: "Full ssh URL with subdomain"},
@@ -294,6 +263,8 @@ var tldExtractGoTests = []extractTest{
 	{urlParams: UrlParams{Url: "http://domainer.xn--55qx5d.xn--j6w193g", ConvertURLToPunyCode: true}, expected: &ExtractResult{SubDomain: "", Domain: "domainer", Suffix: "xn--55qx5d.xn--j6w193g", RegisteredDomain: "domainer.xn--55qx5d.xn--j6w193g", Port: ""}, description: "Basic URL with full punycode international TLD (result in punycode)"},
 	{urlParams: UrlParams{Url: "http://domainer.xn--ciqpn.hk"}, expected: &ExtractResult{SubDomain: "", Domain: "domainer", Suffix: "xn--ciqpn.hk", RegisteredDomain: "domainer.xn--ciqpn.hk", Port: ""}, description: "Basic URL with mixed punycode international TLD (result in unicode)"},
 	{urlParams: UrlParams{Url: "http://domainer.xn--55qx5d.xn--j6w193g"}, expected: &ExtractResult{SubDomain: "", Domain: "domainer", Suffix: "xn--55qx5d.xn--j6w193g", RegisteredDomain: "domainer.xn--55qx5d.xn--j6w193g", Port: ""}, description: "Basic URL with full punycode international TLD (result in unicode)"},
+
+	// {urlParams: UrlParams{Url: "git+ssh://www.!github.com/"}, expected: &ExtractResult{SubDomain: "", Domain: "", Suffix: "", RegisteredDomain: "", Port: ""}, description: "Full git+ssh URL with bad domain"},
 }
 
 func TestExtract(t *testing.T) {
@@ -314,7 +285,7 @@ func TestExtract(t *testing.T) {
 				extractor = extractorWithoutPrivateSuffix
 			}
 			// fmt.Println(test.urlParams.Url)
-			res := extractor.OldExtract(test.urlParams)
+			res := extractor.Extract(test.urlParams)
 
 			if output := reflect.DeepEqual(res,
 				test.expected); !output {
@@ -346,25 +317,12 @@ func BenchmarkFastTld(b *testing.B) {
 	}
 }
 
-// this module's previous map[string]interface{}-based implementation
-func BenchmarkOldFastTld(b *testing.B) {
-	extractorWithoutPrivateSuffix, _ := New(SuffixListParams{
-		CacheFilePath:        getTestPSLFilePath(),
-		IncludePrivateSuffix: false,
-	})
-	extractor := extractorWithoutPrivateSuffix
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		extractor.OldExtract(UrlParams{
-			Url: benchmarkURL})
-	}
-}
-
 // github.com/jpillora/go-tld
 func BenchmarkGoTld(b *testing.B) {
 	// this module also provides the PORT and PATH subcomponents
-	// though it cannot handle "+://google.com"
+	// it cannot handle "+://google.com" and IP addresses
+	// it cannot handle urls without scheme component
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		tld.Parse(benchmarkURL)
@@ -419,7 +377,7 @@ func BenchmarkPublicSuffixGo(b *testing.B) {
 /*
 // github.com/forease/gotld
 func BenchmarkGoTldForeEase(b *testing.B) {
-	// does not extract subdomain properly
+	// does not extract subdomain properly, cannot handle ip addresses
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		gotld.GetSubdomain(benchmarkURL, 2048)

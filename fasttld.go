@@ -17,9 +17,8 @@ const defaultPSLFileName string = "public_suffix_list.dat"
 var schemeRegex = regexp.MustCompile("^([A-Za-z0-9+-.]+:)?//")
 
 type fastTLD struct {
-	OldTldTrie    dict
-	cacheFilePath string
 	TldTrie       *trie
+	cacheFilePath string
 }
 
 type ExtractResult struct {
@@ -286,9 +285,8 @@ func New(n SuffixListParams) (*fastTLD, error) {
 		autoUpdate(n.CacheFilePath)
 	}
 
-	// Construct oldTldTrie using list located at n.CacheFilePath
-	oldTldTrie := oldTrieConstruct(n.IncludePrivateSuffix, n.CacheFilePath)
+	// Construct tldTrie using list located at n.CacheFilePath
 	tldTrie := trieConstruct(n.IncludePrivateSuffix, n.CacheFilePath)
 
-	return &fastTLD{oldTldTrie, n.CacheFilePath, tldTrie}, nil
+	return &fastTLD{tldTrie, n.CacheFilePath}, nil
 }
