@@ -17,7 +17,7 @@ This module is a port of the Python [fasttld](https://github.com/jophy/fasttld) 
 
 For example, it extracts the `com` TLD, `maps` subdomain, and `google` domain from `https://maps.google.com:8080/a/long/path/?query=42`.
 
-**go-fasttld** also supports extraction of private domains listed in the [Mozilla Public Suffix List](http://www.publicsuffix.org) like 'blogspot.co.uk' and 'sinaapp.com', and extraction of IPv4 addresses (e.g. https://127.0.0.1).
+**go-fasttld** also supports extraction of private domains listed in the [Mozilla Public Suffix List](http://www.publicsuffix.org) like 'blogspot.co.uk' and 'sinaapp.com', and extraction of IPv4 addresses (e.g. `https://127.0.0.1`).
 
 ### Why not split on "." and take the last element instead?
 
@@ -74,7 +74,7 @@ extractor, _ := fasttld.New(fasttld.SuffixListParams{})
 // Manually update local cache
 showLogMessages := false
 if err := extractor.Update(showLogMessages); err != nil {
-	log.Println(err)
+    log.Println(err)
 }
 ```
 
