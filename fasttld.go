@@ -42,7 +42,11 @@ type trie struct {
 	matches     map[string]*trie
 }
 
+// Store a slice of keys in the trie, by traversing the trie using the keys as a "path",
+// creating new tries for keys that do not exist yet.
+// if a new path overlaps an existing path, flag the previous path's trie node as End = true
 func nestedDict(dic *trie, keys []string) {
+	// credits: https://stackoverflow.com/questions/13687924 and https://github.com/jophy/fasttld
 	var end bool
 	var dic_bk *trie
 
@@ -122,13 +126,16 @@ func trieConstruct(includePrivateSuffix bool, cacheFilePath string) *trie {
 	return tldTrie
 }
 
-// Extract subdomain, domain, suffix and registered domain from a given `url`
+// Extract components from a given `url`
 //
 //  Example: "https://maps.google.com.ua/a/long/path?query=42"
+//  scheme: https://
 //  subdomain: maps
 //  domain: google
 //  suffix: com.ua
 //  registered domain: maps.google.com.ua
+//  port: <no output>
+//  path: a/long/path?query=42
 func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
 	urlParts := ExtractResult{}
 
@@ -192,7 +199,6 @@ func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
 
 	}
 
-	// Determine if url is an IPv4 address
 	if looksLikeIPv4Address(netloc) {
 		urlParts.Domain = netloc
 		urlParts.RegisteredDomain = netloc
