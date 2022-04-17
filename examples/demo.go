@@ -9,6 +9,7 @@ import (
 
 func printRes(url string, res *fasttld.ExtractResult) {
 	fmt.Println("              url:", url)
+	fmt.Println("           scheme:", res.Scheme)
 	fmt.Println("        subdomain:", res.SubDomain)
 	fmt.Println("           domain:", res.Domain)
 	fmt.Println("           suffix:", res.Suffix)
@@ -28,6 +29,7 @@ func main() {
 	res := extractor.Extract(fasttld.UrlParams{Url: url})
 	fmt.Println("Simple Example")
 	printRes(url, res)
+	// res.Scheme = https://
 	// res.SubDomain = a.long.subdomain
 	// res.Domain = ox
 	// res.Suffix = ac.uk
@@ -52,6 +54,7 @@ func main() {
 	res = extractor.Extract(fasttld.UrlParams{Url: url})
 	fmt.Println("Exclude Private Domains")
 	printRes(url, res)
+	// res.Scheme = https://
 	// res.SubDomain = google
 	// res.Domain = blogspot
 	// res.Suffix = com
@@ -63,6 +66,7 @@ func main() {
 	res = extractor.Extract(fasttld.UrlParams{Url: url})
 	fmt.Println("Include Private Domains")
 	printRes(url, res)
+	// res.Scheme = https://
 	// res.SubDomain = <no output>
 	// res.Domain = google
 	// res.Suffix = blogspot.com
@@ -77,6 +81,7 @@ func main() {
 	res = extractor.Extract(fasttld.UrlParams{Url: url, IgnoreSubDomains: true})
 	fmt.Println("Ignore Subdomains")
 	printRes(url, res)
+	// res.Scheme = https://
 	// res.SubDomain = <no output>
 	// res.Domain = google
 	// res.Suffix = com
@@ -90,6 +95,7 @@ func main() {
 	res = extractor.Extract(fasttld.UrlParams{Url: url, ConvertURLToPunyCode: true})
 	fmt.Println("Punycode")
 	printRes(url, res)
+	// res.Scheme = https://
 	// res.SubDomain = hello
 	// res.Domain = xn--rhqv96g
 	// res.Suffix = com
@@ -100,6 +106,7 @@ func main() {
 	res = extractor.Extract(fasttld.UrlParams{Url: url, ConvertURLToPunyCode: false})
 	fmt.Println("No Punycode")
 	printRes(url, res)
+	// res.Scheme = https://
 	// res.SubDomain = hello
 	// res.Domain = 世界
 	// res.Suffix = com

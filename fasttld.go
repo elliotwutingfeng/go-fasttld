@@ -22,7 +22,7 @@ type fastTLD struct {
 }
 
 type ExtractResult struct {
-	SubDomain, Domain, Suffix, Port, Path, RegisteredDomain string
+	Scheme, SubDomain, Domain, Suffix, Port, Path, RegisteredDomain string
 }
 
 type SuffixListParams struct {
@@ -136,11 +136,14 @@ func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
 		e.Url = formatAsPunycode(e.Url)
 	}
 
-	// Remove URL scheme
+	// Extract URL scheme
 	// Credits: https://github.com/mjd2021usa/tldextract/blob/main/tldextract.go
-	netloc := e.Url
-	netloc = schemeRegex.ReplaceAllString(netloc, "")
-	netloc = strings.Trim(netloc, ". \n\t\r")
+	netlocWithScheme := strings.Trim(e.Url, ". \n\t\r")
+	netloc := schemeRegex.ReplaceAllString(netlocWithScheme, "")
+
+	lengthDiff := len(netlocWithScheme) - len(netloc)
+	urlParts.Scheme = netlocWithScheme[0:lengthDiff]
+
 	var afterHost string
 
 	// Remove URL userinfo
