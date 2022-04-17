@@ -1,11 +1,11 @@
 on: [push, pull_request]
 name: Test and coverage
 jobs:
-  test:
+  test-and-coverage:
     strategy:
       matrix:
-        go-version: [1.17.x, 1.18.x]
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        go-version: [1.18.x]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/setup-go@v3
@@ -13,14 +13,6 @@ jobs:
         go-version: ${{ matrix.go-version }}
     - uses: actions/checkout@v3
     - run: go test ./...
-    - run: go test -race ./...
-  coverage:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-      with:
-        go-version: '1.18'
-    - name: Run coverage
     - run: go test -race -covermode=atomic -coverprofile=coverage.out
     - name: Upload coverage to Codecov
-    - uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v3
