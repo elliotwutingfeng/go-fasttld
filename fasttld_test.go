@@ -23,28 +23,129 @@ func getTestPSLFilePath() string {
 }
 
 type nestedDictTest struct {
-	originalDict dict
+	originalDict Dict
 	keys         []string
-	expected     dict
+	expected     Dict
 }
 
 var nestedDictTests = []nestedDictTest{
-	{dict{"a": dict{"b": true}}, []string{},
-		dict{"a": dict{"b": true}}},
-	{dict{"a": dict{"b": true}}, []string{"a"},
-		dict{"a": true}},
-	{dict{"a": dict{"b": true}}, []string{"c", "d"},
-		dict{"a": dict{"b": true}, "c": dict{"d": true}}},
-	{dict{"a": dict{"b": dict{"c": true}}}, []string{"a", "b", "c", "d"},
-		dict{"a": dict{"b": dict{"c": dict{"_END": true, "d": true}, "d": true}}}},
+	{Dict{"a": Dict{"b": true}}, []string{},
+		Dict{"a": Dict{"b": true}}},
+	{Dict{"a": Dict{"b": true}}, []string{"a"},
+		Dict{"a": true}},
+	{Dict{"a": Dict{"b": true}}, []string{"c", "d"},
+		Dict{"a": Dict{"b": true}, "c": Dict{"d": true}}},
+	{Dict{"a": Dict{"b": Dict{"c": true}}}, []string{"a", "b", "c", "d"},
+		Dict{"a": Dict{"b": Dict{"c": Dict{"_END": true, "d": true}, "d": true}}}},
 }
 
 func TestNestedDict(t *testing.T) {
 
 	for _, test := range nestedDictTests {
-		nestedDict(test.originalDict, test.keys)
+		NestedDict(test.originalDict, test.keys)
 		if output := reflect.DeepEqual(test.originalDict, test.expected); !output {
 			t.Errorf("Output %q not equal to expected %q", test.originalDict, test.expected)
+		}
+	}
+}
+
+func TestNestedDict2(t *testing.T) {
+	originalDict := &Trie{Matches: map[string]*Trie{}}
+	keysSequence := []([]string){{"a"}, {"a", "d"}, {"a", "b"}, {"a", "b", "c"}, {"c"}, {"c", "b"}, {"d", "f"}}
+	for _, keys := range keysSequence {
+		NestedDict2(originalDict, keys)
+	}
+	// check each nested value
+	//Top level c
+	if len(originalDict.Matches["c"].Matches) != 1 {
+		t.Errorf("Top level c must have Matches map of length 1")
+	}
+	if _, ok := originalDict.Matches["c"].Matches["b"]; !ok {
+		t.Errorf("Top level c must have b in Matches map")
+	}
+	if !originalDict.Matches["c"].End {
+		t.Errorf("Top level c must have End = true")
+	}
+	// Top level a
+	if len(originalDict.Matches["a"].Matches) != 2 {
+		t.Errorf("Top level a must have Matches map of length 2")
+	}
+	// a -> d
+	if _, ok := originalDict.Matches["a"].Matches["d"]; !ok {
+		t.Errorf("Top level a must have d in Matches map")
+	}
+	if len(originalDict.Matches["a"].Matches["d"].Matches) != 0 {
+		t.Errorf("a -> d must have empty Matches map")
+	}
+	// a -> b
+	if _, ok := originalDict.Matches["a"].Matches["b"]; !ok {
+		t.Errorf("Top level a must have b in Matches map")
+	}
+	if !originalDict.Matches["a"].Matches["b"].End {
+		t.Errorf("a -> b must have End = true")
+	}
+	if len(originalDict.Matches["a"].Matches["b"].Matches) != 1 {
+		t.Errorf("a -> b must have Matches map of length 1")
+	}
+	// a -> b -> c
+	if _, ok := originalDict.Matches["a"].Matches["b"].Matches["c"]; !ok {
+		t.Errorf("a -> b must have c in Matches map")
+	}
+	if len(originalDict.Matches["a"].Matches["b"].Matches["c"].Matches) != 0 {
+		t.Errorf("a -> b -> c must have empty Matches map")
+	}
+	if !originalDict.Matches["a"].End {
+		t.Errorf("Top level a must have End = true")
+	}
+	// d -> f
+	if originalDict.Matches["d"].End {
+		t.Errorf("Top level d must have End = false")
+	}
+	if originalDict.Matches["d"].Matches["f"].End {
+		t.Errorf("d -> f must have End = false")
+	}
+	if len(originalDict.Matches["d"].Matches["f"].Matches) != 0 {
+		t.Errorf("d -> f must have empty Matches map")
+	}
+}
+
+func TestTrie(t *testing.T) {
+	trie := TrieConstruct2(false, "test/mini_public_suffix_list.dat")
+	if len_trie_matches := len(trie.Matches); len_trie_matches != 2 {
+		t.Errorf("Expected top level Trie Matches map length of 2. Got %d.", len_trie_matches)
+	}
+	for _, tld := range []string{"ac", "ck"} {
+		if _, ok := trie.Matches[tld]; !ok {
+			t.Errorf("Top level %q must exist", tld)
+		}
+	}
+	if !trie.Matches["ac"].End {
+		t.Errorf("Top level ac must have End = true")
+	}
+	if trie.Matches["ck"].End {
+		t.Errorf("Top level ck must have End = false")
+	}
+	if len(trie.Matches["ck"].Matches) != 2 {
+		t.Errorf("Top level ck must have Matches map of length 2")
+	}
+	if _, ok := trie.Matches["ck"].Matches["*"]; !ok {
+		t.Errorf("Top level ck must have * in Matches map")
+	}
+	if len(trie.Matches["ck"].Matches["*"].Matches) != 0 {
+		t.Errorf("ck -> * must have empty Matches map")
+	}
+	if _, ok := trie.Matches["ck"].Matches["!www"]; !ok {
+		t.Errorf("Top level ck must have !www in Matches map")
+	}
+	if len(trie.Matches["ck"].Matches["!www"].Matches) != 0 {
+		t.Errorf("ck -> !www must have empty Matches map")
+	}
+	for _, tld := range []string{"com", "edu", "gov", "net", "mil", "org"} {
+		if _, ok := trie.Matches["ac"].Matches[tld]; !ok {
+			t.Errorf("Top level ac must have %q in Matches map", tld)
+		}
+		if len(trie.Matches["ac"].Matches[tld].Matches) != 0 {
+			t.Errorf("ac -> %q must have empty Matches map", tld)
 		}
 	}
 }
@@ -91,7 +192,7 @@ func TestPunyCode(t *testing.T) {
 type newTest struct {
 	cacheFilePath        string
 	includePrivateSuffix bool
-	expected             dict
+	expected             Dict
 }
 
 var newTests = []newTest{
@@ -212,6 +313,7 @@ func TestExtract(t *testing.T) {
 			} else {
 				extractor = extractorWithoutPrivateSuffix
 			}
+			// fmt.Println(test.urlParams.Url)
 			res := extractor.Extract(test.urlParams)
 
 			if output := reflect.DeepEqual(res,
@@ -224,7 +326,10 @@ func TestExtract(t *testing.T) {
 
 }
 
-const benchmarkURL = "https://maps.google.com/a/b/c/d/e/f/e/f/sa/s/s/s/sd/asd/asd/sad/sad/as/dsa/das/dsa/das/da/sd/asd/asd/asd/a?id=42"
+const benchmarkURL = "https://maps.google.com/a/b/c/d/e/f/e/f/sa/s/s/s/sd/asd/asd/sad/sad/as/dsa/" +
+	"das/dsa/das/da/sd/asd/asd/asd/a/b/c/d/e/f/e/f/sa/s/s/s/sd/asd/asd/sad/sad/as/dsa/das/dsa/das/da/" +
+	"sd/asd/asd/asd/a/b/c/d/e/f/e/f/sa/s/s/s/sd/asd/asd/sad/sad/as/dsa/das/dsa/das/da/sd/asd/asd/" +
+	"asd/a/b/c/d/e/f/e/f/sa/s/s/s/sd/asd/asd/sad/sad/as/dsa/das/dsa/das/da/sd/asd/asd/asd/a?id=42"
 
 // this module
 func BenchmarkFastTld(b *testing.B) {
@@ -273,7 +378,7 @@ func BenchmarkMjd2021USATldExtract(b *testing.B) {
 	}
 }
 
-// "github.com/M507/tlde/src"
+// github.com/M507/tlde/src
 func BenchmarkTlde(b *testing.B) {
 	// Appears to be the same as github.com/joeguo/tldextract
 	cache := "/tmp/tld.cache"

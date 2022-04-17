@@ -1,0 +1,11 @@
+ac
+com.ac
+edu.ac
+gov.ac
+net.ac
+mil.ac
+org.ac
+*.ck
+!www.ck
+// ===BEGIN PRIVATE DOMAINS===
+blogspot.com
