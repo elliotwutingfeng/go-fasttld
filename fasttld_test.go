@@ -346,6 +346,20 @@ func BenchmarkFastTld(b *testing.B) {
 	}
 }
 
+func BenchmarkFastTld2(b *testing.B) {
+	extractorWithoutPrivateSuffix, _ := New(SuffixListParams{
+		CacheFilePath:        getTestPSLFilePath(),
+		IncludePrivateSuffix: false,
+	})
+	extractor := extractorWithoutPrivateSuffix
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		extractor.Extract2(UrlParams{
+			Url: benchmarkURL})
+	}
+}
+
 // github.com/jpillora/go-tld
 func BenchmarkGoTld(b *testing.B) {
 	// this module also provides the PORT and PATH subcomponents
