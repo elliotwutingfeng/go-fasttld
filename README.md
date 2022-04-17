@@ -172,10 +172,50 @@ res = extractor.Extract(fasttld.UrlParams{Url: url, ConvertURLToPunyCode: false}
 go test -v -coverprofile=test_coverage.out && go tool cover -html=test_coverage.out -o test_coverage.html
 ```
 
-## Benchmarking
+## Benchmarks
+
+### Run
 
 ```sh
 go test -bench=. -benchmem -cpu 1
+```
+
+### Results
+
+**go-fasttld** performs especially well on longer URLs.
+
+```sh
+goos: linux
+goarch: amd64
+pkg: github.com/elliotwutingfeng/go-fasttld
+cpu: AMD Ryzen 7 5800X 8-Core Processor
+
+# BenchmarkFastTld              -> go-fasttld (this module)
+# BenchmarkGoTld                -> github.com/jpillora/go-tld
+# BenchmarkJoeGuoTldExtract     -> github.com/joeguo/tldextract
+# BenchmarkMjd2021USATldExtract -> github.com/mjd2021usa/tldextract
+# BenchmarkTlde                 -> github.com/M507/tlde
+
+# https://maps.google.com
+BenchmarkFastTld                 2384101               505.7 ns/op           224 B/op          6 allocs/op
+BenchmarkGoTld                   2764809               422.5 ns/op           224 B/op          2 allocs/op
+BenchmarkJoeGuoTldExtract        2455089               489.3 ns/op           160 B/op          5 allocs/op
+BenchmarkMjd2021USATldExtract    1451707               823.9 ns/op           208 B/op          7 allocs/op
+BenchmarkTlde                    2450620               496.5 ns/op           160 B/op          5 allocs/op
+
+# https://maps.google.com.ua/a/long/path?query=42
+BenchmarkFastTld                 2161218               563.1 ns/op           304 B/op          6 allocs/op
+BenchmarkGoTld                   2402505               497.7 ns/op           224 B/op          2 allocs/op
+BenchmarkJoeGuoTldExtract        1413582               850.6 ns/op           296 B/op          8 allocs/op
+BenchmarkMjd2021USATldExtract    1322862               894.5 ns/op           296 B/op          8 allocs/op
+BenchmarkTlde                    1393911               856.3 ns/op           296 B/op          8 allocs/op
+
+# https://a.b.c.d.e.maps.google.com.sg:5050/aaaa/bbbb/cccc/dddd/eeee/ffff/gggg/hhhh/iiii.html?id=42#select
+BenchmarkFastTld                 1782356               663.1 ns/op           480 B/op          6 allocs/op
+BenchmarkGoTld                   1658845               723.5 ns/op           224 B/op          2 allocs/op
+BenchmarkJoeGuoTldExtract        1000000              1148 ns/op             576 B/op          9 allocs/op
+BenchmarkMjd2021USATldExtract     958197              1261 ns/op             576 B/op          9 allocs/op
+BenchmarkTlde                     994126              1148 ns/op             576 B/op          9 allocs/op
 ```
 
 ## Acknowledgements

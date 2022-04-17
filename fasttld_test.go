@@ -255,7 +255,7 @@ var tldExtractGoTests = []extractTest{
 	{urlParams: UrlParams{Url: "//server.domain.com/path"}, expected: &ExtractResult{Scheme: "//", SubDomain: "server", Domain: "domain", Suffix: "com", RegisteredDomain: "domain.com", Port: "", Path: "path"}, description: "Missing protocol URL with subdomain"},
 	{urlParams: UrlParams{Url: "server.domain.com/path"}, expected: &ExtractResult{Scheme: "", SubDomain: "server", Domain: "domain", Suffix: "com", RegisteredDomain: "domain.com", Port: "", Path: "path"}, description: "Full ssh URL with subdomain"},
 	{urlParams: UrlParams{Url: "10.10.10.10"}, expected: &ExtractResult{Scheme: "", SubDomain: "", Domain: "10.10.10.10", Suffix: "", RegisteredDomain: "10.10.10.10", Port: ""}, description: "Basic IPv4 Address"},
-	{urlParams: UrlParams{Url: "http://10.10.10.10"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "", Domain: "10.10.10.10", Suffix: "", RegisteredDomain: "10.10.10.10", Port: ""}, description: "Basic IPv4 Address URL"},
+	{urlParams: UrlParams{Url: "http://10.10.10.10:5000"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "", Domain: "10.10.10.10", Suffix: "", RegisteredDomain: "10.10.10.10", Port: "5000"}, description: "Basic IPv4 Address URL"},
 	{urlParams: UrlParams{Url: "http://10.10.10.256"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "", Domain: "", Suffix: "", RegisteredDomain: "", Port: ""}, description: "Basic IPv4 Address URL with bad IP"},
 	{urlParams: UrlParams{Url: "http://godaddy.godaddy"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "", Domain: "godaddy", Suffix: "godaddy", RegisteredDomain: "godaddy.godaddy", Port: ""}, description: "Basic URL"},
 	{urlParams: UrlParams{Url: "http://godaddy.godaddy.godaddy"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "godaddy", Domain: "godaddy", Suffix: "godaddy", RegisteredDomain: "godaddy.godaddy", Port: ""}, description: "Basic URL with subdomain"},
@@ -306,9 +306,11 @@ func TestExtract(t *testing.T) {
 	}
 }
 
-const benchmarkURL = "https://maps.google.com/a/b/c/d/e/a/b/c/d/e/a/b/c/d/e/a/b/c/d/e/a/b/c/d/e/a/b/c/d/e/a/b/c/d/e/a/b/c/d/e/e/a/b/c/d/e/a/b/c/d/e/a/b/c/d/e/a/b/c/d/e/a/b/c/d/e/a/b/c/d/?id=42"
+// const benchmarkURL = "https://maps.google.com"
+// const benchmarkURL = "https://maps.google.com.ua/a/long/path?query=42"
+const benchmarkURL = "https://a.b.c.d.e.maps.google.com.sg:5050/aaaa/bbbb/cccc/dddd/eeee/ffff/gggg/hhhh/iiii.html?id=42#select"
 
-// this module struct-based implementation
+// this module
 func BenchmarkFastTld(b *testing.B) {
 	extractorWithoutPrivateSuffix, _ := New(SuffixListParams{
 		CacheFilePath:        getTestPSLFilePath(),
@@ -357,7 +359,7 @@ func BenchmarkMjd2021USATldExtract(b *testing.B) {
 	}
 }
 
-// github.com/M507/tlde/src
+// github.com/M507/tlde
 func BenchmarkTlde(b *testing.B) {
 	// Appears to be the same as github.com/joeguo/tldextract
 	cache := "/tmp/tld.cache"

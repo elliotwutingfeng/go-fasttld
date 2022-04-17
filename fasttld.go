@@ -178,10 +178,10 @@ func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
 				maybePort = afterHost[1:pathStartIndex]
 			}
 			if port, err := strconv.Atoi(maybePort); !(err == nil && 0 <= port && port <= 65535) {
-				maybePort = ""
 				invalidPort = true
+			} else {
+				urlParts.Port = maybePort
 			}
-			urlParts.Port = maybePort
 		}
 		if !invalidPort && pathStartIndex != -1 && pathStartIndex != lenAfterHost {
 			// if there is any path/query/fragment after the authority URI component...
@@ -205,8 +205,8 @@ func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
 	// define the root node
 	node = f.TldTrie
 
-	lenSuffix := 0
-	suffixCharCount := 0
+	var lenSuffix int
+	var suffixCharCount int
 	lenLabels := len(labels)
 	for idx := range labels {
 		label := labels[lenLabels-idx-1]
@@ -261,7 +261,7 @@ func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
 	}
 
 	len_url_suffix := len(urlParts.Suffix)
-	len_url_domain := 0
+	var len_url_domain int
 
 	if 0 < lenSuffix && lenSuffix < lenLabels {
 		urlParts.Domain = labels[lenLabels-lenSuffix-1]
