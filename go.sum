@@ -2,8 +2,6 @@ github.com/M507/tlde v0.0.0-20210907033143-fb7938b62971 h1:LJEdF/3U2BviLgbxHR8JI
 github.com/M507/tlde v0.0.0-20210907033143-fb7938b62971/go.mod h1:g9GA43TBwCYBzzy8QrO6z+BQpUJqfI9q+zRVPLJx9wA=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/forease/gotld v0.0.0-20220117081630-c190e9a9a647 h1:FTkD/Buv4Gz5SBvlJZ76seZ7hzBqCoxw4zWPWjzrtOU=
-github.com/forease/gotld v0.0.0-20220117081630-c190e9a9a647/go.mod h1:KFhbGCth/LCf6CMyCUzAlBnNHPyx0ciRVu1siPnlKXw=
 github.com/joeguo/tldextract v0.0.0-20220411225532-7e064860e89c h1:Gy4SNnjFVAzUymOWGy0LMhu7vP/+vVMeEIjOJeEgeDQ=
 github.com/joeguo/tldextract v0.0.0-20220411225532-7e064860e89c/go.mod h1:oGfutRjaB95239mjFVwofaOPTwuS3vb71ZLIGCEb36g=
 github.com/jpillora/go-tld v1.1.1 h1:P1ZwtKDHBYYUl235R/D64cdBARfGYzEy1Hg2Ikir3FQ=
@@ -15,10 +13,7 @@ github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZN
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5CcY=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
-github.com/weppos/publicsuffix-go v0.15.0 h1:2uQCwDczZ8YZe5uD0mM3sXRoZYA74xxPuiKK8LdPcGQ=
-github.com/weppos/publicsuffix-go v0.15.0/go.mod h1:HYux0V0Zi04bHNwOHy4cXJVz/TQjYonnF6aoYhj+3QE=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
-golang.org/x/net v0.0.0-20200202094626-16171245cfb2/go.mod h1:z5CRVTTTmAJ677TzLLGU+0bjPO0LkuOLi4/5GtJWs/s=
 golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e/go.mod h1:qpuaurCH72eLCgpAm/N6yyVIVM9cpaDIP3A8BGJEC5A=
 golang.org/x/net v0.0.0-20220407224826-aac1ed45d8e3 h1:EN5+DfgmRMvRUrMGERW2gQl3Vc+Z7ZMnI/xdEpPSf0c=
 golang.org/x/net v0.0.0-20220407224826-aac1ed45d8e3/go.mod h1:CfG3xpIq0wQ8r1q4Su4UZFWDARRcnwPjda9FqA0JpMk=

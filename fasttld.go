@@ -22,7 +22,7 @@ type fastTLD struct {
 }
 
 type ExtractResult struct {
-	SubDomain, Domain, Suffix, Port, RegisteredDomain string
+	SubDomain, Domain, Suffix, Port, Path, RegisteredDomain string
 }
 
 type SuffixListParams struct {
@@ -162,7 +162,7 @@ func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
 		netloc = netloc[0:hostEndIndex]
 	}
 
-	// extract port and path if any
+	// extract port and "Path" if any
 	if lenAfterHost := len(afterHost); lenAfterHost != 0 {
 		var maybePort string
 		hasPort := afterHost[0] == ':'
@@ -181,8 +181,12 @@ func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
 			urlParts.Port = maybePort
 		}
 		if !invalidPort && pathStartIndex != -1 && pathStartIndex != lenAfterHost {
-			// fmt.Println(afterHost[pathStartIndex+1:])
+			// if there is any path/query/fragment after the authority URI component...
+			// see https://stackoverflow.com/questions/47543432/what-do-we-call-the-combined-path-query-and-fragment-in-a-uri
+			// for simplicity, we shall call this the "Path"
+			urlParts.Path = afterHost[pathStartIndex+1:]
 		}
+
 	}
 
 	// Determine if url is an IPv4 address
@@ -261,7 +265,6 @@ func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
 		len_url_domain = len(urlParts.Domain)
 		if !e.IgnoreSubDomains && (lenLabels-lenSuffix) >= 2 {
 			urlParts.SubDomain = netloc[:netlocLen-len_url_domain-len_url_suffix-2]
-			// urlParts.SubDomain = strings.Join(labels[0:lenLabels-lenSuffix-1], ".")
 		}
 	}
 

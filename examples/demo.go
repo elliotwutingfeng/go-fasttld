@@ -14,6 +14,7 @@ func printRes(url string, res *fasttld.ExtractResult) {
 	fmt.Println("           suffix:", res.Suffix)
 	fmt.Println("registered domain:", res.RegisteredDomain)
 	fmt.Println("             port:", res.Port)
+	fmt.Println("             path:", res.Path)
 	fmt.Println("")
 }
 
@@ -32,6 +33,7 @@ func main() {
 	// res.Suffix = ac.uk
 	// res.RegisteredDomain = ox.ac.uk
 	// res.Port = 5000
+	// res.Path = a/b/c/d/e/f/g/h/i?id=42
 
 	// Specify custom public suffix list file
 	// cacheFilePath := "/absolute/path/to/file.dat"
@@ -55,6 +57,7 @@ func main() {
 	// res.Suffix = com
 	// res.RegisteredDomain = blogspot.com
 	// res.Port = <no output>
+	// res.Path = <no output>
 
 	extractor, _ = fasttld.New(fasttld.SuffixListParams{IncludePrivateSuffix: true})
 	res = extractor.Extract(fasttld.UrlParams{Url: url})
@@ -65,6 +68,7 @@ func main() {
 	// res.Suffix = blogspot.com
 	// res.RegisteredDomain = google.blogspot.com
 	// res.Port = <no output>
+	// res.Path = <no output>
 
 	// Ignore Subdomains
 	url = "https://maps.google.com"
@@ -78,6 +82,7 @@ func main() {
 	// res.Suffix = com
 	// res.RegisteredDomain = google.com
 	// res.Port = <no output>
+	// res.Path = <no output>
 
 	// Punycode
 	url = "https://hello.世界.com"
@@ -90,6 +95,7 @@ func main() {
 	// res.Suffix = com
 	// res.RegisteredDomain = xn--rhqv96g.com
 	// res.Port = <no output>
+	// res.Path = <no output>
 
 	res = extractor.Extract(fasttld.UrlParams{Url: url, ConvertURLToPunyCode: false})
 	fmt.Println("No Punycode")
@@ -99,4 +105,5 @@ func main() {
 	// res.Suffix = com
 	// res.RegisteredDomain = 世界.com
 	// res.Port = <no output>
+	// res.Path = <no output>
 }

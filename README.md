@@ -47,6 +47,7 @@ fmt.Println(res.Domain)           // ox
 fmt.Println(res.Suffix)           // ac.uk
 fmt.Println(res.RegisteredDomain) // ox.ac.uk
 fmt.Println(res.Port) // 5000
+fmt.Println(res.Path) // a/b/c/d/e/f/g/h/i?id=42
 ```
 
 ## Public Suffix List options
@@ -93,6 +94,7 @@ res := extractor.Extract(fasttld.UrlParams{Url: url})
 // res.Suffix = com
 // res.RegisteredDomain = blogspot.com
 // res.Port = <no output>
+// res.Path = <no output>
 ```
 
 You can _include_ private domains by setting `IncludePrivateSuffix = true`
@@ -108,6 +110,7 @@ res := extractor.Extract(fasttld.UrlParams{Url: url})
 // res.Suffix = blogspot.com
 // res.RegisteredDomain = google.blogspot.com
 // res.Port = <no output>
+// res.Path = <no output>
 ```
 
 ## Extraction options
@@ -127,6 +130,7 @@ res := extractor.Extract(fasttld.UrlParams{Url: url, IgnoreSubDomains: true})
 // res.Suffix = com
 // res.RegisteredDomain = google.com
 // res.Port = <no output>
+// res.Path = <no output>
 ```
 
 ### Punycode
@@ -144,6 +148,7 @@ res := extractor.Extract(fasttld.UrlParams{Url: url, ConvertURLToPunyCode: true}
 // res.Suffix = com
 // res.RegisteredDomain = xn--rhqv96g.com
 // res.Port = <no output>
+// res.Path = <no output>
 
 res = extractor.Extract(fasttld.UrlParams{Url: url, ConvertURLToPunyCode: false})
 
@@ -152,6 +157,7 @@ res = extractor.Extract(fasttld.UrlParams{Url: url, ConvertURLToPunyCode: false}
 // res.Suffix = com
 // res.RegisteredDomain = 世界.com
 // res.Port = <no output>
+// res.Path = <no output>
 ```
 
 ## Testing
