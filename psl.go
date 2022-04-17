@@ -172,6 +172,6 @@ func update(cacheFilePath string, showLogMessages bool) error {
 	return nil
 }
 
-func (t *FastTLD) Update(showLogMessages bool) error {
+func (t *fastTLD) Update(showLogMessages bool) error {
 	return update(t.cacheFilePath, showLogMessages)
 }

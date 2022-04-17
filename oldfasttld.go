@@ -1,98 +1,53 @@
 package fasttld
 
 import (
-	"log"
-	"os"
-	"path/filepath"
-	"regexp"
 	"strconv"
 	"strings"
-
-	"golang.org/x/net/idna"
 )
 
-const defaultPSLFileName string = "public_suffix_list.dat"
+// Hashmap with keys as strings
+type dict map[string]interface{}
 
-// Extract URL scheme from string
-var schemeRegex = regexp.MustCompile("^([A-Za-z0-9+-.]+:)?//")
+// credits: https://stackoverflow.com/questions/13687924 and https://github.com/jophy/fasttld
+func OldNestedDict(dic dict, keys []string) {
+	if len(keys) == 0 {
+	} else if len(keys) == 1 {
+		dic[keys[0]] = true
+	} else {
+		keys_ := keys[0 : len(keys)-1]
+		len_keys := len(keys)
 
-type fastTLD struct {
-	OldTldTrie    dict
-	cacheFilePath string
-	TldTrie       *trie
-}
+		var dic_ interface{}
 
-type ExtractResult struct {
-	SubDomain, Domain, Suffix, Port, RegisteredDomain string
-}
+		dic_ = dic
 
-type SuffixListParams struct {
-	CacheFilePath        string
-	IncludePrivateSuffix bool
-}
-
-type UrlParams struct {
-	Url                  string
-	IgnoreSubDomains     bool
-	ConvertURLToPunyCode bool
-}
-
-type trie struct {
-	end         bool
-	hasChildren bool
-	matches     map[string]*trie
-}
-
-func nestedDict(dic *trie, keys []string) {
-	var end bool
-	var dic_bk *trie
-
-	keys_ := keys[0 : len(keys)-1]
-	len_keys := len(keys)
-
-	for _, key := range keys_ {
-		dic_bk = dic
-		// if dic.matches[key] does not exist
-		if _, ok := dic.matches[key]; !ok {
-			// set dic.matches[key] to &Trie
-			dic.matches[key] = &trie{hasChildren: true, matches: make(map[string]*trie)}
+		for _, key := range keys_ {
+			if dic_bk, isDict := dic_.(dict); isDict {
+				if _, ok := dic_bk[key]; !ok { // dic_[key] does not exist
+					dic_bk[key] = dict{} // set to dict{}
+					dic_ = dic_bk[key]   // point dic_ to it
+				} else { // dic_[key] exists
+					if _, isDict := dic_bk[key].(dict); isDict {
+						dic_ = dic_bk[key] // point dic_ to it
+					} else {
+						// it's a boolean
+						dic_ = dic_bk
+						dic_bk[keys[len_keys-2]] = dict{"_END": true, keys[len_keys-1]: true}
+					}
+				}
+			}
 		}
-		dic = dic.matches[key] // point dic to it
-		if len(dic.matches) == 0 && !dic.hasChildren {
-			end = true
-			dic = dic_bk
-			dic.matches[keys[len_keys-2]] = &trie{end: true, matches: make(map[string]*trie)}
-			dic.matches[keys[len_keys-2]].matches[keys[len_keys-1]] = &trie{matches: make(map[string]*trie)}
+		if val, isDict := dic_.(dict); isDict {
+			val[keys[len_keys-1]] = true
 		}
 	}
-	if !end {
-		dic.matches[keys[len_keys-1]] = &trie{matches: make(map[string]*trie)}
-	}
-}
-
-// Reverse a slice of strings in-place
-func reverse(input []string) {
-	for i, j := 0, len(input)-1; i < j; i, j = i+1, j-1 {
-		input[i], input[j] = input[j], input[i]
-	}
-}
-
-// Format string as punycode
-func formatAsPunycode(s string) string {
-	asPunyCode, err := idna.ToASCII(strings.ToLower(strings.TrimSpace(s)))
-	if err != nil {
-		log.Println(strings.SplitAfterN(err.Error(), "idna: invalid label", 2)[0])
-		return ""
-	}
-
-	return asPunyCode
 }
 
 // Construct a compressed trie to store Public Suffix List TLDs split at "." in reverse-order
 //
 // For example: "us.gov.pl" will be stored in the order {"pl", "gov", "us"}
-func trieConstruct(includePrivateSuffix bool, cacheFilePath string) *trie {
-	tldTrie := &trie{matches: make(map[string]*trie)}
+func oldTrieConstruct(includePrivateSuffix bool, cacheFilePath string) dict {
+	tldTrie := dict{}
 	suffixLists := getPublicSuffixList(cacheFilePath)
 
 	SuffixList := []string{}
@@ -108,29 +63,33 @@ func trieConstruct(includePrivateSuffix bool, cacheFilePath string) *trie {
 		if strings.Contains(suffix, ".") {
 			sp := strings.Split(suffix, ".")
 			reverse(sp)
-			nestedDict(tldTrie, sp)
+			OldNestedDict(tldTrie, sp)
 		} else {
-			tldTrie.matches[suffix] = &trie{end: true, matches: make(map[string]*trie)}
+			tldTrie[suffix] = dict{"_END": true}
 		}
 	}
 
-	for key := range tldTrie.matches {
-		if len(tldTrie.matches[key].matches) == 0 && tldTrie.matches[key].end {
-			tldTrie.matches[key] = &trie{matches: make(map[string]*trie)}
+	for key := range tldTrie {
+		if val, ok := tldTrie[key].(dict); ok {
+			if len(val) == 1 {
+				if _, ok := tldTrie["_END"]; ok {
+					tldTrie[key] = true
+				}
+			}
 		}
 	}
 
 	return tldTrie
 }
 
-// Extract subdomain, domain, suffix and registered domain from a given `url`
+// OldExtract subdomain, domain, suffix and registered domain from a given `url`
 //
 //  Example: "https://maps.google.com.ua/a/long/path?query=42"
 //  subdomain: maps
 //  domain: google
 //  suffix: com.ua
 //  registered domain: maps.google.com.ua
-func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
+func (f *fastTLD) OldExtract(e UrlParams) *ExtractResult {
 	urlParts := ExtractResult{}
 
 	if e.ConvertURLToPunyCode {
@@ -195,9 +154,9 @@ func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
 
 	labels := strings.Split(netloc, ".")
 
-	var node *trie
+	var node dict
 	// define the root node
-	node = f.TldTrie
+	node = f.OldTldTrie
 
 	lenSuffix := 0
 	suffixCharCount := 0
@@ -208,13 +167,13 @@ func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
 
 		// this node has sub-nodes and maybe an end-node.
 		// eg. cn -> (cn, gov.cn)
-		if node.end {
+		if _, ok := node["_END"]; ok {
 			// check if there is a sub node
 			// eg. gov.cn
-			if val, ok := node.matches[label]; ok {
+			if val, ok := node[label]; ok {
 				lenSuffix += 1
 				suffixCharCount += labelLength
-				if len(val.matches) == 0 {
+				if val, ok := val.(dict); !ok {
 					urlParts.Domain = labels[idx-1]
 					break
 				} else {
@@ -224,10 +183,10 @@ func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
 			}
 		}
 
-		if _, ok := node.matches["*"]; ok {
+		if _, ok := node["*"]; ok {
 			// check if there is a sub node
 			// e.g. www.ck
-			if _, ok := node.matches["!"+label]; !ok {
+			if _, ok := node["!"+label]; !ok {
 				lenSuffix += 1
 				suffixCharCount += labelLength
 			} else {
@@ -235,18 +194,20 @@ func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
 			}
 			break
 		}
+
 		// check if TLD in Public Suffix List
-		if val, ok := node.matches[label]; ok {
+		if val, ok := node[label]; ok {
 			lenSuffix += 1
 			suffixCharCount += labelLength
-			if len(val.matches) != 0 {
-				node = val
+			if val_, ok := val.(dict); ok {
+				node = val_
 			} else {
 				break
 			}
 		} else {
 			break
 		}
+
 	}
 
 	netlocLen := len(netloc)
@@ -271,24 +232,4 @@ func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
 	}
 
 	return &urlParts
-}
-
-// New creates a new *FastTLD
-func New(n SuffixListParams) (*fastTLD, error) {
-	cachePath := filepath.Dir(n.CacheFilePath)
-	if stat, err := os.Stat(cachePath); cachePath == "." || err != nil || !stat.IsDir() {
-		// if cachePath is unreachable, use default Public Suffix List
-		cachePath = getCurrentFilePath()
-		n.CacheFilePath = cachePath + string(os.PathSeparator) + defaultPSLFileName
-
-		// Download new Public Suffix List if local cache does not exist
-		// or if local cache is older than 3 days
-		autoUpdate(n.CacheFilePath)
-	}
-
-	// Construct oldTldTrie using list located at n.CacheFilePath
-	oldTldTrie := oldTrieConstruct(n.IncludePrivateSuffix, n.CacheFilePath)
-	tldTrie := trieConstruct(n.IncludePrivateSuffix, n.CacheFilePath)
-
-	return &fastTLD{oldTldTrie, n.CacheFilePath, tldTrie}, nil
 }
