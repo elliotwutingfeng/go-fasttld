@@ -10,6 +10,7 @@ import (
 func printRes(url string, res *fasttld.ExtractResult) {
 	fmt.Println("              url:", url)
 	fmt.Println("           scheme:", res.Scheme)
+	fmt.Println("         userinfo:", res.UserInfo)
 	fmt.Println("        subdomain:", res.SubDomain)
 	fmt.Println("           domain:", res.Domain)
 	fmt.Println("           suffix:", res.Suffix)
@@ -20,7 +21,7 @@ func printRes(url string, res *fasttld.ExtractResult) {
 }
 
 func main() {
-	url := "https://a.long.subdomain.ox.ac.uk:5000/a/b/c/d/e/f/g/h/i?id=42"
+	url := "https://some-user@a.long.subdomain.ox.ac.uk:5000/a/b/c/d/e/f/g/h/i?id=42"
 
 	extractor, err := fasttld.New(fasttld.SuffixListParams{})
 	if err != nil {
@@ -30,6 +31,7 @@ func main() {
 	fmt.Println("Simple Example")
 	printRes(url, res)
 	// res.Scheme = https://
+	// res.UserInfo = some-user
 	// res.SubDomain = a.long.subdomain
 	// res.Domain = ox
 	// res.Suffix = ac.uk
@@ -55,6 +57,7 @@ func main() {
 	fmt.Println("Exclude Private Domains")
 	printRes(url, res)
 	// res.Scheme = https://
+	// res.UserInfo = <no output>
 	// res.SubDomain = google
 	// res.Domain = blogspot
 	// res.Suffix = com
@@ -67,6 +70,7 @@ func main() {
 	fmt.Println("Include Private Domains")
 	printRes(url, res)
 	// res.Scheme = https://
+	// res.UserInfo = <no output>
 	// res.SubDomain = <no output>
 	// res.Domain = google
 	// res.Suffix = blogspot.com
@@ -82,6 +86,7 @@ func main() {
 	fmt.Println("Ignore Subdomains")
 	printRes(url, res)
 	// res.Scheme = https://
+	// res.UserInfo = <no output>
 	// res.SubDomain = <no output>
 	// res.Domain = google
 	// res.Suffix = com
@@ -96,6 +101,7 @@ func main() {
 	fmt.Println("Punycode")
 	printRes(url, res)
 	// res.Scheme = https://
+	// res.UserInfo = <no output>
 	// res.SubDomain = hello
 	// res.Domain = xn--rhqv96g
 	// res.Suffix = com
@@ -107,6 +113,7 @@ func main() {
 	fmt.Println("No Punycode")
 	printRes(url, res)
 	// res.Scheme = https://
+	// res.UserInfo = <no output>
 	// res.SubDomain = hello
 	// res.Domain = 世界
 	// res.Suffix = com

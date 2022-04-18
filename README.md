@@ -39,11 +39,12 @@ Full demo available in the _examples_ folder
 extractor, _ := fasttld.New(fasttld.SuffixListParams{})
 
 //Extract URL subcomponents
-url := "https://a.long.subdomain.ox.ac.uk:5000/a/b/c/d/e/f/g/h/i?id=42"
+url := "https://some-user@a.long.subdomain.ox.ac.uk:5000/a/b/c/d/e/f/g/h/i?id=42"
 res := extractor.Extract(fasttld.UrlParams{Url: url})
 
 // Display results
 fmt.Println(res.Scheme)           // https://
+fmt.Println(res.UserInfo)         // some-user
 fmt.Println(res.SubDomain)        // a.long.subdomain
 fmt.Println(res.Domain)           // ox
 fmt.Println(res.Suffix)           // ac.uk
@@ -92,6 +93,7 @@ url := "https://google.blogspot.com"
 res := extractor.Extract(fasttld.UrlParams{Url: url})
 
 // res.Scheme = https://
+// res.UserInfo = <no output>
 // res.SubDomain = google
 // res.Domain = blogspot
 // res.Suffix = com
@@ -109,6 +111,7 @@ url := "https://google.blogspot.com"
 res := extractor.Extract(fasttld.UrlParams{Url: url})
 
 // res.Scheme = https://
+// res.UserInfo = <no output>
 // res.SubDomain = <no output>
 // res.Domain = google
 // res.Suffix = blogspot.com
@@ -130,6 +133,7 @@ url := "https://maps.google.com"
 res := extractor.Extract(fasttld.UrlParams{Url: url, IgnoreSubDomains: true})
 
 // res.Scheme = https://
+// res.UserInfo = <no output>
 // res.SubDomain = <no output>
 // res.Domain = google
 // res.Suffix = com
@@ -149,6 +153,7 @@ url := "https://hello.世界.com"
 res := extractor.Extract(fasttld.UrlParams{Url: url, ConvertURLToPunyCode: true})
 
 // res.Scheme = https://
+// res.UserInfo = <no output>
 // res.SubDomain = hello
 // res.Domain = xn--rhqv96g
 // res.Suffix = com
@@ -159,6 +164,7 @@ res := extractor.Extract(fasttld.UrlParams{Url: url, ConvertURLToPunyCode: true}
 res = extractor.Extract(fasttld.UrlParams{Url: url, ConvertURLToPunyCode: false})
 
 // res.Scheme = https://
+// res.UserInfo = <no output>
 // res.SubDomain = hello
 // res.Domain = 世界
 // res.Suffix = com
