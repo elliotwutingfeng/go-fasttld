@@ -1,0 +1,13 @@
+{
+    "extends": ["config:base"],
+    "ignoreTests": false,
+    "packageRules": [
+      {
+        "updateTypes": ["minor", "patch"],
+        "automerge": true
+      }
+    ],
+    "gomod": {
+      "postUpdateOptions": ["gomodUpdateImportPaths", "gomodTidy"]
+    }
+  }
