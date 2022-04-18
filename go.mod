@@ -1,6 +1,6 @@
 module github.com/elliotwutingfeng/go-fasttld
 
-go 1.17
+go 1.18
 
 require (
 	github.com/M507/tlde v0.0.0-20210907033143-fb7938b62971

@@ -234,6 +234,14 @@ var extraExtractTests = []extractTest{
 			Scheme: "", SubDomain: "maps", Domain: "google", Suffix: "com.sg",
 			RegisteredDomain: "google.com.sg", Port: "5000",
 		}, description: "Port number"},
+
+	{includePrivateSuffix: true,
+		urlParams: UrlParams{Url: "maps.google.com.sg:8589934592/this/path/will/not/be/parsed",
+			IgnoreSubDomains: false, ConvertURLToPunyCode: false},
+		expected: &ExtractResult{
+			Scheme: "", SubDomain: "maps", Domain: "google", Suffix: "com.sg",
+			RegisteredDomain: "google.com.sg", Port: "",
+		}, description: "Invalid Port number"},
 }
 
 // test cases ported from https://github.com/mjd2021usa/tldextract
