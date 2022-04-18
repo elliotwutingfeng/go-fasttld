@@ -22,7 +22,7 @@ type fastTLD struct {
 }
 
 type ExtractResult struct {
-	Scheme, SubDomain, Domain, Suffix, Port, Path, RegisteredDomain string
+	Scheme, UserInfo, SubDomain, Domain, Suffix, Port, Path, RegisteredDomain string
 }
 
 type SuffixListParams struct {
@@ -153,9 +153,10 @@ func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
 
 	var afterHost string
 
-	// Remove URL userinfo
+	// Extract URL userinfo
 	atIdx := strings.Index(netloc, "@")
 	if atIdx != -1 {
+		urlParts.UserInfo = netloc[:atIdx]
 		netloc = netloc[atIdx+1:]
 	}
 
@@ -287,14 +288,9 @@ func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
 // New creates a new *FastTLD
 func New(n SuffixListParams) (*fastTLD, error) {
 	cacheFilePath, err := filepath.Abs(n.CacheFilePath)
-	cacheFilePath = strings.TrimSpace(cacheFilePath)
+	invalidCacheFilePath := err != nil
 
-	var invalidCacheFilePath bool
-	if err != nil {
-		invalidCacheFilePath = true
-	}
-
-	if stat, err := os.Stat(cacheFilePath); invalidCacheFilePath || err != nil || stat.IsDir() || stat.Size() == 0 {
+	if stat, err := os.Stat(strings.TrimSpace(cacheFilePath)); invalidCacheFilePath || err != nil || stat.IsDir() || stat.Size() == 0 {
 		// if cacheFilePath is unreachable, use default Public Suffix List
 		n.CacheFilePath = getCurrentFilePath() + string(os.PathSeparator) + defaultPSLFileName
 
@@ -303,7 +299,7 @@ func New(n SuffixListParams) (*fastTLD, error) {
 		autoUpdate(n.CacheFilePath)
 	}
 
-	// Construct tldTrie using list located at n.CacheFilePath
+	// Construct *trie using list located at n.CacheFilePath
 	tldTrie := trieConstruct(n.IncludePrivateSuffix, n.CacheFilePath)
 
 	return &fastTLD{tldTrie, n.CacheFilePath}, nil

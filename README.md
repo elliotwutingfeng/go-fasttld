@@ -4,7 +4,6 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/elliotwutingfeng/go-fasttld?style=for-the-badge)](https://goreportcard.com/report/github.com/elliotwutingfeng/go-fasttld)
 [![Codecov Coverage](https://img.shields.io/codecov/c/github/elliotwutingfeng/go-fasttld?color=bright-green&logo=codecov&style=for-the-badge&token=GB00MYK51E)](https://codecov.io/gh/elliotwutingfeng/go-fasttld)
 
-
 [![GitHub license](https://img.shields.io/badge/LICENSE-BSD--3--CLAUSE-GREEN?style=for-the-badge)](LICENSE)
 
 **go-fasttld** is a high performance [top level domains (TLD)](https://en.wikipedia.org/wiki/Top-level_domain) extraction module implemented with [compressed tries](https://en.wikipedia.org/wiki/Trie).
@@ -176,49 +175,70 @@ go test -v -coverprofile=test_coverage.out && go tool cover -html=test_coverage.
 
 ## Benchmarks
 
-### Run
-
 ```sh
 go test -bench=. -benchmem -cpu 1
 ```
 
+### Modules used
+
+| Benchmark Name                | Source                           |
+|:------------------------------|:---------------------------------|
+| BenchmarkGoFastTld              | go-fasttld (this module)         |
+| BenchmarkJPilloraGoTld                | github.com/jpillora/go-tld       |
+| BenchmarkJoeGuoTldExtract     | github.com/joeguo/tldextract     |
+| BenchmarkMjd2021USATldExtract | github.com/mjd2021usa/tldextract |
+| BenchmarkM507Tlde                 | github.com/M507/tlde             |
+
 ### Results
+
+Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 **go-fasttld** performs especially well on longer URLs.
 
-```sh
-goos: linux
-goarch: amd64
-pkg: github.com/elliotwutingfeng/go-fasttld
-cpu: AMD Ryzen 7 5800X 8-Core Processor
+---
 
-# BenchmarkFastTld              -> go-fasttld (this module)
-# BenchmarkGoTld                -> github.com/jpillora/go-tld
-# BenchmarkJoeGuoTldExtract     -> github.com/joeguo/tldextract
-# BenchmarkMjd2021USATldExtract -> github.com/mjd2021usa/tldextract
-# BenchmarkTlde                 -> github.com/M507/tlde
+#### #1
 
-# https://maps.google.com
-BenchmarkFastTld                 2384101               505.7 ns/op           224 B/op          6 allocs/op
-BenchmarkGoTld                   2764809               422.5 ns/op           224 B/op          2 allocs/op
-BenchmarkJoeGuoTldExtract        2455089               489.3 ns/op           160 B/op          5 allocs/op
-BenchmarkMjd2021USATldExtract    1451707               823.9 ns/op           208 B/op          7 allocs/op
-BenchmarkTlde                    2450620               496.5 ns/op           160 B/op          5 allocs/op
+<code>https://news.google.com</code>
 
-# https://maps.google.com.ua/a/long/path?query=42
-BenchmarkFastTld                 2161218               563.1 ns/op           304 B/op          6 allocs/op
-BenchmarkGoTld                   2402505               497.7 ns/op           224 B/op          2 allocs/op
-BenchmarkJoeGuoTldExtract        1413582               850.6 ns/op           296 B/op          8 allocs/op
-BenchmarkMjd2021USATldExtract    1322862               894.5 ns/op           296 B/op          8 allocs/op
-BenchmarkTlde                    1393911               856.3 ns/op           296 B/op          8 allocs/op
 
-# https://a.b.c.d.e.maps.google.com.sg:5050/aaaa/bbbb/cccc/dddd/eeee/ffff/gggg/hhhh/iiii.html?id=42#select
-BenchmarkFastTld                 1782356               663.1 ns/op           480 B/op          6 allocs/op
-BenchmarkGoTld                   1658845               723.5 ns/op           224 B/op          2 allocs/op
-BenchmarkJoeGuoTldExtract        1000000              1148 ns/op             576 B/op          9 allocs/op
-BenchmarkMjd2021USATldExtract     958197              1261 ns/op             576 B/op          9 allocs/op
-BenchmarkTlde                     994126              1148 ns/op             576 B/op          9 allocs/op
-```
+| Benchmark Name                | Iterations | ns/op       | B/op     | allocs/op   |
+|:------------------------------|------------|-------------|----------|-------------|
+| BenchmarkGoFastTld              | 2298066    | 506.3 ns/op | 240 B/op | 6 allocs/op |
+| **BenchmarkJPilloraGoTld**            | 2761731    | **432.0 ns/op** | 224 B/op | 2 allocs/op |
+| BenchmarkJoeGuoTldExtract     | 2294841    | 526.0 ns/op | 160 B/op | 5 allocs/op |
+| BenchmarkMjd2021USATldExtract | 1416856    | 846.5 ns/op | 208 B/op | 7 allocs/op |
+| BenchmarkM507Tlde                 | 2346414    | 503.9 ns/op | 160 B/op | 5 allocs/op |
+
+---
+
+#### #2
+
+<code>https://iupac.org/iupac-announces-the-2021-top-ten-emerging-technologies-in-chemistry/</code>
+
+| Benchmark Name                | Iterations | ns/op       | B/op     | allocs/op   |
+|:------------------------------|------------|-------------|----------|-------------|
+| **BenchmarkGoFastTld**          | 2135850    | **560.4 ns/op** | 352 B/op | 6 allocs/op |
+| BenchmarkJPilloraGoTld                | 1825435    | 662.7 ns/op | 224 B/op | 2 allocs/op |
+| BenchmarkJoeGuoTldExtract     | 2048882    | 574.7 ns/op | 272 B/op | 5 allocs/op |
+| BenchmarkMjd2021USATldExtract | 1422930    | 826.4 ns/op | 288 B/op | 6 allocs/op |
+| BenchmarkM507Tlde                 | 1991284    | 589.6 ns/op | 272 B/op | 5 allocs/op |
+
+---
+
+#### #3
+
+<code>https://www.google.com/maps/dir/Parliament+Place,+Parliament+House+Of+Singapore,+Singapore/Parliament+St,+London,+UK/@25.2440033,33.6721455,4z/data=!3m1!4b1!4m14!4m13!1m5!1m1!1s0x31da19a0abd4d71d:0xeda26636dc4ea1dc!2m2!1d103.8504863!2d1.2891543!1m5!1m1!1s0x487604c5aaa7da5b:0xf13a2197d7e7dd26!2m2!1d-0.1260826!2d51.5017061!3e4</code>
+
+| Benchmark Name                | Iterations | ns/op       | B/op      | allocs/op   |
+|:------------------------------|------------|-------------|-----------|-------------|
+| **BenchmarkGoFastTld**          | 1660712    | **707.6 ns/op** | 832 B/op  | 5 allocs/op |
+| BenchmarkJPilloraGoTld                | 462886     | 2546 ns/op  | 928 B/op  | 4 allocs/op |
+| BenchmarkJoeGuoTldExtract     | 812468     | 1340 ns/op  | 1120 B/op | 6 allocs/op |
+| BenchmarkMjd2021USATldExtract | 851353     | 1358 ns/op  | 1120 B/op | 6 allocs/op |
+| BenchmarkM507Tlde                 | 820447     | 1352 ns/op  | 1120 B/op | 6 allocs/op |
+
+---
 
 ## Acknowledgements
 
