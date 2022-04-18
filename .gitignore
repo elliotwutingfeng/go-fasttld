@@ -17,8 +17,4 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
-# Exclude all PSL .dat except for those in test folder
-*.dat
-!test/*.dat
-
 sandbox/

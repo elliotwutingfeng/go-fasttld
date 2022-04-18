@@ -286,11 +286,17 @@ func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
 
 // New creates a new *FastTLD
 func New(n SuffixListParams) (*fastTLD, error) {
-	cachePath := filepath.Dir(n.CacheFilePath)
-	if stat, err := os.Stat(cachePath); cachePath == "." || err != nil || !stat.IsDir() {
-		// if cachePath is unreachable, use default Public Suffix List
-		cachePath = getCurrentFilePath()
-		n.CacheFilePath = cachePath + string(os.PathSeparator) + defaultPSLFileName
+	cacheFilePath, err := filepath.Abs(n.CacheFilePath)
+	cacheFilePath = strings.TrimSpace(cacheFilePath)
+
+	var invalidCacheFilePath bool
+	if err != nil {
+		invalidCacheFilePath = true
+	}
+
+	if stat, err := os.Stat(cacheFilePath); invalidCacheFilePath || err != nil || stat.IsDir() || stat.Size() == 0 {
+		// if cacheFilePath is unreachable, use default Public Suffix List
+		n.CacheFilePath = getCurrentFilePath() + string(os.PathSeparator) + defaultPSLFileName
 
 		// Download new Public Suffix List if local cache does not exist
 		// or if local cache is older than 3 days
