@@ -1,3 +1,9 @@
+// go-fasttld is a high performance top level domains (TLD)
+// extraction module implemented with compressed tries.
+//
+// This module is a port of the Python fasttld module,
+// with additional modifications to support extraction
+// of subcomponents from full URLs and IPv4 addresses.
 package fasttld
 
 import (
@@ -98,16 +104,16 @@ func trieConstruct(includePrivateSuffix bool, cacheFilePath string) *trie {
 	tldTrie := &trie{matches: make(map[string]*trie)}
 	suffixLists := getPublicSuffixList(cacheFilePath)
 
-	var SuffixList []string
+	var suffixList []string
 	if !includePrivateSuffix {
 		// public suffixes only
-		SuffixList = suffixLists[0]
+		suffixList = suffixLists[0]
 	} else {
 		// public suffixes AND private suffixes
-		SuffixList = suffixLists[2]
+		suffixList = suffixLists[2]
 	}
 
-	for _, suffix := range SuffixList {
+	for _, suffix := range suffixList {
 		if strings.Contains(suffix, ".") {
 			sp := strings.Split(suffix, ".")
 			reverse(sp)
@@ -145,17 +151,15 @@ func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
 
 	// Extract URL scheme
 	// Credits: https://github.com/mjd2021usa/tldextract/blob/main/tldextract.go
-	netlocWithScheme := strings.Trim(e.Url, ". \n\t\r")
+	netlocWithScheme := strings.Trim(e.Url, ". \n\t\r\uFEFF\u200b\u200c\u200d") // trim whitespace and '.'
 	netloc := schemeRegex.ReplaceAllString(netlocWithScheme, "")
 
-	lengthDiff := len(netlocWithScheme) - len(netloc)
-	urlParts.Scheme = netlocWithScheme[0:lengthDiff]
+	urlParts.Scheme = netlocWithScheme[0 : len(netlocWithScheme)-len(netloc)]
 
 	var afterHost string
 
 	// Extract URL userinfo
-	atIdx := strings.Index(netloc, "@")
-	if atIdx != -1 {
+	if atIdx := strings.Index(netloc, "@"); atIdx != -1 {
 		urlParts.UserInfo = netloc[:atIdx]
 		netloc = netloc[atIdx+1:]
 	}
@@ -175,11 +179,12 @@ func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
 
 	// extract port and "Path" if any
 	if lenAfterHost := len(afterHost); lenAfterHost != 0 {
-		var maybePort string
-		hasPort := afterHost[0] == ':'
 		pathStartIndex := strings.Index(afterHost, "/")
-		var invalidPort bool
-		if hasPort {
+		var (
+			maybePort   string
+			invalidPort bool
+		)
+		if hasPort := afterHost[0] == ':'; hasPort {
 			if pathStartIndex == -1 {
 				maybePort = afterHost[1:]
 			} else {
