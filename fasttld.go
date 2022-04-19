@@ -305,7 +305,7 @@ func New(n SuffixListParams) (*fastTLD, error) {
 
 		// Download new Public Suffix List if local cache does not exist
 		// or if local cache is older than 3 days
-		autoUpdate(n.CacheFilePath)
+		autoUpdate(n.CacheFilePath, publicSuffixListSource, publicSuffixListSourceFallback)
 	}
 
 	// Construct *trie using list located at n.CacheFilePath

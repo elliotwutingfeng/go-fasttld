@@ -113,15 +113,14 @@ func downloadFile(url string) ([]byte, error) {
 // Update local cache of Public Suffix List
 //
 // This function will update the local cache of Public Suffix List if it is more than 3 days old
-func autoUpdate(cacheFilePath string) {
+func autoUpdate(cacheFilePath string, publicSuffixListSource string, publicSuffixListSourceFallback string) {
 	file, err := os.Stat(cacheFilePath)
 	// if file at at cacheFilePath does not exist,
 	// or if file at cacheFilePath exists and it is older than 3 days,
 	// update the file
-	if err != nil || (err == nil &&
-		time.Now().Sub(file.ModTime()).Hours() > 72) {
+	if err != nil || time.Now().Sub(file.ModTime()).Hours() > 72 {
 		showLogMessages := false
-		update(cacheFilePath, showLogMessages)
+		update(cacheFilePath, showLogMessages, publicSuffixListSource, publicSuffixListSourceFallback)
 	}
 }
 
@@ -139,7 +138,8 @@ func getCurrentFilePath() string {
 }
 
 // Update local cache of Public Suffix List
-func update(cacheFilePath string, showLogMessages bool) error {
+func update(cacheFilePath string, showLogMessages bool,
+	publicSuffixListSource string, publicSuffixListSourceFallback string) error {
 	download_success := false
 	// Try main source
 	// Create local file at cacheFilePath
@@ -153,6 +153,7 @@ func update(cacheFilePath string, showLogMessages bool) error {
 	if bodyBytes, err := downloadFile(publicSuffixListSource); err != nil {
 		log.Println(err)
 	} else {
+		out.Seek(0, 0)
 		out.Write(bodyBytes)
 		download_success = true
 	}
@@ -163,6 +164,7 @@ func update(cacheFilePath string, showLogMessages bool) error {
 			errorMsg := "Failed to fetch Public Suffix List from both main source and fallback source"
 			return errors.New(errorMsg)
 		} else {
+			out.Seek(0, 0)
 			out.Write(bodyBytes)
 			download_success = true
 		}
@@ -180,5 +182,5 @@ func (t *fastTLD) Update(showLogMessages bool) error {
 	if t.cacheFilePath != getCurrentFilePath()+string(os.PathSeparator)+defaultPSLFileName {
 		return errors.New("Update() only applies to default Public Suffix List, not custom Public Suffix List.")
 	}
-	return update(t.cacheFilePath, showLogMessages)
+	return update(t.cacheFilePath, showLogMessages, publicSuffixListSource, publicSuffixListSourceFallback)
 }
