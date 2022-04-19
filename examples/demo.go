@@ -44,8 +44,7 @@ func main() {
 	// extractor, _ = fasttld.New(fasttld.SuffixListParams{CacheFilePath: cacheFilePath})
 
 	// Manually update local cache
-	showLogMessages := false
-	if err := extractor.Update(showLogMessages); err != nil {
+	if err := extractor.Update(); err != nil {
 		log.Println(err)
 	}
 

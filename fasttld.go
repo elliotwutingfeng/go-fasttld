@@ -7,12 +7,14 @@
 package fasttld
 
 import (
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"golang.org/x/net/idna"
 )
@@ -294,18 +296,27 @@ func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
 	return &urlParts
 }
 
+// Number of hours elapsed since last modified time of file
+func fileLastModifiedHours(fileinfo fs.FileInfo) float64 {
+	return time.Now().Sub(fileinfo.ModTime()).Hours()
+}
+
 // New creates a new *FastTLD
 func New(n SuffixListParams) (*fastTLD, error) {
 	cacheFilePath, err := filepath.Abs(n.CacheFilePath)
 	invalidCacheFilePath := err != nil
 
+	// if cacheFilePath is unreachable, use default Public Suffix List
 	if stat, err := os.Stat(strings.TrimSpace(cacheFilePath)); invalidCacheFilePath || err != nil || stat.IsDir() || stat.Size() == 0 {
-		// if cacheFilePath is unreachable, use default Public Suffix List
 		n.CacheFilePath = getCurrentFilePath() + string(os.PathSeparator) + defaultPSLFileName
-
-		// Download new Public Suffix List if local cache does not exist
-		// or if local cache is older than 3 days
-		autoUpdate(n.CacheFilePath, publicSuffixListSource, publicSuffixListSourceFallback)
+		// Update Public Suffix List if it doesn't exist or is more than 3 days old
+		if fileinfo, err := os.Stat(n.CacheFilePath); err != nil || fileLastModifiedHours(fileinfo) > 72 {
+			// Create local file at n.CacheFilePath
+			if file, err := os.Create(n.CacheFilePath); err == nil {
+				err = update(file, publicSuffixListSources)
+				defer file.Close()
+			}
+		}
 	}
 
 	// Construct *trie using list located at n.CacheFilePath

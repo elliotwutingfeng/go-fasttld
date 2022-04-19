@@ -16,6 +16,7 @@ import (
 	joeguotldextract "github.com/joeguo/tldextract"
 	tld "github.com/jpillora/go-tld"
 	mjd2021usatldextract "github.com/mjd2021usa/tldextract"
+	"github.com/spf13/afero"
 )
 
 func getTestPSLFilePath() string {
@@ -319,6 +320,16 @@ func TestExtract(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestFileLastModifiedHours(t *testing.T) {
+	filesystem := new(afero.MemMapFs)
+	file, _ := afero.TempFile(filesystem, "", "ioutil-test")
+	fileinfo, _ := filesystem.Stat(file.Name())
+	if hours := fileLastModifiedHours(fileinfo); int(hours) != 0 {
+		t.Errorf("Expected hours elapsed since last modification to be 0 immediately after file creation. %f", hours)
+	}
+	defer file.Close()
 }
 
 var benchmarkURLs = []string{

@@ -11,6 +11,8 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
+
+	"github.com/spf13/afero"
 )
 
 type looksLikeIPv4AddressTest struct {
@@ -122,7 +124,54 @@ func TestUpdateCustomSuffixList(t *testing.T) {
 	if err != nil {
 		t.Errorf("%q", err)
 	}
-	if err = extractor.Update(false); err == nil {
+	if err = extractor.Update(); err == nil {
 		t.Errorf("Expected error when trying to Update() custom Public Suffix List.")
+	}
+}
+
+type updateTest struct {
+	mainServerAvailable, fallbackServerAvailable, expectError bool
+}
+
+var updateTests = []updateTest{
+	{true, true, false},
+	{true, false, false},
+	{false, true, false},
+	{false, false, true},
+}
+
+func TestUpdate(t *testing.T) {
+	goodServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte{})
+	}))
+	defer goodServer.Close()
+	badServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(404)
+	}))
+	defer badServer.Close()
+
+	filesystem := new(afero.MemMapFs)
+	file, _ := afero.TempFile(filesystem, "", "ioutil-test")
+	defer file.Close()
+	for _, test := range updateTests {
+		var primarySource, fallbackSource string
+		if test.mainServerAvailable {
+			primarySource = goodServer.URL
+		} else {
+			primarySource = badServer.URL
+		}
+		if test.fallbackServerAvailable {
+			fallbackSource = goodServer.URL
+		} else {
+			fallbackSource = badServer.URL
+		}
+
+		err := update(file, []string{primarySource, fallbackSource})
+		if test.expectError && err == nil {
+			t.Errorf("Expected update() error, got no error.")
+		}
+		if !test.expectError && err != nil {
+			t.Errorf("Expected no update() error, got an error.")
+		}
 	}
 }

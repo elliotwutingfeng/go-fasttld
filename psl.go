@@ -18,15 +18,15 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"time"
 
+	"github.com/spf13/afero"
 	"golang.org/x/net/idna"
 )
 
-const (
-	publicSuffixListSource         string = "https://publicsuffix.org/list/public_suffix_list.dat"
-	publicSuffixListSourceFallback string = "https://raw.githubusercontent.com/publicsuffix/list/master/public_suffix_list.dat"
-)
+var publicSuffixListSources = []string{
+	"https://publicsuffix.org/list/public_suffix_list.dat",
+	"https://raw.githubusercontent.com/publicsuffix/list/master/public_suffix_list.dat",
+}
 
 // Return true if `maybeIPv4Address` is an IPv4 address
 func looksLikeIPv4Address(maybeIPv4Address string) bool {
@@ -110,20 +110,6 @@ func downloadFile(url string) ([]byte, error) {
 	return bodyBytes, err
 }
 
-// Update local cache of Public Suffix List
-//
-// This function will update the local cache of Public Suffix List if it is more than 3 days old
-func autoUpdate(cacheFilePath string, publicSuffixListSource string, publicSuffixListSourceFallback string) {
-	file, err := os.Stat(cacheFilePath)
-	// if file at at cacheFilePath does not exist,
-	// or if file at cacheFilePath exists and it is older than 3 days,
-	// update the file
-	if err != nil || time.Now().Sub(file.ModTime()).Hours() > 72 {
-		showLogMessages := false
-		update(cacheFilePath, showLogMessages, publicSuffixListSource, publicSuffixListSourceFallback)
-	}
-}
-
 // Get path to current module file
 //
 // Similar to os.path.dirname(os.path.realpath(__file__)) in Python
@@ -138,49 +124,39 @@ func getCurrentFilePath() string {
 }
 
 // Update local cache of Public Suffix List
-func update(cacheFilePath string, showLogMessages bool,
-	publicSuffixListSource string, publicSuffixListSourceFallback string) error {
+func update(file afero.File,
+	publicSuffixListSources []string) error {
 	download_success := false
-	// Try main source
-	// Create local file at cacheFilePath
-	out, err := os.Create(cacheFilePath)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-	// Write GET request body to local file
-
-	if bodyBytes, err := downloadFile(publicSuffixListSource); err != nil {
-		log.Println(err)
-	} else {
-		out.Seek(0, 0)
-		out.Write(bodyBytes)
-		download_success = true
-	}
-	// If that fails, try fallback source
-	if !download_success {
-		if bodyBytes, err := downloadFile(publicSuffixListSourceFallback); err != nil {
+	for _, publicSuffixListSource := range publicSuffixListSources {
+		// Write GET request body to local file
+		if bodyBytes, err := downloadFile(publicSuffixListSource); err != nil {
 			log.Println(err)
-			errorMsg := "Failed to fetch Public Suffix List from both main source and fallback source"
-			return errors.New(errorMsg)
 		} else {
-			out.Seek(0, 0)
-			out.Write(bodyBytes)
+			file.Seek(0, 0)
+			file.Write(bodyBytes)
 			download_success = true
+			break
 		}
 	}
-
-	if download_success && showLogMessages {
-		log.Println(filepath.Base(cacheFilePath), "downloaded")
+	if download_success {
+		log.Println("Public Suffix List updated.")
+	} else {
+		return errors.New("Failed to fetch any Public Suffix List from all mirrors.")
 	}
 
 	return nil
 }
 
 // If Public Suffix List is not custom, update its local cache
-func (t *fastTLD) Update(showLogMessages bool) error {
+func (t *fastTLD) Update() error {
 	if t.cacheFilePath != getCurrentFilePath()+string(os.PathSeparator)+defaultPSLFileName {
 		return errors.New("Update() only applies to default Public Suffix List, not custom Public Suffix List.")
 	}
-	return update(t.cacheFilePath, showLogMessages, publicSuffixListSource, publicSuffixListSourceFallback)
+	// Create local file at cacheFilePath
+	if file, err := os.Create(t.cacheFilePath); err != nil {
+		return err
+	} else {
+		defer file.Close()
+		return update(file, publicSuffixListSources)
+	}
 }

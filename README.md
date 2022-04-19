@@ -74,8 +74,7 @@ Whenever `fasttld.New` is called without specifying `CacheFilePath` in `fasttld.
 extractor, _ := fasttld.New(fasttld.SuffixListParams{})
 
 // Manually update local cache
-showLogMessages := false
-if err := extractor.Update(showLogMessages); err != nil {
+if err := extractor.Update(); err != nil {
     log.Println(err)
 }
 ```
@@ -206,7 +205,6 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 #### #1
 
 <code>https://news.google.com</code>
-
 
 | Benchmark Name                | Iterations | ns/op       | B/op     | allocs/op   | Fastest            |
 |:------------------------------|------------|-------------|----------|-------------|--------------------|
