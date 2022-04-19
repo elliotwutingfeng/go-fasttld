@@ -29,15 +29,23 @@ type fastTLD struct {
 	cacheFilePath string
 }
 
+// Components extracted from URL
 type ExtractResult struct {
 	Scheme, UserInfo, SubDomain, Domain, Suffix, Port, Path, RegisteredDomain string
 }
 
+// Parameters for specifying path to Public Suffix List file and
+// whether to extract private suffixes (e.g. blogspot.com).
 type SuffixListParams struct {
 	CacheFilePath        string
 	IncludePrivateSuffix bool
 }
 
+// Specify Url to extract components from.
+//
+// If IgnoreSubDomains = true, do not extract subdomains.
+//
+// If ConvertURLToPunyCode = true, convert non-ASCII characters like 世界 to punycode.
 type UrlParams struct {
 	Url                  string
 	IgnoreSubDomains     bool
@@ -52,7 +60,8 @@ type trie struct {
 
 // Store a slice of keys in the trie, by traversing the trie using the keys as a "path",
 // creating new tries for keys that do not exist yet.
-// if a new path overlaps an existing path, flag the previous path's trie node as End = true
+//
+// If a new path overlaps an existing path, flag the previous path's trie node as End = true
 func nestedDict(dic *trie, keys []string) {
 	// credits: https://stackoverflow.com/questions/13687924 and https://github.com/jophy/fasttld
 	var end bool
@@ -81,14 +90,14 @@ func nestedDict(dic *trie, keys []string) {
 	}
 }
 
-// Reverse a slice of strings in-place
+// Reverse a slice of strings in-place.
 func reverse(input []string) {
 	for i, j := 0, len(input)-1; i < j; i, j = i+1, j-1 {
 		input[i], input[j] = input[j], input[i]
 	}
 }
 
-// Format string as punycode
+// Format string as punycode.
 func formatAsPunycode(s string) string {
 	asPunyCode, err := idna.ToASCII(strings.ToLower(strings.TrimSpace(s)))
 	if err != nil {
@@ -99,7 +108,7 @@ func formatAsPunycode(s string) string {
 	return asPunyCode
 }
 
-// Construct a compressed trie to store Public Suffix List TLDs split at "." in reverse-order
+// Construct a compressed trie to store Public Suffix List TLDs split at "." in reverse-order.
 //
 // For example: "us.gov.pl" will be stored in the order {"pl", "gov", "us"}
 func trieConstruct(includePrivateSuffix bool, cacheFilePath string) (*trie, error) {
@@ -138,16 +147,7 @@ func trieConstruct(includePrivateSuffix bool, cacheFilePath string) (*trie, erro
 	return tldTrie, nil
 }
 
-// Extract components from a given `url`
-//
-//  Example: "https://maps.google.com.ua/a/long/path?query=42"
-//  scheme: https://
-//  subdomain: maps
-//  domain: google
-//  suffix: com.ua
-//  registered domain: maps.google.com.ua
-//  port: <no output>
-//  path: a/long/path?query=42
+// Extract components from a given `url`.
 func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
 	urlParts := ExtractResult{}
 
@@ -296,12 +296,12 @@ func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
 	return &urlParts
 }
 
-// Number of hours elapsed since last modified time of file
+// Number of hours elapsed since last modified time of fileinfo.
 func fileLastModifiedHours(fileinfo fs.FileInfo) float64 {
 	return time.Now().Sub(fileinfo.ModTime()).Hours()
 }
 
-// New creates a new *FastTLD
+// New creates a new *FastTLD.
 func New(n SuffixListParams) (*fastTLD, error) {
 	cacheFilePath, err := filepath.Abs(n.CacheFilePath)
 	invalidCacheFilePath := err != nil

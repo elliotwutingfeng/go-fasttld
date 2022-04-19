@@ -166,6 +166,8 @@ func TestUpdate(t *testing.T) {
 			fallbackSource = badServer.URL
 		}
 
+		// error should only be returned if Public Suffix List cannot
+		// be downloaded from any of the sources.
 		err := update(file, []string{primarySource, fallbackSource})
 		if test.expectError && err == nil {
 			t.Errorf("Expected update() error, got no error.")

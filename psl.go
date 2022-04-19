@@ -147,7 +147,7 @@ func update(file afero.File,
 	return nil
 }
 
-// If Public Suffix List is not custom, update its local cache
+// If Public Suffix List is not custom, update its local cache.
 func (t *fastTLD) Update() error {
 	if t.cacheFilePath != getCurrentFilePath()+string(os.PathSeparator)+defaultPSLFileName {
 		return errors.New("Update() only applies to default Public Suffix List, not custom Public Suffix List.")
