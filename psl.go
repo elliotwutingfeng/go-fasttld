@@ -9,6 +9,7 @@ package fasttld
 import (
 	"bufio"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net"
@@ -39,18 +40,15 @@ func looksLikeIPv4Address(maybeIPv4Address string) bool {
 // PrivateSuffixes: PRIVATE domains. Example: blogspot.co.uk, appspot.com etc.
 //
 // AllSuffixes: Both ICANN and PRIVATE domains.
-func getPublicSuffixList(cacheFilePath string) [3]([]string) {
+func getPublicSuffixList(cacheFilePath string) ([3]([]string), error) {
 	PublicSuffixes := []string{}
 	PrivateSuffixes := []string{}
 	AllSuffixes := []string{}
 
-	if _, err := os.Stat(cacheFilePath); err != nil {
-		// if file at cacheFilePath does not exist
-		log.Fatal("Path: " + cacheFilePath + " | Public suffix list file not found.")
-	}
 	fd, err := os.Open(cacheFilePath)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return [3]([]string){PublicSuffixes, PrivateSuffixes, AllSuffixes}, err
 	}
 	defer fd.Close()
 
@@ -67,7 +65,9 @@ func getPublicSuffixList(cacheFilePath string) [3]([]string) {
 		}
 		suffix, err := idna.ToASCII(line)
 		if err != nil {
-			log.Fatal(err)
+			// skip line if unable to convert to ascii
+			log.Println(line, '|', err)
+			continue
 		}
 		if isPrivateSuffix {
 			PrivateSuffixes = append(PrivateSuffixes, suffix)
@@ -89,28 +89,25 @@ func getPublicSuffixList(cacheFilePath string) [3]([]string) {
 		}
 
 	}
-	return [3]([]string){PublicSuffixes, PrivateSuffixes, AllSuffixes}
+	return [3]([]string){PublicSuffixes, PrivateSuffixes, AllSuffixes}, nil
 }
 
-// Download a url to a local file without loading the whole file into memory
-func downloadFile(cacheFilePath string, url string) error {
+// Download file from url as byte slice
+func downloadFile(url string) ([]byte, error) {
 	// Make HTTP GET request
+	var bodyBytes []byte
 	resp, err := http.Get(url)
 	if err != nil {
-		return err
+		return bodyBytes, err
 	}
 	defer resp.Body.Close()
 
-	// Create local file at cacheFilePath
-	out, err := os.Create(cacheFilePath)
-	if err != nil {
-		return err
+	if resp.StatusCode == http.StatusOK {
+		bodyBytes, err = io.ReadAll(resp.Body)
+	} else {
+		err = errors.New("Download failed, HTTP status code :" + fmt.Sprint(resp.StatusCode))
 	}
-	defer out.Close()
-
-	// Write GET request body to local file
-	_, err = io.Copy(out, resp.Body)
-	return err
+	return bodyBytes, err
 }
 
 // Update local cache of Public Suffix List
@@ -155,18 +152,28 @@ func getCurrentFilePath() string {
 func update(cacheFilePath string, showLogMessages bool) error {
 	download_success := false
 	// Try main source
-	if err := downloadFile(cacheFilePath, publicSuffixListSource); err != nil {
+	// Create local file at cacheFilePath
+	out, err := os.Create(cacheFilePath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+	// Write GET request body to local file
+
+	if bodyBytes, err := downloadFile(publicSuffixListSource); err != nil {
 		log.Println(err)
 	} else {
+		out.Write(bodyBytes)
 		download_success = true
 	}
 	// If that fails, try fallback source
 	if !download_success {
-		if err := downloadFile(cacheFilePath, publicSuffixListSourceFallback); err != nil {
+		if bodyBytes, err := downloadFile(publicSuffixListSourceFallback); err != nil {
 			log.Println(err)
 			errorMsg := "Failed to fetch Public Suffix List from both main source and fallback source"
 			return errors.New(errorMsg)
 		} else {
+			out.Write(bodyBytes)
 			download_success = true
 		}
 	}
@@ -178,6 +185,10 @@ func update(cacheFilePath string, showLogMessages bool) error {
 	return nil
 }
 
+// If Public Suffix List is not custom, update its local cache
 func (t *fastTLD) Update(showLogMessages bool) error {
+	if t.cacheFilePath != getCurrentFilePath()+string(os.PathSeparator)+defaultPSLFileName {
+		return errors.New("Update() only applies to default Public Suffix List, not custom Public Suffix List.")
+	}
 	return update(t.cacheFilePath, showLogMessages)
 }

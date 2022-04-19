@@ -7,6 +7,8 @@
 package fasttld
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"reflect"
 	"testing"
 )
@@ -43,22 +45,74 @@ func TestLooksLikeIPv4Address(t *testing.T) {
 
 type getPublicSuffixListTest struct {
 	cacheFilePath string
-	expected      [3]([]string)
+	expectedLists [3]([]string)
+	hasError      bool
 }
 
 var getPublicSuffixListTests = []getPublicSuffixListTest{
+
 	{cacheFilePath: "test/public_suffix_list.dat",
-		expected: pslTestLists,
+		expectedLists: pslTestLists,
+		hasError:      false,
+	},
+	{cacheFilePath: "test/mini_public_suffix_list.dat",
+		expectedLists: [3][]string{{"ac", "com.ac", "edu.ac", "gov.ac", "net.ac",
+			"mil.ac", "org.ac", "*.ck", "!www.ck"}, {},
+			{"ac", "com.ac", "edu.ac", "gov.ac", "net.ac", "mil.ac",
+				"org.ac", "*.ck", "!www.ck"}},
+		hasError: false,
+	},
+	{cacheFilePath: "test/public_suffix_list.dat.noexist",
+		expectedLists: [3][]string{{}, {}, {}},
+		hasError:      true,
 	},
 }
 
 func TestGetPublicSuffixList(t *testing.T) {
 	for _, test := range getPublicSuffixListTests {
-		suffixLists := getPublicSuffixList(test.cacheFilePath)
-		if output := reflect.DeepEqual(suffixLists,
-			test.expected); !output {
-			t.Errorf("Output %q not equal to expected %q",
-				suffixLists, test.expected)
+		suffixLists, err := getPublicSuffixList(test.cacheFilePath)
+		if test.hasError && err == nil {
+			t.Errorf("Expected an error. Got no error.")
 		}
+		if !test.hasError && err != nil {
+			t.Errorf("Expected no error. Got an error.")
+		}
+		if output := reflect.DeepEqual(suffixLists,
+			test.expectedLists); !output {
+			t.Errorf("Output %q not equal to expected %q",
+				suffixLists, test.expectedLists)
+		}
+	}
+}
+
+func TestDownloadFile(t *testing.T) {
+	expectedResponse := []byte(`{"isItSunday": true}`)
+	goodServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write(expectedResponse)
+	}))
+	defer goodServer.Close()
+	badServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(404)
+	}))
+	defer badServer.Close()
+
+	// HTTP Status Code 200
+	res, _ := downloadFile(goodServer.URL)
+	if output := reflect.DeepEqual(expectedResponse,
+		res); !output {
+		t.Errorf("Output %q not equal to expected %q",
+			res, expectedResponse)
+	}
+
+	// HTTP Status Code 404
+	res, _ = downloadFile(badServer.URL)
+	if len(res) != 0 {
+		t.Errorf("Response should be empty.")
+	}
+
+	// Malformed URL
+	res, _ = downloadFile("!example.com")
+	if len(res) != 0 {
+		t.Errorf("Response should be empty.")
 	}
 }

@@ -89,7 +89,10 @@ func TestNestedDict(t *testing.T) {
 }
 
 func TestTrie(t *testing.T) {
-	trie := trieConstruct(false, "test/mini_public_suffix_list.dat")
+	trie, err := trieConstruct(false, "test/mini_public_suffix_list.dat")
+	if err != nil {
+		t.Errorf("trieConstruct failed | %q", err)
+	}
 	if len_trie_matches := len(trie.matches); len_trie_matches != 2 {
 		t.Errorf("Expected top level Trie Matches map length of 2. Got %d.", len_trie_matches)
 	}
@@ -307,7 +310,6 @@ func TestExtract(t *testing.T) {
 			} else {
 				extractor = extractorWithoutPrivateSuffix
 			}
-			// fmt.Println(test.urlParams.Url)
 			res := extractor.Extract(test.urlParams)
 
 			if output := reflect.DeepEqual(res,

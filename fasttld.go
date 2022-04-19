@@ -100,9 +100,13 @@ func formatAsPunycode(s string) string {
 // Construct a compressed trie to store Public Suffix List TLDs split at "." in reverse-order
 //
 // For example: "us.gov.pl" will be stored in the order {"pl", "gov", "us"}
-func trieConstruct(includePrivateSuffix bool, cacheFilePath string) *trie {
+func trieConstruct(includePrivateSuffix bool, cacheFilePath string) (*trie, error) {
 	tldTrie := &trie{matches: make(map[string]*trie)}
-	suffixLists := getPublicSuffixList(cacheFilePath)
+	suffixLists, err := getPublicSuffixList(cacheFilePath)
+	if err != nil {
+		log.Println(err)
+		return tldTrie, err
+	}
 
 	var suffixList []string
 	if !includePrivateSuffix {
@@ -129,7 +133,7 @@ func trieConstruct(includePrivateSuffix bool, cacheFilePath string) *trie {
 		}
 	}
 
-	return tldTrie
+	return tldTrie, nil
 }
 
 // Extract components from a given `url`
@@ -305,7 +309,7 @@ func New(n SuffixListParams) (*fastTLD, error) {
 	}
 
 	// Construct *trie using list located at n.CacheFilePath
-	tldTrie := trieConstruct(n.IncludePrivateSuffix, n.CacheFilePath)
+	tldTrie, err := trieConstruct(n.IncludePrivateSuffix, n.CacheFilePath)
 
-	return &fastTLD{tldTrie, n.CacheFilePath}, nil
+	return &fastTLD{tldTrie, n.CacheFilePath}, err
 }
