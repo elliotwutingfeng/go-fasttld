@@ -114,22 +114,12 @@ func downloadFile(url string) ([]byte, error) {
 //
 // This function will update the local cache of Public Suffix List if it is more than 3 days old
 func autoUpdate(cacheFilePath string) {
-	cacheFileNeedsUpdate := false
-	if file, err := os.Stat(cacheFilePath); err == nil {
-		// if file at cacheFilePath exists
-		// check if it needs to be updated (requirement: older than 3 days)
-		modifiedtime := file.ModTime()
-		if time.Now().Sub(modifiedtime).Hours() > 72 {
-			cacheFileNeedsUpdate = true
-		}
-	} else if errors.Is(err, os.ErrNotExist) {
-		// file at cacheFilePath does not exist
-		cacheFileNeedsUpdate = true
-	} else {
-		// file may or may not exist. Treat file as non-existent
-		cacheFileNeedsUpdate = true
-	}
-	if cacheFileNeedsUpdate {
+	file, err := os.Stat(cacheFilePath)
+	// if file at at cacheFilePath does not exist,
+	// or if file at cacheFilePath exists and it is older than 3 days,
+	// update the file
+	if err != nil || (err == nil &&
+		time.Now().Sub(file.ModTime()).Hours() > 72) {
 		showLogMessages := false
 		update(cacheFilePath, showLogMessages)
 	}
