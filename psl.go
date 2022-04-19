@@ -1,3 +1,9 @@
+// go-fasttld is a high performance top level domains (TLD)
+// extraction module implemented with compressed tries.
+//
+// This module is a port of the Python fasttld module,
+// with additional modifications to support extraction
+// of subcomponents from full URLs and IPv4 addresses.
 package fasttld
 
 import (
