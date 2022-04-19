@@ -116,3 +116,13 @@ func TestDownloadFile(t *testing.T) {
 		t.Errorf("Response should be empty.")
 	}
 }
+
+func TestUpdateCustomSuffixList(t *testing.T) {
+	extractor, err := New(SuffixListParams{CacheFilePath: "test/mini_public_suffix_list.dat"})
+	if err != nil {
+		t.Errorf("%q", err)
+	}
+	if err = extractor.Update(false); err == nil {
+		t.Errorf("Expected error when trying to Update() custom Public Suffix List.")
+	}
+}
