@@ -94,8 +94,8 @@ func TestTrie(t *testing.T) {
 	if err != nil {
 		t.Errorf("trieConstruct failed | %q", err)
 	}
-	if len_trie_matches := len(trie.matches); len_trie_matches != 2 {
-		t.Errorf("Expected top level Trie Matches map length of 2. Got %d.", len_trie_matches)
+	if lenTrieMatches := len(trie.matches); lenTrieMatches != 2 {
+		t.Errorf("Expected top level Trie Matches map length of 2. Got %d.", lenTrieMatches)
 	}
 	for _, tld := range []string{"ac", "ck"} {
 		if _, ok := trie.matches[tld]; !ok {
@@ -201,13 +201,13 @@ func TestNew(t *testing.T) {
 
 type extractTest struct {
 	includePrivateSuffix bool
-	urlParams            UrlParams
+	urlParams            URLParams
 	expected             *ExtractResult
 	description          string
 }
 
 var extraExtractTests = []extractTest{
-	{urlParams: UrlParams{Url: "maps.google.com.sg",
+	{urlParams: URLParams{URL: "maps.google.com.sg",
 		IgnoreSubDomains: true},
 		expected: &ExtractResult{
 			Domain: "google", Suffix: "com.sg",
@@ -215,7 +215,7 @@ var extraExtractTests = []extractTest{
 		}, description: "Ignore SubDomains",
 	},
 
-	{urlParams: UrlParams{Url: "https://brb.i.am.going.to.be.a.fk"},
+	{urlParams: URLParams{URL: "https://brb.i.am.going.to.be.a.fk"},
 		expected: &ExtractResult{
 			Scheme: "https://", SubDomain: "brb.i.am.going.to", Domain: "be", Suffix: "a.fk",
 			RegisteredDomain: "be.a.fk",
@@ -223,21 +223,21 @@ var extraExtractTests = []extractTest{
 	},
 
 	{includePrivateSuffix: true,
-		urlParams: UrlParams{Url: "https://brb.i.am.going.to.be.blogspot.com:5000/a/b/c/d.txt?id=42",
+		urlParams: URLParams{URL: "https://brb.i.am.going.to.be.blogspot.com:5000/a/b/c/d.txt?id=42",
 			IgnoreSubDomains: false, ConvertURLToPunyCode: false},
 		expected: &ExtractResult{
 			Scheme: "https://", SubDomain: "brb.i.am.going.to", Domain: "be", Suffix: "blogspot.com",
 			RegisteredDomain: "be.blogspot.com", Port: "5000", Path: "a/b/c/d.txt?id=42",
 		}, description: "Include Private Suffix"},
 	{includePrivateSuffix: true,
-		urlParams: UrlParams{Url: "global.prod.fastly.net",
+		urlParams: URLParams{URL: "global.prod.fastly.net",
 			IgnoreSubDomains: false, ConvertURLToPunyCode: false},
 		expected: &ExtractResult{
 			Suffix: "global.prod.fastly.net",
 		}, description: "Include Private Suffix | Suffix only"},
 
 	{includePrivateSuffix: true,
-		urlParams: UrlParams{Url: "maps.google.com.sg:5000",
+		urlParams: URLParams{URL: "maps.google.com.sg:5000",
 			IgnoreSubDomains: false, ConvertURLToPunyCode: false},
 		expected: &ExtractResult{
 			SubDomain: "maps", Domain: "google", Suffix: "com.sg",
@@ -245,7 +245,7 @@ var extraExtractTests = []extractTest{
 		}, description: "Port number"},
 
 	{includePrivateSuffix: true,
-		urlParams: UrlParams{Url: "maps.google.com.sg:8589934592/this/path/will/not/be/parsed",
+		urlParams: URLParams{URL: "maps.google.com.sg:8589934592/this/path/will/not/be/parsed",
 			IgnoreSubDomains: false, ConvertURLToPunyCode: false},
 		expected: &ExtractResult{
 			SubDomain: "maps", Domain: "google", Suffix: "com.sg",
@@ -255,41 +255,41 @@ var extraExtractTests = []extractTest{
 
 // test cases ported from https://github.com/mjd2021usa/tldextract
 var tldExtractGoTests = []extractTest{
-	{urlParams: UrlParams{}, expected: &ExtractResult{}, description: "empty string"},
-	{urlParams: UrlParams{Url: "users@myhost.com"}, expected: &ExtractResult{UserInfo: "users", Domain: "myhost", Suffix: "com", RegisteredDomain: "myhost.com"}, description: "user@ address"},
-	{urlParams: UrlParams{Url: "mailto:users@myhost.com"}, expected: &ExtractResult{UserInfo: "mailto:users", Domain: "myhost", Suffix: "com", RegisteredDomain: "myhost.com"}, description: "email address"},
-	{urlParams: UrlParams{Url: "myhost.com:999"}, expected: &ExtractResult{Domain: "myhost", Suffix: "com", RegisteredDomain: "myhost.com", Port: "999"}, description: "host:port"},
-	{urlParams: UrlParams{Url: "myhost.com"}, expected: &ExtractResult{Domain: "myhost", Suffix: "com", RegisteredDomain: "myhost.com"}, description: "basic host"},
-	{urlParams: UrlParams{Url: "255.255.myhost.com"}, expected: &ExtractResult{SubDomain: "255.255", Domain: "myhost", Suffix: "com", RegisteredDomain: "myhost.com"}, description: "basic host with numerit subdomains"},
-	{urlParams: UrlParams{Url: "https://user:pass@foo.myhost.com:999/some/path?param1=value1&param2=value2"}, expected: &ExtractResult{Scheme: "https://", UserInfo: "user:pass", SubDomain: "foo", Domain: "myhost", Suffix: "com", RegisteredDomain: "myhost.com", Port: "999", Path: "some/path?param1=value1&param2=value2"}, description: "Full URL with subdomain"},
-	{urlParams: UrlParams{Url: "http://www.duckduckgo.com"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "www", Domain: "duckduckgo", Suffix: "com", RegisteredDomain: "duckduckgo.com"}, description: "Full URL with subdomain"},
-	{urlParams: UrlParams{Url: "http://duckduckgo.co.uk/path?param1=value1&param2=value2&param3=value3&param4=value4&src=https%3A%2F%2Fwww.yahoo.com%2F"}, expected: &ExtractResult{Scheme: "http://", Domain: "duckduckgo", Suffix: "co.uk", RegisteredDomain: "duckduckgo.co.uk", Path: "path?param1=value1&param2=value2&param3=value3&param4=value4&src=https%3A%2F%2Fwww.yahoo.com%2F"}, description: "Full HTTP URL with no subdomain"},
-	{urlParams: UrlParams{Url: "http://big.long.sub.domain.duckduckgo.co.uk/path?param1=value1&param2=value2&param3=value3&param4=value4&src=https%3A%2F%2Fwww.yahoo.com%2F"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "big.long.sub.domain", Domain: "duckduckgo", Suffix: "co.uk", RegisteredDomain: "duckduckgo.co.uk", Path: "path?param1=value1&param2=value2&param3=value3&param4=value4&src=https%3A%2F%2Fwww.yahoo.com%2F"}, description: "Full HTTP URL with subdomain"},
-	{urlParams: UrlParams{Url: "https://duckduckgo.co.uk/path?param1=value1&param2=value2&param3=value3&param4=value4&src=https%3A%2F%2Fwww.yahoo.com%2F"}, expected: &ExtractResult{Scheme: "https://", Domain: "duckduckgo", Suffix: "co.uk", RegisteredDomain: "duckduckgo.co.uk", Path: "path?param1=value1&param2=value2&param3=value3&param4=value4&src=https%3A%2F%2Fwww.yahoo.com%2F"}, description: "Full HTTPS URL with no subdomain"},
-	{urlParams: UrlParams{Url: "ftp://peterparker:multipass@mail.duckduckgo.co.uk:666/path?param1=value1&param2=value2&param3=value3&param4=value4&src=https%3A%2F%2Fwww.yahoo.com%2F"}, expected: &ExtractResult{Scheme: "ftp://", UserInfo: "peterparker:multipass", SubDomain: "mail", Domain: "duckduckgo", Suffix: "co.uk", RegisteredDomain: "duckduckgo.co.uk", Port: "666", Path: "path?param1=value1&param2=value2&param3=value3&param4=value4&src=https%3A%2F%2Fwww.yahoo.com%2F"}, description: "Full ftp URL with subdomain"},
-	{urlParams: UrlParams{Url: "git+ssh://www.github.com/"}, expected: &ExtractResult{Scheme: "git+ssh://", SubDomain: "www", Domain: "github", Suffix: "com", RegisteredDomain: "github.com"}, description: "Full git+ssh URL with subdomain"},
-	{urlParams: UrlParams{Url: "ssh://server.domain.com/"}, expected: &ExtractResult{Scheme: "ssh://", SubDomain: "server", Domain: "domain", Suffix: "com", RegisteredDomain: "domain.com"}, description: "Full ssh URL with subdomain"},
-	{urlParams: UrlParams{Url: "//server.domain.com/path"}, expected: &ExtractResult{Scheme: "//", SubDomain: "server", Domain: "domain", Suffix: "com", RegisteredDomain: "domain.com", Path: "path"}, description: "Missing protocol URL with subdomain"},
-	{urlParams: UrlParams{Url: "server.domain.com/path"}, expected: &ExtractResult{SubDomain: "server", Domain: "domain", Suffix: "com", RegisteredDomain: "domain.com", Path: "path"}, description: "Full ssh URL with subdomain"},
-	{urlParams: UrlParams{Url: "10.10.10.10"}, expected: &ExtractResult{Domain: "10.10.10.10", RegisteredDomain: "10.10.10.10"}, description: "Basic IPv4 Address"},
-	{urlParams: UrlParams{Url: "http://10.10.10.10:5000"}, expected: &ExtractResult{Scheme: "http://", Domain: "10.10.10.10", RegisteredDomain: "10.10.10.10", Port: "5000"}, description: "Basic IPv4 Address URL"},
-	{urlParams: UrlParams{Url: "http://10.10.10.256"}, expected: &ExtractResult{Scheme: "http://"}, description: "Basic IPv4 Address URL with bad IP"},
-	{urlParams: UrlParams{Url: "http://godaddy.godaddy"}, expected: &ExtractResult{Scheme: "http://", Domain: "godaddy", Suffix: "godaddy", RegisteredDomain: "godaddy.godaddy"}, description: "Basic URL"},
-	{urlParams: UrlParams{Url: "http://godaddy.godaddy.godaddy"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "godaddy", Domain: "godaddy", Suffix: "godaddy", RegisteredDomain: "godaddy.godaddy"}, description: "Basic URL with subdomain"},
-	{urlParams: UrlParams{Url: "http://godaddy.godaddy.co.uk"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "godaddy", Domain: "godaddy", Suffix: "co.uk", RegisteredDomain: "godaddy.co.uk"}, description: "Basic URL with subdomain"},
-	{urlParams: UrlParams{Url: "http://godaddy"}, expected: &ExtractResult{Scheme: "http://", Suffix: "godaddy"}, description: "Basic URL with TLD only"},
-	{urlParams: UrlParams{Url: "http://godaddy.cannon-fodder"}, expected: &ExtractResult{Scheme: "http://"}, description: "Basic URL with bad TLD"},
-	{urlParams: UrlParams{Url: "http://godaddy.godaddy.cannon-fodder"}, expected: &ExtractResult{Scheme: "http://"}, description: "Basic URL with subdomainand bad TLD"},
+	{urlParams: URLParams{}, expected: &ExtractResult{}, description: "empty string"},
+	{urlParams: URLParams{URL: "users@myhost.com"}, expected: &ExtractResult{UserInfo: "users", Domain: "myhost", Suffix: "com", RegisteredDomain: "myhost.com"}, description: "user@ address"},
+	{urlParams: URLParams{URL: "mailto:users@myhost.com"}, expected: &ExtractResult{UserInfo: "mailto:users", Domain: "myhost", Suffix: "com", RegisteredDomain: "myhost.com"}, description: "email address"},
+	{urlParams: URLParams{URL: "myhost.com:999"}, expected: &ExtractResult{Domain: "myhost", Suffix: "com", RegisteredDomain: "myhost.com", Port: "999"}, description: "host:port"},
+	{urlParams: URLParams{URL: "myhost.com"}, expected: &ExtractResult{Domain: "myhost", Suffix: "com", RegisteredDomain: "myhost.com"}, description: "basic host"},
+	{urlParams: URLParams{URL: "255.255.myhost.com"}, expected: &ExtractResult{SubDomain: "255.255", Domain: "myhost", Suffix: "com", RegisteredDomain: "myhost.com"}, description: "basic host with numerit subdomains"},
+	{urlParams: URLParams{URL: "https://user:pass@foo.myhost.com:999/some/path?param1=value1&param2=value2"}, expected: &ExtractResult{Scheme: "https://", UserInfo: "user:pass", SubDomain: "foo", Domain: "myhost", Suffix: "com", RegisteredDomain: "myhost.com", Port: "999", Path: "some/path?param1=value1&param2=value2"}, description: "Full URL with subdomain"},
+	{urlParams: URLParams{URL: "http://www.duckduckgo.com"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "www", Domain: "duckduckgo", Suffix: "com", RegisteredDomain: "duckduckgo.com"}, description: "Full URL with subdomain"},
+	{urlParams: URLParams{URL: "http://duckduckgo.co.uk/path?param1=value1&param2=value2&param3=value3&param4=value4&src=https%3A%2F%2Fwww.yahoo.com%2F"}, expected: &ExtractResult{Scheme: "http://", Domain: "duckduckgo", Suffix: "co.uk", RegisteredDomain: "duckduckgo.co.uk", Path: "path?param1=value1&param2=value2&param3=value3&param4=value4&src=https%3A%2F%2Fwww.yahoo.com%2F"}, description: "Full HTTP URL with no subdomain"},
+	{urlParams: URLParams{URL: "http://big.long.sub.domain.duckduckgo.co.uk/path?param1=value1&param2=value2&param3=value3&param4=value4&src=https%3A%2F%2Fwww.yahoo.com%2F"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "big.long.sub.domain", Domain: "duckduckgo", Suffix: "co.uk", RegisteredDomain: "duckduckgo.co.uk", Path: "path?param1=value1&param2=value2&param3=value3&param4=value4&src=https%3A%2F%2Fwww.yahoo.com%2F"}, description: "Full HTTP URL with subdomain"},
+	{urlParams: URLParams{URL: "https://duckduckgo.co.uk/path?param1=value1&param2=value2&param3=value3&param4=value4&src=https%3A%2F%2Fwww.yahoo.com%2F"}, expected: &ExtractResult{Scheme: "https://", Domain: "duckduckgo", Suffix: "co.uk", RegisteredDomain: "duckduckgo.co.uk", Path: "path?param1=value1&param2=value2&param3=value3&param4=value4&src=https%3A%2F%2Fwww.yahoo.com%2F"}, description: "Full HTTPS URL with no subdomain"},
+	{urlParams: URLParams{URL: "ftp://peterparker:multipass@mail.duckduckgo.co.uk:666/path?param1=value1&param2=value2&param3=value3&param4=value4&src=https%3A%2F%2Fwww.yahoo.com%2F"}, expected: &ExtractResult{Scheme: "ftp://", UserInfo: "peterparker:multipass", SubDomain: "mail", Domain: "duckduckgo", Suffix: "co.uk", RegisteredDomain: "duckduckgo.co.uk", Port: "666", Path: "path?param1=value1&param2=value2&param3=value3&param4=value4&src=https%3A%2F%2Fwww.yahoo.com%2F"}, description: "Full ftp URL with subdomain"},
+	{urlParams: URLParams{URL: "git+ssh://www.github.com/"}, expected: &ExtractResult{Scheme: "git+ssh://", SubDomain: "www", Domain: "github", Suffix: "com", RegisteredDomain: "github.com"}, description: "Full git+ssh URL with subdomain"},
+	{urlParams: URLParams{URL: "ssh://server.domain.com/"}, expected: &ExtractResult{Scheme: "ssh://", SubDomain: "server", Domain: "domain", Suffix: "com", RegisteredDomain: "domain.com"}, description: "Full ssh URL with subdomain"},
+	{urlParams: URLParams{URL: "//server.domain.com/path"}, expected: &ExtractResult{Scheme: "//", SubDomain: "server", Domain: "domain", Suffix: "com", RegisteredDomain: "domain.com", Path: "path"}, description: "Missing protocol URL with subdomain"},
+	{urlParams: URLParams{URL: "server.domain.com/path"}, expected: &ExtractResult{SubDomain: "server", Domain: "domain", Suffix: "com", RegisteredDomain: "domain.com", Path: "path"}, description: "Full ssh URL with subdomain"},
+	{urlParams: URLParams{URL: "10.10.10.10"}, expected: &ExtractResult{Domain: "10.10.10.10", RegisteredDomain: "10.10.10.10"}, description: "Basic IPv4 Address"},
+	{urlParams: URLParams{URL: "http://10.10.10.10:5000"}, expected: &ExtractResult{Scheme: "http://", Domain: "10.10.10.10", RegisteredDomain: "10.10.10.10", Port: "5000"}, description: "Basic IPv4 Address URL"},
+	{urlParams: URLParams{URL: "http://10.10.10.256"}, expected: &ExtractResult{Scheme: "http://"}, description: "Basic IPv4 Address URL with bad IP"},
+	{urlParams: URLParams{URL: "http://godaddy.godaddy"}, expected: &ExtractResult{Scheme: "http://", Domain: "godaddy", Suffix: "godaddy", RegisteredDomain: "godaddy.godaddy"}, description: "Basic URL"},
+	{urlParams: URLParams{URL: "http://godaddy.godaddy.godaddy"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "godaddy", Domain: "godaddy", Suffix: "godaddy", RegisteredDomain: "godaddy.godaddy"}, description: "Basic URL with subdomain"},
+	{urlParams: URLParams{URL: "http://godaddy.godaddy.co.uk"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "godaddy", Domain: "godaddy", Suffix: "co.uk", RegisteredDomain: "godaddy.co.uk"}, description: "Basic URL with subdomain"},
+	{urlParams: URLParams{URL: "http://godaddy"}, expected: &ExtractResult{Scheme: "http://", Suffix: "godaddy"}, description: "Basic URL with TLD only"},
+	{urlParams: URLParams{URL: "http://godaddy.cannon-fodder"}, expected: &ExtractResult{Scheme: "http://"}, description: "Basic URL with bad TLD"},
+	{urlParams: URLParams{URL: "http://godaddy.godaddy.cannon-fodder"}, expected: &ExtractResult{Scheme: "http://"}, description: "Basic URL with subdomainand bad TLD"},
 
-	{urlParams: UrlParams{Url: "http://domainer.个人.hk", ConvertURLToPunyCode: true}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "xn--ciqpn.hk", RegisteredDomain: "domainer.xn--ciqpn.hk"}, description: "Basic URL with mixed international TLD (result in punycode)"},
-	{urlParams: UrlParams{Url: "http://domainer.公司.香港", ConvertURLToPunyCode: true}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "xn--55qx5d.xn--j6w193g", RegisteredDomain: "domainer.xn--55qx5d.xn--j6w193g"}, description: "Basic URL with full international TLD (result in punycode)"},
-	{urlParams: UrlParams{Url: "http://domainer.个人.hk"}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "个人.hk", RegisteredDomain: "domainer.个人.hk"}, description: "Basic URL with mixed international TLD (result in unicode)"},
-	{urlParams: UrlParams{Url: "http://domainer.公司.香港"}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "公司.香港", RegisteredDomain: "domainer.公司.香港"}, description: "Basic URL with full international TLD (result in unicode)"},
+	{urlParams: URLParams{URL: "http://domainer.个人.hk", ConvertURLToPunyCode: true}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "xn--ciqpn.hk", RegisteredDomain: "domainer.xn--ciqpn.hk"}, description: "Basic URL with mixed international TLD (result in punycode)"},
+	{urlParams: URLParams{URL: "http://domainer.公司.香港", ConvertURLToPunyCode: true}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "xn--55qx5d.xn--j6w193g", RegisteredDomain: "domainer.xn--55qx5d.xn--j6w193g"}, description: "Basic URL with full international TLD (result in punycode)"},
+	{urlParams: URLParams{URL: "http://domainer.个人.hk"}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "个人.hk", RegisteredDomain: "domainer.个人.hk"}, description: "Basic URL with mixed international TLD (result in unicode)"},
+	{urlParams: URLParams{URL: "http://domainer.公司.香港"}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "公司.香港", RegisteredDomain: "domainer.公司.香港"}, description: "Basic URL with full international TLD (result in unicode)"},
 
-	{urlParams: UrlParams{Url: "http://domainer.xn--ciqpn.hk", ConvertURLToPunyCode: true}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "xn--ciqpn.hk", RegisteredDomain: "domainer.xn--ciqpn.hk"}, description: "Basic URL with mixed punycode international TLD (result in punycode)"},
-	{urlParams: UrlParams{Url: "http://domainer.xn--55qx5d.xn--j6w193g", ConvertURLToPunyCode: true}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "xn--55qx5d.xn--j6w193g", RegisteredDomain: "domainer.xn--55qx5d.xn--j6w193g"}, description: "Basic URL with full punycode international TLD (result in punycode)"},
-	{urlParams: UrlParams{Url: "http://domainer.xn--ciqpn.hk"}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "xn--ciqpn.hk", RegisteredDomain: "domainer.xn--ciqpn.hk"}, description: "Basic URL with mixed punycode international TLD (result in unicode)"},
-	{urlParams: UrlParams{Url: "http://domainer.xn--55qx5d.xn--j6w193g"}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "xn--55qx5d.xn--j6w193g", RegisteredDomain: "domainer.xn--55qx5d.xn--j6w193g"}, description: "Basic URL with full punycode international TLD (result in unicode)"},
+	{urlParams: URLParams{URL: "http://domainer.xn--ciqpn.hk", ConvertURLToPunyCode: true}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "xn--ciqpn.hk", RegisteredDomain: "domainer.xn--ciqpn.hk"}, description: "Basic URL with mixed punycode international TLD (result in punycode)"},
+	{urlParams: URLParams{URL: "http://domainer.xn--55qx5d.xn--j6w193g", ConvertURLToPunyCode: true}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "xn--55qx5d.xn--j6w193g", RegisteredDomain: "domainer.xn--55qx5d.xn--j6w193g"}, description: "Basic URL with full punycode international TLD (result in punycode)"},
+	{urlParams: URLParams{URL: "http://domainer.xn--ciqpn.hk"}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "xn--ciqpn.hk", RegisteredDomain: "domainer.xn--ciqpn.hk"}, description: "Basic URL with mixed punycode international TLD (result in unicode)"},
+	{urlParams: URLParams{URL: "http://domainer.xn--55qx5d.xn--j6w193g"}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "xn--55qx5d.xn--j6w193g", RegisteredDomain: "domainer.xn--55qx5d.xn--j6w193g"}, description: "Basic URL with full punycode international TLD (result in unicode)"},
 
 	// {urlParams: UrlParams{Url: "git+ssh://www.!github.com/"}, expected: &ExtractResult{}, description: "Full git+ssh URL with bad domain"},
 }
@@ -305,7 +305,7 @@ func TestExtract(t *testing.T) {
 	})
 	for _, testCollection := range []([]extractTest){extraExtractTests, tldExtractGoTests} {
 		for _, test := range testCollection {
-			var extractor *fastTLD
+			var extractor *FastTLD
 			if test.includePrivateSuffix {
 				extractor = extractorWithPrivateSuffix
 			} else {
@@ -352,8 +352,8 @@ func BenchmarkGoFastTld(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		extractor.Extract(UrlParams{
-			Url: benchmarkURL})
+		extractor.Extract(URLParams{
+			URL: benchmarkURL})
 	}
 }
 

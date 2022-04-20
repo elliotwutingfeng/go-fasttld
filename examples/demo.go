@@ -27,7 +27,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	res := extractor.Extract(fasttld.UrlParams{Url: url})
+	res := extractor.Extract(fasttld.URLParams{URL: url})
 	fmt.Println("Simple Example")
 	printRes(url, res)
 	// res.Scheme = https://
@@ -52,7 +52,7 @@ func main() {
 	url = "https://google.blogspot.com"
 
 	extractor, _ = fasttld.New(fasttld.SuffixListParams{})
-	res = extractor.Extract(fasttld.UrlParams{Url: url})
+	res = extractor.Extract(fasttld.URLParams{URL: url})
 	fmt.Println("Exclude Private Domains")
 	printRes(url, res)
 	// res.Scheme = https://
@@ -65,7 +65,7 @@ func main() {
 	// res.Path = <no output>
 
 	extractor, _ = fasttld.New(fasttld.SuffixListParams{IncludePrivateSuffix: true})
-	res = extractor.Extract(fasttld.UrlParams{Url: url})
+	res = extractor.Extract(fasttld.URLParams{URL: url})
 	fmt.Println("Include Private Domains")
 	printRes(url, res)
 	// res.Scheme = https://
@@ -81,7 +81,7 @@ func main() {
 	url = "https://maps.google.com"
 
 	extractor, _ = fasttld.New(fasttld.SuffixListParams{})
-	res = extractor.Extract(fasttld.UrlParams{Url: url, IgnoreSubDomains: true})
+	res = extractor.Extract(fasttld.URLParams{URL: url, IgnoreSubDomains: true})
 	fmt.Println("Ignore Subdomains")
 	printRes(url, res)
 	// res.Scheme = https://
@@ -96,7 +96,7 @@ func main() {
 	// Punycode
 	url = "https://hello.世界.com"
 
-	res = extractor.Extract(fasttld.UrlParams{Url: url, ConvertURLToPunyCode: true})
+	res = extractor.Extract(fasttld.URLParams{URL: url, ConvertURLToPunyCode: true})
 	fmt.Println("Punycode")
 	printRes(url, res)
 	// res.Scheme = https://
@@ -108,7 +108,7 @@ func main() {
 	// res.Port = <no output>
 	// res.Path = <no output>
 
-	res = extractor.Extract(fasttld.UrlParams{Url: url, ConvertURLToPunyCode: false})
+	res = extractor.Extract(fasttld.URLParams{URL: url, ConvertURLToPunyCode: false})
 	fmt.Println("No Punycode")
 	printRes(url, res)
 	// res.Scheme = https://

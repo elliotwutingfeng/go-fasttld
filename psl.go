@@ -28,12 +28,12 @@ var publicSuffixListSources = []string{
 	"https://raw.githubusercontent.com/publicsuffix/list/master/public_suffix_list.dat",
 }
 
-// Return true if `maybeIPv4Address` is an IPv4 address
+// Returns true if `maybeIPv4Address` is an IPv4 address
 func looksLikeIPv4Address(maybeIPv4Address string) bool {
 	return net.ParseIP(maybeIPv4Address) != nil
 }
 
-// Extract Public Suffixes and Private Suffixes from Public Suffix list located at `cacheFilePath`
+// Retrieves Public Suffixes and Private Suffixes from Public Suffix list located at `cacheFilePath`
 //
 // PublicSuffixes: ICANN domains. Example: com, net, org etc.
 //
@@ -92,7 +92,7 @@ func getPublicSuffixList(cacheFilePath string) ([3]([]string), error) {
 	return [3]([]string){PublicSuffixes, PrivateSuffixes, AllSuffixes}, nil
 }
 
-// Download file from url as byte slice
+// Downloads file from url as byte slice
 func downloadFile(url string) ([]byte, error) {
 	// Make HTTP GET request
 	var bodyBytes []byte
@@ -123,10 +123,10 @@ func getCurrentFilePath() string {
 	return filepath.Dir(file)
 }
 
-// Update local cache of Public Suffix List
+// Updates local cache of Public Suffix List
 func update(file afero.File,
 	publicSuffixListSources []string) error {
-	download_success := false
+	downloadSuccess := false
 	for _, publicSuffixListSource := range publicSuffixListSources {
 		// Write GET request body to local file
 		if bodyBytes, err := downloadFile(publicSuffixListSource); err != nil {
@@ -134,29 +134,29 @@ func update(file afero.File,
 		} else {
 			file.Seek(0, 0)
 			file.Write(bodyBytes)
-			download_success = true
+			downloadSuccess = true
 			break
 		}
 	}
-	if download_success {
+	if downloadSuccess {
 		log.Println("Public Suffix List updated.")
 	} else {
-		return errors.New("Failed to fetch any Public Suffix List from all mirrors.")
+		return errors.New("failed to fetch any Public Suffix List from all mirrors")
 	}
 
 	return nil
 }
 
-// If Public Suffix List is not custom, update its local cache.
-func (t *fastTLD) Update() error {
+// Update updates the local cache of Public Suffix list if it is not custom
+func (t *FastTLD) Update() error {
 	if t.cacheFilePath != getCurrentFilePath()+string(os.PathSeparator)+defaultPSLFileName {
-		return errors.New("Update() only applies to default Public Suffix List, not custom Public Suffix List.")
+		return errors.New("function Update() only applies to default Public Suffix List, not custom Public Suffix List")
 	}
 	// Create local file at cacheFilePath
-	if file, err := os.Create(t.cacheFilePath); err != nil {
+	file, err := os.Create(t.cacheFilePath)
+	if err != nil {
 		return err
-	} else {
-		defer file.Close()
-		return update(file, publicSuffixListSources)
 	}
+	defer file.Close()
+	return update(file, publicSuffixListSources)
 }

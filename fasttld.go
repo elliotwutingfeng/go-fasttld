@@ -24,30 +24,33 @@ const defaultPSLFileName string = "public_suffix_list.dat"
 // Extract URL scheme from string
 var schemeRegex = regexp.MustCompile("^([A-Za-z0-9+-.]+:)?//")
 
-type fastTLD struct {
+// FastTLD provides the Extract() function, to extract
+// URLs using TldTrie generated from the
+// Public Suffix List file at cacheFilePath
+type FastTLD struct {
 	TldTrie       *trie
 	cacheFilePath string
 }
 
-// Components extracted from URL
+// ExtractResult contains components extracted from URL
 type ExtractResult struct {
 	Scheme, UserInfo, SubDomain, Domain, Suffix, Port, Path, RegisteredDomain string
 }
 
-// Parameters for specifying path to Public Suffix List file and
+// SuffixListParams contains parameters for specifying path to Public Suffix List file and
 // whether to extract private suffixes (e.g. blogspot.com).
 type SuffixListParams struct {
 	CacheFilePath        string
 	IncludePrivateSuffix bool
 }
 
-// Specify Url to extract components from.
+// URLParams specifies URL to extract components from.
 //
 // If IgnoreSubDomains = true, do not extract subdomains.
 //
 // If ConvertURLToPunyCode = true, convert non-ASCII characters like 世界 to punycode.
-type UrlParams struct {
-	Url                  string
+type URLParams struct {
+	URL                  string
 	IgnoreSubDomains     bool
 	ConvertURLToPunyCode bool
 }
@@ -65,13 +68,13 @@ type trie struct {
 func nestedDict(dic *trie, keys []string) {
 	// credits: https://stackoverflow.com/questions/13687924 and https://github.com/jophy/fasttld
 	var end bool
-	var dic_bk *trie
+	var dicBk *trie
 
-	keys_ := keys[0 : len(keys)-1]
-	len_keys := len(keys)
+	keysExceptLast := keys[0 : len(keys)-1]
+	lenKeys := len(keys)
 
-	for _, key := range keys_ {
-		dic_bk = dic
+	for _, key := range keysExceptLast {
+		dicBk = dic
 		// if dic.matches[key] does not exist
 		if _, ok := dic.matches[key]; !ok {
 			// set dic.matches[key] to &Trie
@@ -80,13 +83,13 @@ func nestedDict(dic *trie, keys []string) {
 		dic = dic.matches[key] // point dic to it
 		if len(dic.matches) == 0 && !dic.hasChildren {
 			end = true
-			dic = dic_bk
-			dic.matches[keys[len_keys-2]] = &trie{end: true, matches: make(map[string]*trie)}
-			dic.matches[keys[len_keys-2]].matches[keys[len_keys-1]] = &trie{matches: make(map[string]*trie)}
+			dic = dicBk
+			dic.matches[keys[lenKeys-2]] = &trie{end: true, matches: make(map[string]*trie)}
+			dic.matches[keys[lenKeys-2]].matches[keys[lenKeys-1]] = &trie{matches: make(map[string]*trie)}
 		}
 	}
 	if !end {
-		dic.matches[keys[len_keys-1]] = &trie{matches: make(map[string]*trie)}
+		dic.matches[keys[lenKeys-1]] = &trie{matches: make(map[string]*trie)}
 	}
 }
 
@@ -148,16 +151,16 @@ func trieConstruct(includePrivateSuffix bool, cacheFilePath string) (*trie, erro
 }
 
 // Extract components from a given `url`.
-func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
+func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	urlParts := ExtractResult{}
 
 	if e.ConvertURLToPunyCode {
-		e.Url = formatAsPunycode(e.Url)
+		e.URL = formatAsPunycode(e.URL)
 	}
 
 	// Extract URL scheme
 	// Credits: https://github.com/mjd2021usa/tldextract/blob/main/tldextract.go
-	netlocWithScheme := strings.Trim(e.Url, ". \n\t\r\uFEFF\u200b\u200c\u200d") // trim whitespace and '.'
+	netlocWithScheme := strings.Trim(e.URL, ". \n\t\r\uFEFF\u200b\u200c\u200d") // trim whitespace and '.'
 	netloc := schemeRegex.ReplaceAllString(netlocWithScheme, "")
 
 	urlParts.Scheme = netlocWithScheme[0 : len(netlocWithScheme)-len(netloc)]
@@ -236,7 +239,7 @@ func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
 			// check if there is a sub node
 			// eg. gov.cn
 			if val, ok := node.matches[label]; ok {
-				lenSuffix += 1
+				lenSuffix++
 				suffixCharCount += labelLength
 				if len(val.matches) == 0 {
 					urlParts.Domain = labels[idx-1]
@@ -252,7 +255,7 @@ func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
 			// check if there is a sub node
 			// e.g. www.ck
 			if _, ok := node.matches["!"+label]; !ok {
-				lenSuffix += 1
+				lenSuffix++
 				suffixCharCount += labelLength
 			} else {
 				urlParts.Domain = label
@@ -261,7 +264,7 @@ func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
 		}
 		// check if TLD in Public Suffix List
 		if val, ok := node.matches[label]; ok {
-			lenSuffix += 1
+			lenSuffix++
 			suffixCharCount += labelLength
 			if len(val.matches) != 0 {
 				node = val
@@ -278,18 +281,18 @@ func (f *fastTLD) Extract(e UrlParams) *ExtractResult {
 		urlParts.Suffix = netloc[netlocLen-suffixCharCount-lenSuffix+1:]
 	}
 
-	len_url_suffix := len(urlParts.Suffix)
-	var len_url_domain int
+	lenURLSuffix := len(urlParts.Suffix)
+	var lenURLDomain int
 
 	if 0 < lenSuffix && lenSuffix < lenLabels {
 		urlParts.Domain = labels[lenLabels-lenSuffix-1]
-		len_url_domain = len(urlParts.Domain)
+		lenURLDomain = len(urlParts.Domain)
 		if !e.IgnoreSubDomains && (lenLabels-lenSuffix) >= 2 {
-			urlParts.SubDomain = netloc[:netlocLen-len_url_domain-len_url_suffix-2]
+			urlParts.SubDomain = netloc[:netlocLen-lenURLDomain-lenURLSuffix-2]
 		}
 	}
 
-	if len_url_domain > 0 && len_url_suffix > 0 {
+	if lenURLDomain > 0 && lenURLSuffix > 0 {
 		urlParts.RegisteredDomain = urlParts.Domain + "." + urlParts.Suffix
 	}
 
@@ -302,7 +305,7 @@ func fileLastModifiedHours(fileinfo fs.FileInfo) float64 {
 }
 
 // New creates a new *FastTLD.
-func New(n SuffixListParams) (*fastTLD, error) {
+func New(n SuffixListParams) (*FastTLD, error) {
 	cacheFilePath, err := filepath.Abs(n.CacheFilePath)
 	invalidCacheFilePath := err != nil
 
@@ -322,5 +325,5 @@ func New(n SuffixListParams) (*fastTLD, error) {
 	// Construct *trie using list located at n.CacheFilePath
 	tldTrie, err := trieConstruct(n.IncludePrivateSuffix, n.CacheFilePath)
 
-	return &fastTLD{tldTrie, n.CacheFilePath}, err
+	return &FastTLD{tldTrie, n.CacheFilePath}, err
 }
