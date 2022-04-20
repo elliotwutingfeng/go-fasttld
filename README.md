@@ -40,7 +40,7 @@ extractor, _ := fasttld.New(fasttld.SuffixListParams{})
 
 //Extract URL subcomponents
 url := "https://some-user@a.long.subdomain.ox.ac.uk:5000/a/b/c/d/e/f/g/h/i?id=42"
-res := extractor.Extract(fasttld.UrlParams{Url: url})
+res := extractor.Extract(fasttld.URLParams{URL: url})
 
 // Display results
 fmt.Println(res.Scheme)           // https://
@@ -89,7 +89,7 @@ By default, **go-fasttld** _excludes_ these private domains (i.e. `IncludePrivat
 extractor, _ := fasttld.New(fasttld.SuffixListParams{})
 
 url := "https://google.blogspot.com"
-res := extractor.Extract(fasttld.UrlParams{Url: url})
+res := extractor.Extract(fasttld.URLParams{URL: url})
 
 // res.Scheme = https://
 // res.UserInfo = <no output>
@@ -107,7 +107,7 @@ You can _include_ private domains by setting `IncludePrivateSuffix = true`
 extractor, _ := fasttld.New(fasttld.SuffixListParams{IncludePrivateSuffix: true})
 
 url := "https://google.blogspot.com"
-res := extractor.Extract(fasttld.UrlParams{Url: url})
+res := extractor.Extract(fasttld.URLParams{URL: url})
 
 // res.Scheme = https://
 // res.UserInfo = <no output>
@@ -129,7 +129,7 @@ You can ignore subdomains by setting `IgnoreSubDomains = true`. By default, subd
 extractor, _ := fasttld.New(fasttld.SuffixListParams{})
 
 url := "https://maps.google.com"
-res := extractor.Extract(fasttld.UrlParams{Url: url, IgnoreSubDomains: true})
+res := extractor.Extract(fasttld.URLParams{URL: url, IgnoreSubDomains: true})
 
 // res.Scheme = https://
 // res.UserInfo = <no output>
@@ -149,7 +149,7 @@ Convert internationalised URLs to [punycode](https://en.wikipedia.org/wiki/Punyc
 extractor, _ := fasttld.New(fasttld.SuffixListParams{})
 
 url := "https://hello.世界.com"
-res := extractor.Extract(fasttld.UrlParams{Url: url, ConvertURLToPunyCode: true})
+res := extractor.Extract(fasttld.URLParams{URL: url, ConvertURLToPunyCode: true})
 
 // res.Scheme = https://
 // res.UserInfo = <no output>
@@ -160,7 +160,7 @@ res := extractor.Extract(fasttld.UrlParams{Url: url, ConvertURLToPunyCode: true}
 // res.Port = <no output>
 // res.Path = <no output>
 
-res = extractor.Extract(fasttld.UrlParams{Url: url, ConvertURLToPunyCode: false})
+res = extractor.Extract(fasttld.URLParams{URL: url, ConvertURLToPunyCode: false})
 
 // res.Scheme = https://
 // res.UserInfo = <no output>
