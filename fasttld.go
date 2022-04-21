@@ -293,7 +293,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	}
 
 	if lenURLDomain > 0 && lenURLSuffix > 0 {
-		urlParts.RegisteredDomain = urlParts.Domain + "." + urlParts.Suffix
+		urlParts.RegisteredDomain = netloc[netlocLen-lenURLDomain-lenURLSuffix-1:]
 	}
 
 	return &urlParts

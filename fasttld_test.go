@@ -222,6 +222,13 @@ var extraExtractTests = []extractTest{
 		}, description: "Asterisk",
 	},
 
+	// {urlParams: URLParams{URL: "https://brb\u002ei\u3002am\uff0egoing\uff61to\uff0ebe\u3002a\uff61fk"},
+	// 	expected: &ExtractResult{
+	// 		Scheme: "https://", SubDomain: "brb\u002ei\u3002am\uff0egoing\uff61to", Domain: "be", Suffix: "a\uff61fk",
+	// 		RegisteredDomain: "be\u3002a\uff61fk",
+	// 	}, description: "internationalised domain name dots",
+	// },
+
 	{includePrivateSuffix: true,
 		urlParams: URLParams{URL: "https://brb.i.am.going.to.be.blogspot.com:5000/a/b/c/d.txt?id=42",
 			IgnoreSubDomains: false, ConvertURLToPunyCode: false},

@@ -208,11 +208,11 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 | Benchmark Name                | Iterations | ns/op       | B/op     | allocs/op   | Fastest            |
 |:------------------------------|------------|-------------|----------|-------------|--------------------|
-| BenchmarkGoFastTld            | 2284368    | 523.3 ns/op | 240 B/op | 6 allocs/op |                    |
-| BenchmarkJPilloraGoTld        | 2661440    | 444.6 ns/op | 224 B/op | 2 allocs/op | :heavy_check_mark: |
-| BenchmarkJoeGuoTldExtract     | 2400536    | 494.7 ns/op | 160 B/op | 5 allocs/op |                    |
-| BenchmarkMjd2021USATldExtract | 1439263    | 841.2 ns/op | 208 B/op | 7 allocs/op |                    |
-| BenchmarkM507Tlde             | 2388453    | 506.8 ns/op | 160 B/op | 5 allocs/op |                    |
+| BenchmarkGoFastTld            | 2404935    | 494.2 ns/op | 224 B/op | 5 allocs/op |                    |
+| BenchmarkJPilloraGoTld        | 2674566    | 444.8 ns/op | 224 B/op | 2 allocs/op | :heavy_check_mark: |
+| BenchmarkJoeGuoTldExtract     | 2277444    | 518.3 ns/op | 160 B/op | 5 allocs/op |                    |
+| BenchmarkMjd2021USATldExtract | 1364408    | 838.8 ns/op | 208 B/op | 7 allocs/op |                    |
+| BenchmarkM507Tlde             | 2387058    | 499.8 ns/op | 160 B/op | 5 allocs/op |                    |
 
 ---
 
@@ -222,11 +222,11 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 | Benchmark Name                | Iterations | ns/op       | B/op     | allocs/op   | Fastest            |
 |:------------------------------|------------|-------------|----------|-------------|--------------------|
-| BenchmarkGoFastTld            | 2129161    | 565.0 ns/op | 352 B/op | 6 allocs/op | :heavy_check_mark: |
-| BenchmarkJPilloraGoTld        | 1880540    | 643.9 ns/op | 224 B/op | 2 allocs/op |                    |
-| BenchmarkJoeGuoTldExtract     | 1586659    | 761.4 ns/op | 288 B/op | 6 allocs/op |                    |
-| BenchmarkMjd2021USATldExtract | 1488391    | 810.3 ns/op | 288 B/op | 6 allocs/op |                    |
-| BenchmarkM507Tlde             | 2076404    | 572.9 ns/op | 272 B/op | 5 allocs/op |                    |
+| BenchmarkGoFastTld            | 2371904    | 507.4 ns/op | 336 B/op | 5 allocs/op | :heavy_check_mark: |
+| BenchmarkJPilloraGoTld        | 1854488    | 646.5 ns/op | 224 B/op | 2 allocs/op |                    |
+| BenchmarkJoeGuoTldExtract     | 2117841    | 570.3 ns/op | 272 B/op | 5 allocs/op |                    |
+| BenchmarkMjd2021USATldExtract | 1503780    | 814.9 ns/op | 288 B/op | 6 allocs/op |                    |
+| BenchmarkM507Tlde             | 2140771    | 563.4 ns/op | 272 B/op | 5 allocs/op |                    |
 
 ---
 
@@ -236,11 +236,11 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 | Benchmark Name                | Iterations | ns/op       | B/op      | allocs/op   | Fastest            |
 |:------------------------------|------------|-------------|-----------|-------------|--------------------|
-| BenchmarkGoFastTld            | 1678980    | 752.2 ns/op | 832 B/op  | 5 allocs/op | :heavy_check_mark: |
-| BenchmarkJPilloraGoTld        | 464935     | 2571 ns/op  | 928 B/op  | 4 allocs/op |                    |
-| BenchmarkJoeGuoTldExtract     | 823464     | 1341 ns/op  | 1120 B/op | 6 allocs/op |                    |
-| BenchmarkMjd2021USATldExtract | 851773     | 1307 ns/op  | 1120 B/op | 6 allocs/op |                    |
-| BenchmarkM507Tlde             | 856286     | 1362 ns/op  | 1120 B/op | 6 allocs/op |                    |
+| BenchmarkGoFastTld            | 1688197    | 715.8 ns/op | 832 B/op  | 5 allocs/op | :heavy_check_mark: |
+| BenchmarkJPilloraGoTld        | 471436     | 2509 ns/op  | 928 B/op  | 4 allocs/op |                    |
+| BenchmarkJoeGuoTldExtract     | 839716     | 1344 ns/op  | 1120 B/op | 6 allocs/op |                    |
+| BenchmarkMjd2021USATldExtract | 795507     | 1291 ns/op  | 1120 B/op | 6 allocs/op |                    |
+| BenchmarkM507Tlde             | 820988     | 1335 ns/op  | 1120 B/op | 6 allocs/op |                    |
 
 ---
 
