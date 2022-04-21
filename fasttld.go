@@ -193,7 +193,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 			maybePort   string
 			invalidPort bool
 		)
-		if hasPort := afterHost[0] == ':'; hasPort {
+		if afterHost[0] == ':' {
 			if pathStartIndex == -1 {
 				maybePort = afterHost[1:]
 			} else {
@@ -222,9 +222,8 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 
 	labels := strings.Split(netloc, ".")
 
-	var node *trie
 	// define the root node
-	node = f.TldTrie
+	node := f.TldTrie
 
 	var lenSuffix int
 	var suffixCharCount int
@@ -244,10 +243,9 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 				if len(val.matches) == 0 {
 					urlParts.Domain = labels[idx-1]
 					break
-				} else {
-					node = val
-					continue
 				}
+				node = val
+				continue
 			}
 		}
 
