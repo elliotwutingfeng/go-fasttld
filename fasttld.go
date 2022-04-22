@@ -239,7 +239,6 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 				lenSuffix++
 				suffixCharCount += len(label)
 				if len(val.matches) == 0 {
-					urlParts.Domain = labels[idx-1]
 					break
 				}
 				node = val
@@ -253,8 +252,6 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 			if _, ok := node.matches["!"+label]; !ok {
 				lenSuffix++
 				suffixCharCount += len(label)
-			} else {
-				urlParts.Domain = label
 			}
 			break
 		}
@@ -286,7 +283,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		}
 	}
 
-	if lenURLDomain > 0 && len(urlParts.Suffix) > 0 {
+	if 0 < lenURLDomain && 0 < lenSuffix {
 		urlParts.RegisteredDomain = netloc[len(netloc)-lenURLDomain-len(urlParts.Suffix)-1:]
 	}
 
