@@ -8,7 +8,7 @@ require (
 	github.com/jpillora/go-tld v1.1.1
 	github.com/mjd2021usa/tldextract v0.9.2
 	github.com/spf13/afero v1.8.2
-	golang.org/x/net v0.0.0-20220420153159-1850ba15e1be
+	golang.org/x/net v0.0.0-20220421235706-1d1ef9303861
 )
 
 require golang.org/x/text v0.3.7 // indirect
