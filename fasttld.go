@@ -187,7 +187,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	}
 
 	// extract port and "Path" if any
-	if lenAfterHost := len(afterHost); lenAfterHost != 0 {
+	if len(afterHost) != 0 {
 		pathStartIndex := strings.Index(afterHost, "/")
 		var (
 			maybePort   string
@@ -205,7 +205,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 				urlParts.Port = maybePort
 			}
 		}
-		if !invalidPort && pathStartIndex != -1 && pathStartIndex != lenAfterHost {
+		if !invalidPort && pathStartIndex != -1 && pathStartIndex != len(afterHost) {
 			// if there is any path/query/fragment after the authority URI component...
 			// see https://stackoverflow.com/questions/47543432/what-do-we-call-the-combined-path-query-and-fragment-in-a-uri
 			// for simplicity, we shall call this the "Path"
@@ -227,10 +227,8 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 
 	var lenSuffix int
 	var suffixCharCount int
-	lenLabels := len(labels)
 	for idx := range labels {
-		label := labels[lenLabels-idx-1]
-		labelLength := len(label)
+		label := labels[len(labels)-idx-1]
 
 		// this node has sub-nodes and maybe an end-node.
 		// eg. cn -> (cn, gov.cn)
@@ -239,7 +237,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 			// eg. gov.cn
 			if val, ok := node.matches[label]; ok {
 				lenSuffix++
-				suffixCharCount += labelLength
+				suffixCharCount += len(label)
 				if len(val.matches) == 0 {
 					urlParts.Domain = labels[idx-1]
 					break
@@ -254,7 +252,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 			// e.g. www.ck
 			if _, ok := node.matches["!"+label]; !ok {
 				lenSuffix++
-				suffixCharCount += labelLength
+				suffixCharCount += len(label)
 			} else {
 				urlParts.Domain = label
 			}
@@ -263,7 +261,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		// check if TLD in Public Suffix List
 		if val, ok := node.matches[label]; ok {
 			lenSuffix++
-			suffixCharCount += labelLength
+			suffixCharCount += len(label)
 			if len(val.matches) != 0 {
 				node = val
 			} else {
@@ -274,24 +272,22 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		}
 	}
 
-	netlocLen := len(netloc)
 	if lenSuffix != 0 {
-		urlParts.Suffix = netloc[netlocLen-suffixCharCount-lenSuffix+1:]
+		urlParts.Suffix = netloc[len(netloc)-suffixCharCount-lenSuffix+1:]
 	}
 
-	lenURLSuffix := len(urlParts.Suffix)
 	var lenURLDomain int
 
-	if 0 < lenSuffix && lenSuffix < lenLabels {
-		urlParts.Domain = labels[lenLabels-lenSuffix-1]
+	if 0 < lenSuffix && lenSuffix < len(labels) {
+		urlParts.Domain = labels[len(labels)-lenSuffix-1]
 		lenURLDomain = len(urlParts.Domain)
-		if !e.IgnoreSubDomains && (lenLabels-lenSuffix) >= 2 {
-			urlParts.SubDomain = netloc[:netlocLen-lenURLDomain-lenURLSuffix-2]
+		if !e.IgnoreSubDomains && (len(labels)-lenSuffix) >= 2 {
+			urlParts.SubDomain = netloc[:len(netloc)-lenURLDomain-len(urlParts.Suffix)-2]
 		}
 	}
 
-	if lenURLDomain > 0 && lenURLSuffix > 0 {
-		urlParts.RegisteredDomain = netloc[netlocLen-lenURLDomain-lenURLSuffix-1:]
+	if lenURLDomain > 0 && len(urlParts.Suffix) > 0 {
+		urlParts.RegisteredDomain = netloc[len(netloc)-lenURLDomain-len(urlParts.Suffix)-1:]
 	}
 
 	return &urlParts
