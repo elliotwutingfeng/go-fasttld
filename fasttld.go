@@ -161,7 +161,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	// Extract URL scheme
 	// Credits: https://github.com/mjd2021usa/tldextract/blob/main/tldextract.go
 	netlocWithScheme := strings.Trim(e.URL, ". \n\t\r\uFEFF\u200b\u200c\u200d") // trim whitespace and '.'
-	netloc := schemeRegex.ReplaceAllString(netlocWithScheme, "")
+	netloc := schemeRegex.ReplaceAllLiteralString(netlocWithScheme, "")
 
 	urlParts.Scheme = netlocWithScheme[0 : len(netlocWithScheme)-len(netloc)]
 
@@ -174,21 +174,16 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	}
 
 	// Separate URL host from subcomponents thereafter
-	hostEndIndex := strings.IndexFunc(netloc, func(r rune) bool {
-		switch r {
-		case ':', '/', '?', '&', '#':
-			return true
-		}
-		return false
-	})
-	if hostEndIndex != -1 {
+	if hostEndIndex := strings.IndexFunc(netloc, func(r rune) bool {
+		return r == ':' || r == '/' || r == '?' || r == '&' || r == '#'
+	}); hostEndIndex != -1 {
 		afterHost = netloc[hostEndIndex:]
 		netloc = netloc[0:hostEndIndex]
 	}
 
 	// extract port and "Path" if any
 	if len(afterHost) != 0 {
-		pathStartIndex := strings.Index(afterHost, "/")
+		pathStartIndex := strings.IndexFunc(afterHost, func(r rune) bool { return r == '/' })
 		var (
 			maybePort   string
 			invalidPort bool

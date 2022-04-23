@@ -207,12 +207,12 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 <code>https://news.google.com</code>
 
 | Benchmark Name                | Iterations | ns/op       | B/op     | allocs/op   | Fastest            |
-|:------------------------------|------------|-------------|----------|-------------|--------------------|
-| BenchmarkGoFastTld            | 2404935    | 494.2 ns/op | 224 B/op | 5 allocs/op |                    |
-| BenchmarkJPilloraGoTld        | 2674566    | 444.8 ns/op | 224 B/op | 2 allocs/op | :heavy_check_mark: |
-| BenchmarkJoeGuoTldExtract     | 2277444    | 518.3 ns/op | 160 B/op | 5 allocs/op |                    |
-| BenchmarkMjd2021USATldExtract | 1364408    | 838.8 ns/op | 208 B/op | 7 allocs/op |                    |
-| BenchmarkM507Tlde             | 2387058    | 499.8 ns/op | 160 B/op | 5 allocs/op |                    |
+|-------------------------------|------------|-------------|----------|-------------|--------------------|
+| BenchmarkGoFastTld            | 2540830    | 477.3 ns/op | 224 B/op | 5 allocs/op |                    |
+| BenchmarkJPilloraGoTld        | 2569042    | 455.9 ns/op | 224 B/op | 2 allocs/op | :heavy_check_mark: |
+| BenchmarkJoeGuoTldExtract     | 2276013    | 535.6 ns/op | 160 B/op | 5 allocs/op |                    |
+| BenchmarkMjd2021USATldExtract | 1367376    | 877.6 ns/op | 208 B/op | 7 allocs/op |                    |
+| BenchmarkM507Tlde             | 2322066    | 516.6 ns/op | 160 B/op | 5 allocs/op |                    |
 
 ---
 
@@ -221,12 +221,12 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 <code>https://iupac.org/iupac-announces-the-2021-top-ten-emerging-technologies-in-chemistry/</code>
 
 | Benchmark Name                | Iterations | ns/op       | B/op     | allocs/op   | Fastest            |
-|:------------------------------|------------|-------------|----------|-------------|--------------------|
-| BenchmarkGoFastTld            | 2371904    | 507.4 ns/op | 336 B/op | 5 allocs/op | :heavy_check_mark: |
-| BenchmarkJPilloraGoTld        | 1854488    | 646.5 ns/op | 224 B/op | 2 allocs/op |                    |
-| BenchmarkJoeGuoTldExtract     | 2117841    | 570.3 ns/op | 272 B/op | 5 allocs/op |                    |
-| BenchmarkMjd2021USATldExtract | 1503780    | 814.9 ns/op | 288 B/op | 6 allocs/op |                    |
-| BenchmarkM507Tlde             | 2140771    | 563.4 ns/op | 272 B/op | 5 allocs/op |                    |
+|-------------------------------|------------|-------------|----------|-------------|--------------------|
+| BenchmarkGoFastTld            | 2366121    | 497.7 ns/op | 336 B/op | 5 allocs/op | :heavy_check_mark: |
+| BenchmarkJPilloraGoTld        | 1792764    | 667.8 ns/op | 224 B/op | 2 allocs/op |                    |
+| BenchmarkJoeGuoTldExtract     | 2041777    | 589.1 ns/op | 272 B/op | 5 allocs/op |                    |
+| BenchmarkMjd2021USATldExtract | 1490863    | 803.2 ns/op | 288 B/op | 6 allocs/op |                    |
+| BenchmarkM507Tlde             | 2065656    | 561.2 ns/op | 272 B/op | 5 allocs/op |                    |
 
 ---
 
@@ -235,12 +235,12 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 <code>https://www.google.com/maps/dir/Parliament+Place,+Parliament+House+Of+Singapore,+Singapore/Parliament+St,+London,+UK/@25.2440033,33.6721455,4z/data=!3m1!4b1!4m14!4m13!1m5!1m1!1s0x31da19a0abd4d71d:0xeda26636dc4ea1dc!2m2!1d103.8504863!2d1.2891543!1m5!1m1!1s0x487604c5aaa7da5b:0xf13a2197d7e7dd26!2m2!1d-0.1260826!2d51.5017061!3e4</code>
 
 | Benchmark Name                | Iterations | ns/op       | B/op      | allocs/op   | Fastest            |
-|:------------------------------|------------|-------------|-----------|-------------|--------------------|
-| BenchmarkGoFastTld            | 1688197    | 715.8 ns/op | 832 B/op  | 5 allocs/op | :heavy_check_mark: |
-| BenchmarkJPilloraGoTld        | 471436     | 2509 ns/op  | 928 B/op  | 4 allocs/op |                    |
-| BenchmarkJoeGuoTldExtract     | 839716     | 1344 ns/op  | 1120 B/op | 6 allocs/op |                    |
-| BenchmarkMjd2021USATldExtract | 795507     | 1291 ns/op  | 1120 B/op | 6 allocs/op |                    |
-| BenchmarkM507Tlde             | 820988     | 1335 ns/op  | 1120 B/op | 6 allocs/op |                    |
+|-------------------------------|------------|-------------|-----------|-------------|--------------------|
+| BenchmarkGoFastTld            | 1663136    | 713.7 ns/op | 832 B/op  | 5 allocs/op | :heavy_check_mark: |
+| BenchmarkJPilloraGoTld        | 445546     | 2600 ns/op  | 928 B/op  | 4 allocs/op |                    |
+| BenchmarkJoeGuoTldExtract     | 807241     | 1368 ns/op  | 1120 B/op | 6 allocs/op |                    |
+| BenchmarkMjd2021USATldExtract | 858139     | 1327 ns/op  | 1120 B/op | 6 allocs/op |                    |
+| BenchmarkM507Tlde             | 747086     | 1373 ns/op  | 1120 B/op | 6 allocs/op |                    |
 
 ---
 
