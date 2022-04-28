@@ -206,7 +206,6 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 			// for simplicity, we shall call this the "Path"
 			urlParts.Path = afterHost[pathStartIndex+1:]
 		}
-
 	}
 
 	if looksLikeIPv4Address(netloc) {
@@ -222,17 +221,16 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 
 	var lenSuffix int
 	var suffixCharCount int
-	for idx := range labels {
-		label := labels[len(labels)-idx-1]
+	for idx := len(labels) - 1; idx >= 0; idx-- {
 
 		// this node has sub-nodes and maybe an end-node.
 		// eg. cn -> (cn, gov.cn)
 		if node.end {
 			// check if there is a sub node
 			// eg. gov.cn
-			if val, ok := node.matches[label]; ok {
+			if val, ok := node.matches[labels[idx]]; ok {
 				lenSuffix++
-				suffixCharCount += len(label)
+				suffixCharCount += len(labels[idx])
 				if len(val.matches) == 0 {
 					break
 				}
@@ -244,16 +242,16 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		if _, ok := node.matches["*"]; ok {
 			// check if there is a sub node
 			// e.g. www.ck
-			if _, ok := node.matches["!"+label]; !ok {
+			if _, ok := node.matches["!"+labels[idx]]; !ok {
 				lenSuffix++
-				suffixCharCount += len(label)
+				suffixCharCount += len(labels[idx])
 			}
 			break
 		}
 		// check if TLD in Public Suffix List
-		if val, ok := node.matches[label]; ok {
+		if val, ok := node.matches[labels[idx]]; ok {
 			lenSuffix++
-			suffixCharCount += len(label)
+			suffixCharCount += len(labels[idx])
 			if len(val.matches) != 0 {
 				node = val
 			} else {
@@ -264,22 +262,15 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		}
 	}
 
-	if lenSuffix != 0 {
+	if 0 < lenSuffix {
 		urlParts.Suffix = netloc[len(netloc)-suffixCharCount-lenSuffix+1:]
-	}
-
-	var lenURLDomain int
-
-	if 0 < lenSuffix && lenSuffix < len(labels) {
-		urlParts.Domain = labels[len(labels)-lenSuffix-1]
-		lenURLDomain = len(urlParts.Domain)
-		if !e.IgnoreSubDomains && (len(labels)-lenSuffix) >= 2 {
-			urlParts.SubDomain = netloc[:len(netloc)-lenURLDomain-len(urlParts.Suffix)-2]
+		if lenSuffix < len(labels) {
+			urlParts.Domain = labels[len(labels)-lenSuffix-1]
+			if !e.IgnoreSubDomains && (len(labels)-lenSuffix) >= 2 {
+				urlParts.SubDomain = netloc[:len(netloc)-len(urlParts.Domain)-len(urlParts.Suffix)-2]
+			}
+			urlParts.RegisteredDomain = netloc[len(netloc)-len(urlParts.Domain)-len(urlParts.Suffix)-1:]
 		}
-	}
-
-	if 0 < lenURLDomain && 0 < lenSuffix {
-		urlParts.RegisteredDomain = netloc[len(netloc)-lenURLDomain-len(urlParts.Suffix)-1:]
 	}
 
 	return &urlParts
