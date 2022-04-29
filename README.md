@@ -25,6 +25,38 @@ For example, it extracts the `com` TLD, `maps` subdomain, and `google` domain fr
 
 Splitting on "." and taking the last element only works for simple TLDs like `.com`, but not more complex ones like `oseto.nagasaki.jp`.
 
+### Compressed trie example
+
+Valid TLDs from the [Mozilla Public Suffix List](http://www.publicsuffix.org) are appended to the compressed trie in reverse-order.
+
+```sh
+Given the following TLDs
+au
+nsw.edu.au
+com.ac
+edu.ac
+gov.ac
+
+and the example URI host `example.nsw.edu.au`
+
+The compressed trie will be structured as follows:
+
+START
+ ╠═ au 🚩 ✅
+ ║  ╚═ edu ✅
+ ║     ╚═ nsw 🚩 ✅
+ ╚═ ac 🚩
+    ╠═ com 🚩
+    ╠═ edu 🚩
+    ╚═ gov 🚩
+
+=== Symbol meanings ===
+🚩 : path to this node is a valid TLD
+✅ : path to this node found in example URI host `example.nsw.edu.au`
+```
+
+The URI host subcomponents are parsed from right-to-left until no more matching nodes can be found. In this example, the path of matching nodes are `au -> edu -> nsw`. Reversing the nodes gives the extracted TLD `nsw.edu.au`.
+
 ## Installation
 
 ```sh
