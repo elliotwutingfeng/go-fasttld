@@ -262,6 +262,22 @@ var extraExtractTests = []extractTest{
 			SubDomain: "maps", Domain: "google", Suffix: "com.sg",
 			RegisteredDomain: "google.com.sg",
 		}, description: "Invalid Port number"},
+
+	{includePrivateSuffix: true,
+		urlParams: URLParams{URL: " https://brb\u002ei\u3002am\uff0egoing\uff61to\uff0ebe\u3002a\uff61fk/a/b/c. \uff61",
+			IgnoreSubDomains: false, ConvertURLToPunyCode: false},
+		expected: &ExtractResult{
+			Scheme: "https://", SubDomain: "brb\u002ei\u3002am\uff0egoing\uff61to", Domain: "be", Suffix: "a\uff61fk",
+			RegisteredDomain: "be\u3002a\uff61fk", Path: "a/b/c",
+		}, description: "Surrounded by extra whitespace and periods"},
+
+	{includePrivateSuffix: true,
+		urlParams: URLParams{URL: " https://brb\u002ei\u3002am\uff0egoing\uff61to\uff0ebe\u3002a\uff61fk/a/b/c. \uff61",
+			IgnoreSubDomains: false, ConvertURLToPunyCode: true},
+		expected: &ExtractResult{
+			Scheme: "https://", SubDomain: "brb.i.am.going.to", Domain: "be", Suffix: "a.fk",
+			RegisteredDomain: "be.a.fk", Path: "a/b/c",
+		}, description: "Surrounded by extra whitespace and periods | PunyCode"},
 }
 
 // test cases ported from https://github.com/mjd2021usa/tldextract

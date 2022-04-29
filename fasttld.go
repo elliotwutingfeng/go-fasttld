@@ -28,6 +28,9 @@ const periodDelimitersAndWhiteSpace string = periodDelimiters + " \n\t\r\uFEFF\u
 // Extract URL scheme from string
 var schemeRegex = regexp.MustCompile("^([A-Za-z0-9+-.]+:)?//")
 
+// For replacing international period delimiters when converting to punycode
+var periodDelimitersRegex = regexp.MustCompile("[" + periodDelimiters + "]")
+
 // FastTLD provides the Extract() function, to extract
 // URLs using TldTrie generated from the
 // Public Suffix List file at cacheFilePath
@@ -106,7 +109,7 @@ func reverse(input []string) {
 
 // Format string as punycode.
 func formatAsPunycode(s string) string {
-	asPunyCode, err := idna.ToASCII(strings.ToLower(strings.TrimSpace(s)))
+	asPunyCode, err := idna.ToASCII(periodDelimitersRegex.ReplaceAllLiteralString(strings.ToLower(s), "."))
 	if err != nil {
 		log.Println(strings.SplitAfterN(err.Error(), "idna: invalid label", 2)[0])
 		return ""
@@ -170,12 +173,11 @@ func sepSize(r byte) int {
 func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	urlParts := ExtractResult{}
 
-	if e.ConvertURLToPunyCode {
-		e.URL = formatAsPunycode(e.URL)
-	}
-
 	// Extract URL scheme
 	netlocWithScheme := strings.Trim(e.URL, periodDelimitersAndWhiteSpace)
+	if e.ConvertURLToPunyCode {
+		netlocWithScheme = formatAsPunycode(netlocWithScheme)
+	}
 	netloc := schemeRegex.ReplaceAllLiteralString(netlocWithScheme, "")
 
 	urlParts.Scheme = netlocWithScheme[0 : len(netlocWithScheme)-len(netloc)]
