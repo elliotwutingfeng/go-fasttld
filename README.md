@@ -250,3 +250,4 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 - [fasttld (Python)](https://github.com/jophy/fasttld)
 - [tldextract (Python)](https://github.com/john-kurkowski/tldextract)
 - [tldextract (Go)](https://github.com/mjd2021usa/tldextract)
+- [IETF RFC 2396](https://www.ietf.org/rfc/rfc2396.txt)
