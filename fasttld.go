@@ -21,6 +21,10 @@ import (
 
 const defaultPSLFileName string = "public_suffix_list.dat"
 
+const periodDelimiters string = "\u002e\u3002\uff0e\uff61"
+
+const periodDelimitersAndWhiteSpace string = periodDelimiters + " \n\t\r\uFEFF\u200b\u200c\u200d"
+
 // Extract URL scheme from string
 var schemeRegex = regexp.MustCompile("^([A-Za-z0-9+-.]+:)?//")
 
@@ -150,6 +154,18 @@ func trieConstruct(includePrivateSuffix bool, cacheFilePath string) (*trie, erro
 	return tldTrie, nil
 }
 
+func sepSize(r byte) int {
+	// r is the first byte of any of the runes in periodDelimiters
+	if r == 46 {
+		// first byte of '.' is 46
+		// size of '.' is 1
+		return 1
+	}
+	// first byte of any period delimiter other than '.' is not 46
+	// size of delimiter is 3
+	return 3
+}
+
 // Extract components from a given `url`.
 func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	urlParts := ExtractResult{}
@@ -159,8 +175,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	}
 
 	// Extract URL scheme
-	// Credits: https://github.com/mjd2021usa/tldextract/blob/main/tldextract.go
-	netlocWithScheme := strings.Trim(e.URL, ". \n\t\r\uFEFF\u200b\u200c\u200d") // trim whitespace and '.'
+	netlocWithScheme := strings.Trim(e.URL, periodDelimitersAndWhiteSpace)
 	netloc := schemeRegex.ReplaceAllLiteralString(netlocWithScheme, "")
 
 	urlParts.Scheme = netlocWithScheme[0 : len(netlocWithScheme)-len(netloc)]
@@ -168,22 +183,20 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	var afterHost string
 
 	// Extract URL userinfo
-	if atIdx := strings.Index(netloc, "@"); atIdx != -1 {
-		urlParts.UserInfo = netloc[:atIdx]
+	if atIdx := strings.IndexRune(netloc, '@'); atIdx != -1 {
+		urlParts.UserInfo = netloc[0:atIdx]
 		netloc = netloc[atIdx+1:]
 	}
 
 	// Separate URL host from subcomponents thereafter
-	if hostEndIndex := strings.IndexFunc(netloc, func(r rune) bool {
-		return r == ':' || r == '/' || r == '?' || r == '&' || r == '#'
-	}); hostEndIndex != -1 {
+	if hostEndIndex := strings.IndexAny(netloc, "/:?&#"); hostEndIndex != -1 {
 		afterHost = netloc[hostEndIndex:]
 		netloc = netloc[0:hostEndIndex]
 	}
 
 	// extract port and "Path" if any
 	if len(afterHost) != 0 {
-		pathStartIndex := strings.IndexFunc(afterHost, func(r rune) bool { return r == '/' })
+		pathStartIndex := strings.IndexRune(afterHost, '/')
 		var (
 			maybePort   string
 			invalidPort bool
@@ -214,23 +227,32 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		return &urlParts
 	}
 
-	labels := strings.Split(netloc, ".")
-
 	// define the root node
 	node := f.TldTrie
 
-	var lenSuffix int
-	var suffixCharCount int
-	for idx := len(labels) - 1; idx >= 0; idx-- {
+	var hasSuffix bool
+	var end bool
+	sepIdx := len(netloc)
+	previousSepIdx := sepIdx
+
+	for !end {
+		var label string
+		previousSepIdx = sepIdx
+		sepIdx = strings.LastIndexAny(netloc[0:sepIdx], periodDelimiters)
+		if sepIdx != -1 {
+			label = netloc[sepIdx+sepSize(netloc[sepIdx]) : previousSepIdx]
+		} else {
+			label = netloc[0:previousSepIdx]
+			end = true
+		}
 
 		// this node has sub-nodes and maybe an end-node.
 		// eg. cn -> (cn, gov.cn)
 		if node.end {
 			// check if there is a sub node
 			// eg. gov.cn
-			if val, ok := node.matches[labels[idx]]; ok {
-				lenSuffix++
-				suffixCharCount += len(labels[idx])
+			if val, ok := node.matches[label]; ok {
+				hasSuffix = true
 				if len(val.matches) == 0 {
 					break
 				}
@@ -242,16 +264,14 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		if _, ok := node.matches["*"]; ok {
 			// check if there is a sub node
 			// e.g. www.ck
-			if _, ok := node.matches["!"+labels[idx]]; !ok {
-				lenSuffix++
-				suffixCharCount += len(labels[idx])
+			if _, ok := node.matches["!"+label]; !ok {
+				hasSuffix = true
 			}
 			break
 		}
 		// check if TLD in Public Suffix List
-		if val, ok := node.matches[labels[idx]]; ok {
-			lenSuffix++
-			suffixCharCount += len(labels[idx])
+		if val, ok := node.matches[label]; ok {
+			hasSuffix = true
 			if len(val.matches) != 0 {
 				node = val
 			} else {
@@ -262,14 +282,27 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		}
 	}
 
-	if 0 < lenSuffix {
-		urlParts.Suffix = netloc[len(netloc)-suffixCharCount-lenSuffix+1:]
-		if lenSuffix < len(labels) {
-			urlParts.Domain = labels[len(labels)-lenSuffix-1]
-			if !e.IgnoreSubDomains && (len(labels)-lenSuffix) >= 2 {
-				urlParts.SubDomain = netloc[:len(netloc)-len(urlParts.Domain)-len(urlParts.Suffix)-2]
+	if hasSuffix {
+		if sepIdx != -1 {
+			// if there is a domain
+			urlParts.Suffix = netloc[sepIdx+sepSize(netloc[sepIdx]):]
+			domainStartSepIdx := strings.LastIndexAny(netloc[0:sepIdx], periodDelimiters)
+			if domainStartSepIdx != -1 {
+				// if subdomains exist
+				domainStartIdx := domainStartSepIdx + sepSize(netloc[domainStartSepIdx])
+				urlParts.Domain = netloc[domainStartIdx:sepIdx]
+				urlParts.RegisteredDomain = netloc[domainStartIdx:]
+				if !e.IgnoreSubDomains {
+					// if subdomains are to be included
+					urlParts.SubDomain = netloc[0:domainStartSepIdx]
+				}
+			} else {
+				urlParts.Domain = netloc[domainStartSepIdx+1 : sepIdx]
+				urlParts.RegisteredDomain = netloc[domainStartSepIdx+1:]
 			}
-			urlParts.RegisteredDomain = netloc[len(netloc)-len(urlParts.Domain)-len(urlParts.Suffix)-1:]
+		} else {
+			// if only suffix exists
+			urlParts.Suffix = netloc
 		}
 	}
 
