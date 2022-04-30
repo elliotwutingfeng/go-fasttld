@@ -248,6 +248,15 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 			end = true
 		}
 
+		if _, ok := node.matches["*"]; ok {
+			// check if label falls under any wildcard exception rule
+			// e.g. !www.ck
+			if _, ok := node.matches["!"+label]; ok {
+				sepIdx = previousSepIdx
+			}
+			break
+		}
+
 		// this node has sub-nodes and maybe an end-node.
 		// eg. cn -> (cn, gov.cn)
 		if node.end {
@@ -263,14 +272,6 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 			}
 		}
 
-		if _, ok := node.matches["*"]; ok {
-			// check if there is a sub node
-			// e.g. www.ck
-			if _, ok := node.matches["!"+label]; !ok {
-				hasSuffix = true
-			}
-			break
-		}
 		// check if TLD in Public Suffix List
 		if val, ok := node.matches[label]; ok {
 			hasSuffix = true

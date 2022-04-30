@@ -287,7 +287,7 @@ var tldExtractGoTests = []extractTest{
 	{urlParams: URLParams{URL: "mailto:users@myhost.com"}, expected: &ExtractResult{UserInfo: "mailto:users", Domain: "myhost", Suffix: "com", RegisteredDomain: "myhost.com"}, description: "email address"},
 	{urlParams: URLParams{URL: "myhost.com:999"}, expected: &ExtractResult{Domain: "myhost", Suffix: "com", RegisteredDomain: "myhost.com", Port: "999"}, description: "host:port"},
 	{urlParams: URLParams{URL: "myhost.com"}, expected: &ExtractResult{Domain: "myhost", Suffix: "com", RegisteredDomain: "myhost.com"}, description: "basic host"},
-	{urlParams: URLParams{URL: "255.255.myhost.com"}, expected: &ExtractResult{SubDomain: "255.255", Domain: "myhost", Suffix: "com", RegisteredDomain: "myhost.com"}, description: "basic host with numerit subdomains"},
+	{urlParams: URLParams{URL: "255.255.myhost.com"}, expected: &ExtractResult{SubDomain: "255.255", Domain: "myhost", Suffix: "com", RegisteredDomain: "myhost.com"}, description: "basic host with numeric subdomains"},
 	{urlParams: URLParams{URL: "https://user:pass@foo.myhost.com:999/some/path?param1=value1&param2=value2"}, expected: &ExtractResult{Scheme: "https://", UserInfo: "user:pass", SubDomain: "foo", Domain: "myhost", Suffix: "com", RegisteredDomain: "myhost.com", Port: "999", Path: "some/path?param1=value1&param2=value2"}, description: "Full URL with subdomain"},
 	{urlParams: URLParams{URL: "http://www.duckduckgo.com"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "www", Domain: "duckduckgo", Suffix: "com", RegisteredDomain: "duckduckgo.com"}, description: "Full URL with subdomain"},
 	{urlParams: URLParams{URL: "http://duckduckgo.co.uk/path?param1=value1&param2=value2&param3=value3&param4=value4&src=https%3A%2F%2Fwww.yahoo.com%2F"}, expected: &ExtractResult{Scheme: "http://", Domain: "duckduckgo", Suffix: "co.uk", RegisteredDomain: "duckduckgo.co.uk", Path: "path?param1=value1&param2=value2&param3=value3&param4=value4&src=https%3A%2F%2Fwww.yahoo.com%2F"}, description: "Full HTTP URL with no subdomain"},
@@ -322,6 +322,9 @@ var tldExtractGoTests = []extractTest{
 	{urlParams: URLParams{URL: "https://example.co/en"}, expected: &ExtractResult{Scheme: "https://", Domain: "example", Suffix: "co", RegisteredDomain: "example.co", Path: "en"}, description: "Domain only + co"},
 	{urlParams: URLParams{URL: "https://example.sg/en"}, expected: &ExtractResult{Scheme: "https://", Domain: "example", Suffix: "sg", RegisteredDomain: "example.sg", Path: "en"}, description: "Domain only + sg"},
 	{urlParams: URLParams{URL: "https://example.tv/en"}, expected: &ExtractResult{Scheme: "https://", Domain: "example", Suffix: "tv", RegisteredDomain: "example.tv", Path: "en"}, description: "Domain only + tv"},
+
+	{urlParams: URLParams{URL: "https://asdf.wwe.ck"}, expected: &ExtractResult{Scheme: "https://", Domain: "asdf", Suffix: "wwe.ck", RegisteredDomain: "asdf.wwe.ck"}, description: "Wildcard rule | *.ck"},
+	{urlParams: URLParams{URL: "https://asdf.www.ck"}, expected: &ExtractResult{Scheme: "https://", SubDomain: "asdf", Domain: "www", Suffix: "ck", RegisteredDomain: "www.ck"}, description: "Wildcard exception rule | !www.ck"},
 
 	// {urlParams: URLParams{URL: "git+ssh://www.!github.com/"}, expected: &ExtractResult{}, description: "Full git+ssh URL with bad domain"},
 }
