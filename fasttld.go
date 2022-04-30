@@ -280,6 +280,9 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 				break
 			}
 		} else {
+			if previousSepIdx != len(netloc) {
+				sepIdx = previousSepIdx
+			}
 			break
 		}
 	}

@@ -318,6 +318,11 @@ var tldExtractGoTests = []extractTest{
 	{urlParams: URLParams{URL: "http://domainer.xn--ciqpn.hk"}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "xn--ciqpn.hk", RegisteredDomain: "domainer.xn--ciqpn.hk"}, description: "Basic URL with mixed punycode international TLD (result in unicode)"},
 	{urlParams: URLParams{URL: "http://domainer.xn--55qx5d.xn--j6w193g"}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "xn--55qx5d.xn--j6w193g", RegisteredDomain: "domainer.xn--55qx5d.xn--j6w193g"}, description: "Basic URL with full punycode international TLD (result in unicode)"},
 
+	{urlParams: URLParams{URL: "https://example.ai/en"}, expected: &ExtractResult{Scheme: "https://", Domain: "example", Suffix: "ai", RegisteredDomain: "example.ai", Path: "en"}, description: "Domain only + ai"},
+	{urlParams: URLParams{URL: "https://example.co/en"}, expected: &ExtractResult{Scheme: "https://", Domain: "example", Suffix: "co", RegisteredDomain: "example.co", Path: "en"}, description: "Domain only + co"},
+	{urlParams: URLParams{URL: "https://example.sg/en"}, expected: &ExtractResult{Scheme: "https://", Domain: "example", Suffix: "sg", RegisteredDomain: "example.sg", Path: "en"}, description: "Domain only + sg"},
+	{urlParams: URLParams{URL: "https://example.tv/en"}, expected: &ExtractResult{Scheme: "https://", Domain: "example", Suffix: "tv", RegisteredDomain: "example.tv", Path: "en"}, description: "Domain only + tv"},
+
 	// {urlParams: URLParams{URL: "git+ssh://www.!github.com/"}, expected: &ExtractResult{}, description: "Full git+ssh URL with bad domain"},
 }
 
