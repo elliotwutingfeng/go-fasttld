@@ -257,27 +257,12 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 			break
 		}
 
-		// this node has sub-nodes and maybe an end-node.
-		// eg. cn -> (cn, gov.cn)
-		if node.end {
-			// check if there is a sub node
-			// eg. gov.cn
-			if val, ok := node.matches[label]; ok {
-				hasSuffix = true
-				if len(val.matches) == 0 {
-					break
-				}
-				node = val
-				continue
-			}
-		}
-
-		// check if TLD in Public Suffix List
+		// check if label is part of a TLD
 		if val, ok := node.matches[label]; ok {
 			hasSuffix = true
-			if len(val.matches) != 0 {
-				node = val
-			} else {
+			node = val
+			if len(val.matches) == 0 {
+				// label is at a leaf node (no children) ; break out of loop
 				break
 			}
 		} else {
