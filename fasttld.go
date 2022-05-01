@@ -109,7 +109,7 @@ func reverse(input []string) {
 
 // Format string as punycode.
 func formatAsPunycode(s string) string {
-	asPunyCode, err := idna.ToASCII(periodDelimitersRegex.ReplaceAllLiteralString(strings.ToLower(s), "."))
+	asPunyCode, err := idna.ToASCII(periodDelimitersRegex.ReplaceAllLiteralString(s, "."))
 	if err != nil {
 		log.Println(strings.SplitAfterN(err.Error(), "idna: invalid label", 2)[0])
 		return ""
@@ -175,14 +175,8 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 
 	// Extract URL scheme
 	netlocWithScheme := strings.Trim(e.URL, periodDelimitersAndWhiteSpace)
-	if e.ConvertURLToPunyCode {
-		netlocWithScheme = formatAsPunycode(netlocWithScheme)
-	}
 	netloc := schemeRegex.ReplaceAllLiteralString(netlocWithScheme, "")
-
 	urlParts.Scheme = netlocWithScheme[0 : len(netlocWithScheme)-len(netloc)]
-
-	var afterHost string
 
 	// Extract URL userinfo
 	if atIdx := strings.IndexRune(netloc, '@'); atIdx != -1 {
@@ -190,10 +184,17 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		netloc = netloc[atIdx+1:]
 	}
 
+	var afterHost string
 	// Separate URL host from subcomponents thereafter
 	if hostEndIndex := strings.IndexAny(netloc, "/:?&#"); hostEndIndex != -1 {
 		afterHost = netloc[hostEndIndex:]
 		netloc = netloc[0:hostEndIndex]
+	}
+	var host string
+	if e.ConvertURLToPunyCode {
+		host = formatAsPunycode(netloc)
+	} else {
+		host = netloc
 	}
 
 	// extract port and "Path" if any
@@ -223,9 +224,9 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		}
 	}
 
-	if looksLikeIPv4Address(netloc) {
-		urlParts.Domain = netloc
-		urlParts.RegisteredDomain = netloc
+	if looksLikeIPv4Address(host) {
+		urlParts.Domain = host
+		urlParts.RegisteredDomain = host
 		return &urlParts
 	}
 
@@ -234,17 +235,17 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 
 	var hasSuffix bool
 	var end bool
-	sepIdx := len(netloc)
+	sepIdx := len(host)
 	previousSepIdx := sepIdx
 
 	for !end {
 		var label string
 		previousSepIdx = sepIdx
-		sepIdx = strings.LastIndexAny(netloc[0:sepIdx], periodDelimiters)
+		sepIdx = strings.LastIndexAny(host[0:sepIdx], periodDelimiters)
 		if sepIdx != -1 {
-			label = netloc[sepIdx+sepSize(netloc[sepIdx]) : previousSepIdx]
+			label = host[sepIdx+sepSize(host[sepIdx]) : previousSepIdx]
 		} else {
-			label = netloc[0:previousSepIdx]
+			label = host[0:previousSepIdx]
 			end = true
 		}
 
@@ -266,7 +267,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 				break
 			}
 		} else {
-			if previousSepIdx != len(netloc) {
+			if previousSepIdx != len(host) {
 				sepIdx = previousSepIdx
 			}
 			break
@@ -276,24 +277,24 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	if hasSuffix {
 		if sepIdx != -1 {
 			// if there is a domain
-			urlParts.Suffix = netloc[sepIdx+sepSize(netloc[sepIdx]):]
-			domainStartSepIdx := strings.LastIndexAny(netloc[0:sepIdx], periodDelimiters)
+			urlParts.Suffix = host[sepIdx+sepSize(host[sepIdx]):]
+			domainStartSepIdx := strings.LastIndexAny(host[0:sepIdx], periodDelimiters)
 			if domainStartSepIdx != -1 {
 				// if subdomains exist
-				domainStartIdx := domainStartSepIdx + sepSize(netloc[domainStartSepIdx])
-				urlParts.Domain = netloc[domainStartIdx:sepIdx]
-				urlParts.RegisteredDomain = netloc[domainStartIdx:]
+				domainStartIdx := domainStartSepIdx + sepSize(host[domainStartSepIdx])
+				urlParts.Domain = host[domainStartIdx:sepIdx]
+				urlParts.RegisteredDomain = host[domainStartIdx:]
 				if !e.IgnoreSubDomains {
 					// if subdomains are to be included
-					urlParts.SubDomain = netloc[0:domainStartSepIdx]
+					urlParts.SubDomain = host[0:domainStartSepIdx]
 				}
 			} else {
-				urlParts.Domain = netloc[domainStartSepIdx+1 : sepIdx]
-				urlParts.RegisteredDomain = netloc[domainStartSepIdx+1:]
+				urlParts.Domain = host[domainStartSepIdx+1 : sepIdx]
+				urlParts.RegisteredDomain = host[domainStartSepIdx+1:]
 			}
 		} else {
 			// if only suffix exists
-			urlParts.Suffix = netloc
+			urlParts.Suffix = host
 		}
 	}
 

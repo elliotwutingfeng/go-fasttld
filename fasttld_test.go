@@ -272,15 +272,15 @@ var extraExtractTests = []extractTest{
 		}, description: "Surrounded by extra whitespace and periods"},
 
 	{includePrivateSuffix: true,
-		urlParams: URLParams{URL: " https://brb\u002ei\u3002am\uff0egoing\uff61to\uff0ebe\u3002a\uff61fk/a/b/c. \uff61",
+		urlParams: URLParams{URL: " https://brb\u002ei\u3002am\uff0egoing\uff61to\uff0ebe\u3002a\uff61fk/a/B/c. \uff61",
 			IgnoreSubDomains: false, ConvertURLToPunyCode: true},
 		expected: &ExtractResult{
 			Scheme: "https://", SubDomain: "brb.i.am.going.to", Domain: "be", Suffix: "a.fk",
-			RegisteredDomain: "be.a.fk", Path: "a/b/c",
+			RegisteredDomain: "be.a.fk", Path: "a/B/c",
 		}, description: "Surrounded by extra whitespace and periods | PunyCode"},
 }
 
-// test cases ported from https://github.com/mjd2021usa/tldextract
+// most test cases here were ported from https://github.com/mjd2021usa/tldextract
 var tldExtractGoTests = []extractTest{
 	{urlParams: URLParams{}, expected: &ExtractResult{}, description: "empty string"},
 	{urlParams: URLParams{URL: "users@myhost.com"}, expected: &ExtractResult{UserInfo: "users", Domain: "myhost", Suffix: "com", RegisteredDomain: "myhost.com"}, description: "user@ address"},
@@ -308,13 +308,13 @@ var tldExtractGoTests = []extractTest{
 	{urlParams: URLParams{URL: "http://godaddy.cannon-fodder"}, expected: &ExtractResult{Scheme: "http://"}, description: "Basic URL with bad TLD"},
 	{urlParams: URLParams{URL: "http://godaddy.godaddy.cannon-fodder"}, expected: &ExtractResult{Scheme: "http://"}, description: "Basic URL with subdomainand bad TLD"},
 
-	{urlParams: URLParams{URL: "http://domainer.个人.hk", ConvertURLToPunyCode: true}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "xn--ciqpn.hk", RegisteredDomain: "domainer.xn--ciqpn.hk"}, description: "Basic URL with mixed international TLD (result in punycode)"},
-	{urlParams: URLParams{URL: "http://domainer.公司.香港", ConvertURLToPunyCode: true}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "xn--55qx5d.xn--j6w193g", RegisteredDomain: "domainer.xn--55qx5d.xn--j6w193g"}, description: "Basic URL with full international TLD (result in punycode)"},
-	{urlParams: URLParams{URL: "http://domainer.个人.hk"}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "个人.hk", RegisteredDomain: "domainer.个人.hk"}, description: "Basic URL with mixed international TLD (result in unicode)"},
-	{urlParams: URLParams{URL: "http://domainer.公司.香港"}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "公司.香港", RegisteredDomain: "domainer.公司.香港"}, description: "Basic URL with full international TLD (result in unicode)"},
+	{urlParams: URLParams{URL: "http://domainer.个人.hk/地图/A/b/C?编号=42", ConvertURLToPunyCode: true}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "xn--ciqpn.hk", RegisteredDomain: "domainer.xn--ciqpn.hk", Path: "地图/A/b/C?编号=42"}, description: "Basic URL with mixed international TLD (result in punycode)"},
+	{urlParams: URLParams{URL: "http://domainer.公司.香港/地图/A/b/C?编号=42", ConvertURLToPunyCode: true}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "xn--55qx5d.xn--j6w193g", RegisteredDomain: "domainer.xn--55qx5d.xn--j6w193g", Path: "地图/A/b/C?编号=42"}, description: "Basic URL with full international TLD (result in punycode)"},
+	{urlParams: URLParams{URL: "http://domainer.个人.hk/地图/A/b/C?编号=42"}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "个人.hk", RegisteredDomain: "domainer.个人.hk", Path: "地图/A/b/C?编号=42"}, description: "Basic URL with mixed international TLD (result in unicode)"},
+	{urlParams: URLParams{URL: "http://domainer.公司.香港/地图/A/b/C?编号=42"}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "公司.香港", RegisteredDomain: "domainer.公司.香港", Path: "地图/A/b/C?编号=42"}, description: "Basic URL with full international TLD (result in unicode)"},
 
-	{urlParams: URLParams{URL: "http://domainer.xn--ciqpn.hk", ConvertURLToPunyCode: true}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "xn--ciqpn.hk", RegisteredDomain: "domainer.xn--ciqpn.hk"}, description: "Basic URL with mixed punycode international TLD (result in punycode)"},
-	{urlParams: URLParams{URL: "http://domainer.xn--55qx5d.xn--j6w193g", ConvertURLToPunyCode: true}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "xn--55qx5d.xn--j6w193g", RegisteredDomain: "domainer.xn--55qx5d.xn--j6w193g"}, description: "Basic URL with full punycode international TLD (result in punycode)"},
+	{urlParams: URLParams{URL: "http://domainer.xn--ciqpn.hk/地图/A/b/C?编号=42", ConvertURLToPunyCode: true}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "xn--ciqpn.hk", RegisteredDomain: "domainer.xn--ciqpn.hk", Path: "地图/A/b/C?编号=42"}, description: "Basic URL with mixed punycode international TLD (result in punycode)"},
+	{urlParams: URLParams{URL: "http://domainer.xn--55qx5d.xn--j6w193g/地图/A/b/C?编号=42", ConvertURLToPunyCode: true}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "xn--55qx5d.xn--j6w193g", RegisteredDomain: "domainer.xn--55qx5d.xn--j6w193g", Path: "地图/A/b/C?编号=42"}, description: "Basic URL with full punycode international TLD (result in punycode)"},
 	{urlParams: URLParams{URL: "http://domainer.xn--ciqpn.hk"}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "xn--ciqpn.hk", RegisteredDomain: "domainer.xn--ciqpn.hk"}, description: "Basic URL with mixed punycode international TLD (result in unicode)"},
 	{urlParams: URLParams{URL: "http://domainer.xn--55qx5d.xn--j6w193g"}, expected: &ExtractResult{Scheme: "http://", Domain: "domainer", Suffix: "xn--55qx5d.xn--j6w193g", RegisteredDomain: "domainer.xn--55qx5d.xn--j6w193g"}, description: "Basic URL with full punycode international TLD (result in unicode)"},
 
