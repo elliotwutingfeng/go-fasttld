@@ -28,6 +28,8 @@ func BenchmarkComparison(b *testing.B) {
 		{"JoeGuoTldExtract"},     // github.com/joeguo/tldextract
 		{"Mjd2021USATldExtract"}, // github.com/mjd2021usa/tldextract
 		{"M507Tlde"},             // github.com/M507/tlde
+		// {"WepposPublicSuffixGo"}, // github.com/weppos/publicsuffix-go
+		// {"ForeEaseGoTld"},        // github.com/forease/gotld
 	}
 
 	GoFastTld, _ := New(SuffixListParams{
@@ -50,8 +52,7 @@ func BenchmarkComparison(b *testing.B) {
 
 				b.Run(fmt.Sprint(bm.name), func(b *testing.B) {
 					for i := 0; i < b.N; i++ {
-						GoFastTld.Extract(URLParams{
-							URL: benchmarkURL})
+						GoFastTld.Extract(URLParams{URL: benchmarkURL})
 					}
 				})
 
@@ -91,32 +92,28 @@ func BenchmarkComparison(b *testing.B) {
 					}
 				})
 
-			}
+			} /* else if bm.name == "WepposPublicSuffixGo" {
+				// this module cannot handle full URLs with scheme (i.e. https:// ftp:// etc.)
+
+				b.Run(fmt.Sprint(bm.name), func(b *testing.B) {
+					for i := 0; i < b.N; i++ {
+						publicsuffix.Parse(benchmarkURL)
+					}
+				})
+
+			} else if bm.name == "ForeEaseGoTld" {
+				// does not extract subdomain properly, cannot handle ip addresses
+
+				b.Run(fmt.Sprint(bm.name), func(b *testing.B) {
+					for i := 0; i < b.N; i++ {
+						gotld.GetSubdomain(benchmarkURL, 2048)
+					}
+				})
+
+			} */
 		}
 		fmt.Println()
 		fmt.Println("Benchmarks completed for URL :", benchmarkURL)
 		fmt.Println("=======")
 	}
 }
-
-/*
-// github.com/weppos/publicsuffix-go
-func BenchmarkPublicSuffixGo(b *testing.B) {
-	// this module cannot handle full URLs with scheme (i.e. https:// ftp:// etc.)
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		publicsuffix.Parse(benchmarkURL)
-	}
-}
-*/
-
-/*
-// github.com/forease/gotld
-func BenchmarkGoTldForeEase(b *testing.B) {
-	// does not extract subdomain properly, cannot handle ip addresses
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		gotld.GetSubdomain(benchmarkURL, 2048)
-	}
-}
-*/
