@@ -25,7 +25,7 @@ const periodDelimiters string = "\u002e\u3002\uff0e\uff61"
 
 const periodDelimitersAndWhiteSpace string = periodDelimiters + " \n\t\r\uFEFF\u200b\u200c\u200d"
 
-// Extract URL scheme from string
+// For extracting URL scheme
 var schemeRegex = regexp.MustCompile("^([A-Za-z0-9+-.]+:)?//")
 
 // For replacing international period delimiters when converting to punycode
@@ -71,7 +71,7 @@ type trie struct {
 // Store a slice of keys in the trie, by traversing the trie using the keys as a "path",
 // creating new tries for keys that do not exist yet.
 //
-// If a new path overlaps an existing path, flag the previous path's trie node as End = true
+// If a new path overlaps an existing path, flag the previous path's trie node as end = true
 func nestedDict(dic *trie, keys []string) {
 	// credits: https://stackoverflow.com/questions/13687924 and https://github.com/jophy/fasttld
 	var end bool
@@ -223,7 +223,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 			}
 		}
 		if !invalidPort && pathStartIndex != -1 && pathStartIndex != len(afterHost) {
-			// if there is any path/query/fragment after the authority URI component...
+			// if there is any path/query/fragment after the URL authority component...
 			// see https://stackoverflow.com/questions/47543432/what-do-we-call-the-combined-path-query-and-fragment-in-a-uri
 			// for simplicity, we shall call this the "Path"
 			urlParts.Path = afterHost[pathStartIndex+1:]
