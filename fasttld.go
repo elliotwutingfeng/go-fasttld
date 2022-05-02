@@ -53,7 +53,7 @@ type SuffixListParams struct {
 
 // URLParams specifies URL to extract components from.
 //
-// If IgnoreSubDomains = true, do not extract subdomains.
+// If IgnoreSubDomains = true, do not extract SubDomain.
 //
 // If ConvertURLToPunyCode = true, convert non-ASCII characters like 世界 to punycode.
 type URLParams struct {
@@ -203,7 +203,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		host = netloc
 	}
 
-	// extract port and "Path" if any
+	// extract Port and "Path" if any
 	if len(afterHost) != 0 {
 		pathStartIndex := strings.IndexRune(afterHost, '/')
 		var (
@@ -282,16 +282,16 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 
 	if hasSuffix {
 		if sepIdx != -1 {
-			// if there is a domain
+			// if there is a Domain
 			urlParts.Suffix = host[sepIdx+sepSize(host[sepIdx]):]
 			domainStartSepIdx := strings.LastIndexAny(host[0:sepIdx], periodDelimiters)
 			if domainStartSepIdx != -1 {
-				// if subdomains exist
+				// if SubDomain exists
 				domainStartIdx := domainStartSepIdx + sepSize(host[domainStartSepIdx])
 				urlParts.Domain = host[domainStartIdx:sepIdx]
 				urlParts.RegisteredDomain = host[domainStartIdx:]
 				if !e.IgnoreSubDomains {
-					// if subdomains are to be included
+					// if SubDomain is to be included
 					urlParts.SubDomain = host[0:domainStartSepIdx]
 				}
 			} else {
@@ -299,8 +299,22 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 				urlParts.RegisteredDomain = host[domainStartSepIdx+1:]
 			}
 		} else {
-			// if only suffix exists
+			// if only Suffix exists
 			urlParts.Suffix = host
+		}
+	} else {
+		// No Suffix ; check for SubDomain and Domain
+		if sepIdx != -1 {
+			// if there is a SubDomain
+			domainStartSepIdx := strings.LastIndexAny(host, periodDelimiters)
+			domainStartIdx := domainStartSepIdx + sepSize(host[domainStartSepIdx])
+			urlParts.Domain = host[domainStartIdx:]
+			if !e.IgnoreSubDomains {
+				// if SubDomain is to be included
+				urlParts.SubDomain = host[0:domainStartSepIdx]
+			}
+		} else {
+			urlParts.Domain = host
 		}
 	}
 
