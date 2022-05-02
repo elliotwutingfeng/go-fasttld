@@ -34,54 +34,54 @@ func TestNestedDict(t *testing.T) {
 	// check each nested value
 	//Top level c
 	if len(originalDict.matches["c"].matches) != 1 {
-		t.Errorf("Top level c must have Matches map of length 1")
+		t.Errorf("Top level c must have matches map of length 1")
 	}
 	if _, ok := originalDict.matches["c"].matches["b"]; !ok {
-		t.Errorf("Top level c must have b in Matches map")
+		t.Errorf("Top level c must have b in matches map")
 	}
 	if !originalDict.matches["c"].end {
-		t.Errorf("Top level c must have End = true")
+		t.Errorf("Top level c must have end = true")
 	}
 	// Top level a
 	if len(originalDict.matches["a"].matches) != 2 {
-		t.Errorf("Top level a must have Matches map of length 2")
+		t.Errorf("Top level a must have matches map of length 2")
 	}
 	// a -> d
 	if _, ok := originalDict.matches["a"].matches["d"]; !ok {
-		t.Errorf("Top level a must have d in Matches map")
+		t.Errorf("Top level a must have d in matches map")
 	}
 	if len(originalDict.matches["a"].matches["d"].matches) != 0 {
-		t.Errorf("a -> d must have empty Matches map")
+		t.Errorf("a -> d must have empty matches map")
 	}
 	// a -> b
 	if _, ok := originalDict.matches["a"].matches["b"]; !ok {
-		t.Errorf("Top level a must have b in Matches map")
+		t.Errorf("Top level a must have b in matches map")
 	}
 	if !originalDict.matches["a"].matches["b"].end {
-		t.Errorf("a -> b must have End = true")
+		t.Errorf("a -> b must have end = true")
 	}
 	if len(originalDict.matches["a"].matches["b"].matches) != 1 {
-		t.Errorf("a -> b must have Matches map of length 1")
+		t.Errorf("a -> b must have matches map of length 1")
 	}
 	// a -> b -> c
 	if _, ok := originalDict.matches["a"].matches["b"].matches["c"]; !ok {
-		t.Errorf("a -> b must have c in Matches map")
+		t.Errorf("a -> b must have c in matches map")
 	}
 	if len(originalDict.matches["a"].matches["b"].matches["c"].matches) != 0 {
-		t.Errorf("a -> b -> c must have empty Matches map")
+		t.Errorf("a -> b -> c must have empty matches map")
 	}
 	if !originalDict.matches["a"].end {
-		t.Errorf("Top level a must have End = true")
+		t.Errorf("Top level a must have end = true")
 	}
 	// d -> f
 	if originalDict.matches["d"].end {
-		t.Errorf("Top level d must have End = false")
+		t.Errorf("Top level d must have end = false")
 	}
 	if originalDict.matches["d"].matches["f"].end {
-		t.Errorf("d -> f must have End = false")
+		t.Errorf("d -> f must have end = false")
 	}
 	if len(originalDict.matches["d"].matches["f"].matches) != 0 {
-		t.Errorf("d -> f must have empty Matches map")
+		t.Errorf("d -> f must have empty matches map")
 	}
 }
 
@@ -91,7 +91,7 @@ func TestTrie(t *testing.T) {
 		t.Errorf("trieConstruct failed | %q", err)
 	}
 	if lenTrieMatches := len(trie.matches); lenTrieMatches != 2 {
-		t.Errorf("Expected top level Trie Matches map length of 2. Got %d.", lenTrieMatches)
+		t.Errorf("Expected top level Trie matches map length of 2. Got %d.", lenTrieMatches)
 	}
 	for _, tld := range []string{"ac", "ck"} {
 		if _, ok := trie.matches[tld]; !ok {
@@ -99,32 +99,32 @@ func TestTrie(t *testing.T) {
 		}
 	}
 	if !trie.matches["ac"].end {
-		t.Errorf("Top level ac must have End = true")
+		t.Errorf("Top level ac must have end = true")
 	}
 	if trie.matches["ck"].end {
-		t.Errorf("Top level ck must have End = false")
+		t.Errorf("Top level ck must have end = false")
 	}
 	if len(trie.matches["ck"].matches) != 2 {
-		t.Errorf("Top level ck must have Matches map of length 2")
+		t.Errorf("Top level ck must have matches map of length 2")
 	}
 	if _, ok := trie.matches["ck"].matches["*"]; !ok {
-		t.Errorf("Top level ck must have * in Matches map")
+		t.Errorf("Top level ck must have * in matches map")
 	}
 	if len(trie.matches["ck"].matches["*"].matches) != 0 {
-		t.Errorf("ck -> * must have empty Matches map")
+		t.Errorf("ck -> * must have empty matches map")
 	}
 	if _, ok := trie.matches["ck"].matches["!www"]; !ok {
-		t.Errorf("Top level ck must have !www in Matches map")
+		t.Errorf("Top level ck must have !www in matches map")
 	}
 	if len(trie.matches["ck"].matches["!www"].matches) != 0 {
-		t.Errorf("ck -> !www must have empty Matches map")
+		t.Errorf("ck -> !www must have empty matches map")
 	}
 	for _, tld := range []string{"com", "edu", "gov", "net", "mil", "org"} {
 		if _, ok := trie.matches["ac"].matches[tld]; !ok {
-			t.Errorf("Top level ac must have %q in Matches map", tld)
+			t.Errorf("Top level ac must have %q in matches map", tld)
 		}
 		if len(trie.matches["ac"].matches[tld].matches) != 0 {
-			t.Errorf("ac -> %q must have empty Matches map", tld)
+			t.Errorf("ac -> %q must have empty matches map", tld)
 		}
 	}
 }
