@@ -241,11 +241,11 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 | Benchmark Name       | Iterations | ns/op       | B/op     | allocs/op   | Fastest            |
 |----------------------|------------|-------------|----------|-------------|--------------------|
-| GoFastTld            | 2322187    | 514.0 ns/op | 176 B/op | 4 allocs/op |                    |
-| JPilloraGoTld        | 2355600    | 516.4 ns/op | 224 B/op | 2 allocs/op |                    |
-| JoeGuoTldExtract     | 2468788    | 490.7 ns/op | 160 B/op | 5 allocs/op | :heavy_check_mark: |
-| Mjd2021USATldExtract | 1433950    | 836.6 ns/op | 208 B/op | 7 allocs/op |                    |
-| M507Tlde             | 2369467    | 508.4 ns/op | 160 B/op | 5 allocs/op |                    |
+| GoFastTld            | 2431232    | 479.7 ns/op | 176 B/op | 4 allocs/op | :heavy_check_mark: |
+| JPilloraGoTld        | 2265168    | 529.5 ns/op | 224 B/op | 2 allocs/op |                    |
+| JoeGuoTldExtract     | 2354530    | 514.4 ns/op | 160 B/op | 5 allocs/op |                    |
+| Mjd2021USATldExtract | 1402000    | 854.6 ns/op | 208 B/op | 7 allocs/op |                    |
+| M507Tlde             | 2282460    | 516.7 ns/op | 160 B/op | 5 allocs/op |                    |
 
 ---
 
@@ -255,11 +255,11 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 | Benchmark Name       | Iterations | ns/op       | B/op     | allocs/op   | Fastest            |
 |----------------------|------------|-------------|----------|-------------|--------------------|
-| GoFastTld            | 2206496    | 548.6 ns/op | 304 B/op | 4 allocs/op | :heavy_check_mark: |
-| JPilloraGoTld        | 1638154    | 734.7 ns/op | 224 B/op | 2 allocs/op |                    |
-| JoeGuoTldExtract     | 2160390    | 561.1 ns/op | 272 B/op | 5 allocs/op |                    |
-| Mjd2021USATldExtract | 1498402    | 804.0 ns/op | 288 B/op | 6 allocs/op |                    |
-| M507Tlde             | 2116328    | 563.9 ns/op | 272 B/op | 5 allocs/op |                    |
+| GoFastTld            | 2249407    | 571.7 ns/op | 304 B/op | 4 allocs/op | :heavy_check_mark: |
+| JPilloraGoTld        | 1559214    | 742.7 ns/op | 224 B/op | 2 allocs/op |                    |
+| JoeGuoTldExtract     | 2034921    | 614.0 ns/op | 272 B/op | 5 allocs/op |                    |
+| Mjd2021USATldExtract | 1437393    | 812.3 ns/op | 288 B/op | 6 allocs/op |                    |
+| M507Tlde             | 2108818    | 589.0 ns/op | 272 B/op | 5 allocs/op |                    |
 
 ---
 
@@ -269,11 +269,11 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 | Benchmark Name       | Iterations | ns/op       | B/op      | allocs/op   | Fastest            |
 |----------------------|------------|-------------|-----------|-------------|--------------------|
-| GoFastTld            | 1669102    | 716.1 ns/op | 784 B/op  | 4 allocs/op | :heavy_check_mark: |
-| JPilloraGoTld        | 392972     | 2850 ns/op  | 928 B/op  | 4 allocs/op |                    |
-| JoeGuoTldExtract     | 854448     | 1337 ns/op  | 1120 B/op | 6 allocs/op |                    |
-| Mjd2021USATldExtract | 839584     | 1329 ns/op  | 1120 B/op | 6 allocs/op |                    |
-| M507Tlde             | 842383     | 1356 ns/op  | 1120 B/op | 6 allocs/op |                    |
+| GoFastTld            | 1576870    | 762.6 ns/op | 784 B/op  | 4 allocs/op | :heavy_check_mark: |
+| JPilloraGoTld        | 388676     | 2854 ns/op  | 928 B/op  | 4 allocs/op |                    |
+| JoeGuoTldExtract     | 820498     | 1470 ns/op  | 1120 B/op | 6 allocs/op |                    |
+| Mjd2021USATldExtract | 812426     | 1453 ns/op  | 1120 B/op | 6 allocs/op |                    |
+| M507Tlde             | 829669     | 1383 ns/op  | 1120 B/op | 6 allocs/op |                    |
 
 ---
 

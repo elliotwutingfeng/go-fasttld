@@ -28,12 +28,12 @@ var publicSuffixListSources = []string{
 	"https://raw.githubusercontent.com/publicsuffix/list/master/public_suffix_list.dat",
 }
 
-// Returns true if `maybeIPv4Address` is an IPv4 address
+// looksLikeIPv4Address returns true if maybeIPv4Address is an IPv4 address
 func looksLikeIPv4Address(maybeIPv4Address string) bool {
 	return net.ParseIP(maybeIPv4Address) != nil
 }
 
-// Retrieves Public Suffixes and Private Suffixes from Public Suffix list located at `cacheFilePath`
+// getPublicSuffixList retrieves Public Suffixes and Private Suffixes from Public Suffix list located at cacheFilePath.
 //
 // PublicSuffixes: ICANN domains. Example: com, net, org etc.
 //
@@ -92,7 +92,7 @@ func getPublicSuffixList(cacheFilePath string) ([3]([]string), error) {
 	return [3]([]string){PublicSuffixes, PrivateSuffixes, AllSuffixes}, nil
 }
 
-// Downloads file from url as byte slice
+// downloadFile downloads file from url as byte slice
 func downloadFile(url string) ([]byte, error) {
 	// Make HTTP GET request
 	var bodyBytes []byte
@@ -110,7 +110,7 @@ func downloadFile(url string) ([]byte, error) {
 	return bodyBytes, err
 }
 
-// Get path to current module file
+// getCurrentFilePath returns path to current module file
 //
 // Similar to os.path.dirname(os.path.realpath(__file__)) in Python
 //
@@ -123,7 +123,7 @@ func getCurrentFilePath() string {
 	return filepath.Dir(file)
 }
 
-// Updates local cache of Public Suffix List
+// update updates the local cache of Public Suffix List
 func update(file afero.File,
 	publicSuffixListSources []string) error {
 	downloadSuccess := false
@@ -147,7 +147,8 @@ func update(file afero.File,
 	return nil
 }
 
-// Update updates the local cache of Public Suffix list if it is not custom
+// Update updates the local cache of Public Suffix list if t.cacheFilePath is not
+// the same as path to current module file (i.e. no custom file path specified).
 func (t *FastTLD) Update() error {
 	if t.cacheFilePath != getCurrentFilePath()+string(os.PathSeparator)+defaultPSLFileName {
 		return errors.New("function Update() only applies to default Public Suffix List, not custom Public Suffix List")

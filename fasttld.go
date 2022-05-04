@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"golang.org/x/net/idna"
 )
@@ -25,21 +26,25 @@ const periodDelimiters string = "\u002e\u3002\uff0e\uff61"
 
 const periodDelimitersAndWhiteSpace string = periodDelimiters + " \n\t\r\uFEFF\u200b\u200c\u200d"
 
-// For extracting URL scheme
+const hostSeparators string = "/:?&#"
+
+var hostSeparatorsSet asciiSet = makeASCIISet(hostSeparators)
+
+// For extracting URL scheme.
 var schemeRegex = regexp.MustCompile("^([A-Za-z0-9+-.]+:)?//")
 
-// For replacing international period delimiters when converting to punycode
+// For replacing international period delimiters when converting to punycode.
 var periodDelimitersRegex = regexp.MustCompile("[" + periodDelimiters + "]")
 
 // FastTLD provides the Extract() function, to extract
 // URLs using TldTrie generated from the
-// Public Suffix List file at cacheFilePath
+// Public Suffix List file at cacheFilePath.
 type FastTLD struct {
 	TldTrie       *trie
 	cacheFilePath string
 }
 
-// ExtractResult contains components extracted from URL
+// ExtractResult contains components extracted from URL.
 type ExtractResult struct {
 	Scheme, UserInfo, SubDomain, Domain, Suffix, Port, Path, RegisteredDomain string
 }
@@ -62,16 +67,77 @@ type URLParams struct {
 	ConvertURLToPunyCode bool
 }
 
+// trie is a node of the compressed trie
+// used to store Public Suffix List TLDs.
 type trie struct {
 	end         bool
 	hasChildren bool
 	matches     map[string]*trie
 }
 
-// Store a slice of keys in the trie, by traversing the trie using the keys as a "path",
+// asciiSet is a 32-byte value, where each bit represents the presence of a
+// given ASCII character in the set. The 128-bits of the lower 16 bytes,
+// starting with the least-significant bit of the lowest word to the
+// most-significant bit of the highest word, map to the full range of all
+// 128 ASCII characters. The 128-bits of the upper 16 bytes will be zeroed,
+// ensuring that any non-ASCII character will be reported as not in the set.
+// This allocates a total of 32 bytes even though the upper half
+// is unused to avoid bounds checks in asciiSet.contains.
+type asciiSet [8]uint32
+
+// makeASCIISet creates a set of ASCII characters.
+//
+// Similar to strings.makeASCIISet but skips input validation.
+func makeASCIISet(chars string) (as asciiSet) {
+	// all characters in chars are expected to be valid ASCII characters
+	for i := 0; i < len(chars); i++ {
+		c := chars[i]
+		as[c/32] |= 1 << (c % 32)
+	}
+	return as
+}
+
+// contains reports whether c is inside the set.
+//
+// same as strings.contains.
+func (as *asciiSet) contains(c byte) bool {
+	return (as[c/32] & (1 << (c % 32))) != 0
+}
+
+// indexAny returns the index of the first instance of any Unicode code point
+// from asciiSet in s, or -1 if no Unicode code point from asciiSet is present in s.
+//
+// Similar to strings.IndexAny but takes in an asciiSet instead of a string
+// and skips input validation.
+func indexAny(s string, as asciiSet) int {
+	for i := 0; i < len(s); i++ {
+		if as.contains(s[i]) {
+			return i
+		}
+	}
+	return -1
+}
+
+// lastIndexAny returns the index of the last instance of any Unicode code
+// point from chars in s, or -1 if no Unicode code point from chars is
+// present in s.
+//
+// Similar to strings.LastIndexAny but skips input validation.
+func lastIndexAny(s string, chars string) int {
+	for i := len(s); i > 0; {
+		r, size := utf8.DecodeLastRuneInString(s[:i])
+		i -= size
+		if strings.IndexRune(chars, r) >= 0 {
+			return i
+		}
+	}
+	return -1
+}
+
+// nestedDict stores a slice of keys in the trie, by traversing the trie using the keys as a "path",
 // creating new tries for keys that do not exist yet.
 //
-// If a new path overlaps an existing path, flag the previous path's trie node as end = true
+// If a new path overlaps an existing path, flag the previous path's trie node as end = true.
 func nestedDict(dic *trie, keys []string) {
 	// credits: https://stackoverflow.com/questions/13687924 and https://github.com/jophy/fasttld
 	var end bool
@@ -82,9 +148,9 @@ func nestedDict(dic *trie, keys []string) {
 
 	for _, key := range keysExceptLast {
 		dicBk = dic
-		// if dic.matches[key] does not exist
+		// If dic.matches[key] does not exist
 		if _, ok := dic.matches[key]; !ok {
-			// set dic.matches[key] to &Trie
+			// Set dic.matches[key] to &Trie
 			dic.matches[key] = &trie{hasChildren: true, matches: make(map[string]*trie)}
 		}
 		dic = dic.matches[key] // point dic to it
@@ -100,14 +166,14 @@ func nestedDict(dic *trie, keys []string) {
 	}
 }
 
-// Reverse a slice of strings in-place.
+// reverse reverses a slice of strings in-place.
 func reverse(input []string) {
 	for i, j := 0, len(input)-1; i < j; i, j = i+1, j-1 {
 		input[i], input[j] = input[j], input[i]
 	}
 }
 
-// Format string as punycode.
+// formatAsPunycode formats s as punycode.
 func formatAsPunycode(s string) string {
 	asPunyCode, err := idna.ToASCII(periodDelimitersRegex.ReplaceAllLiteralString(s, "."))
 	if err != nil {
@@ -118,9 +184,9 @@ func formatAsPunycode(s string) string {
 	return asPunyCode
 }
 
-// Construct a compressed trie to store Public Suffix List TLDs split at "." in reverse-order.
+// trieConstruct constructs a compressed trie to store Public Suffix List TLDs split at "." in reverse-order.
 //
-// For example: "us.gov.pl" will be stored in the order {"pl", "gov", "us"}
+// For example: "us.gov.pl" will be stored in the order {"pl", "gov", "us"}.
 func trieConstruct(includePrivateSuffix bool, cacheFilePath string) (*trie, error) {
 	tldTrie := &trie{matches: make(map[string]*trie)}
 	suffixLists, err := getPublicSuffixList(cacheFilePath)
@@ -157,14 +223,15 @@ func trieConstruct(includePrivateSuffix bool, cacheFilePath string) (*trie, erro
 	return tldTrie, nil
 }
 
+// sepSize returns byte length of an sep rune, given the rune's first byte.
 func sepSize(r byte) int {
 	// r is the first byte of any of the runes in periodDelimiters
 	if r == 46 {
-		// first byte of '.' is 46
+		// First byte of '.' is 46
 		// size of '.' is 1
 		return 1
 	}
-	// first byte of any period delimiter other than '.' is not 46
+	// First byte of any period delimiter other than '.' is not 46
 	// size of delimiter is 3
 	return 3
 }
@@ -186,12 +253,12 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 
 	var afterHost string
 	// Separate URL host from subcomponents thereafter
-	if hostEndIndex := strings.IndexAny(netloc, "/:?&#"); hostEndIndex != -1 {
+	if hostEndIndex := indexAny(netloc, hostSeparatorsSet); hostEndIndex != -1 {
 		afterHost = netloc[hostEndIndex:]
 		netloc = netloc[0:hostEndIndex]
 	}
 	var host string
-	// check if host cannot be converted to unicode
+	// Check if host cannot be converted to unicode
 	if _, err := idna.ToUnicode(netloc); err != nil {
 		log.Println(strings.SplitAfterN(err.Error(), "idna: invalid label", 2)[0])
 		return &urlParts
@@ -203,7 +270,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		host = netloc
 	}
 
-	// extract Port and "Path" if any
+	// Extract Port and "Path" if any
 	if len(afterHost) != 0 {
 		pathStartIndex := strings.IndexRune(afterHost, '/')
 		var (
@@ -223,9 +290,9 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 			}
 		}
 		if !invalidPort && pathStartIndex != -1 && pathStartIndex != len(afterHost) {
-			// if there is any path/query/fragment after the URL authority component...
-			// see https://stackoverflow.com/questions/47543432/what-do-we-call-the-combined-path-query-and-fragment-in-a-uri
-			// for simplicity, we shall call this the "Path"
+			// If there is any path/query/fragment after the URL authority component...
+			// See https://stackoverflow.com/questions/47543432/what-do-we-call-the-combined-path-query-and-fragment-in-a-uri
+			// For simplicity, we shall call this the "Path".
 			urlParts.Path = afterHost[pathStartIndex+1:]
 		}
 	}
@@ -236,7 +303,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		return &urlParts
 	}
 
-	// define the root node
+	// Define the root node
 	node := f.TldTrie
 
 	var hasSuffix bool
@@ -247,7 +314,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	for !end {
 		var label string
 		previousSepIdx = sepIdx
-		sepIdx = strings.LastIndexAny(host[0:sepIdx], periodDelimiters)
+		sepIdx = lastIndexAny(host[0:sepIdx], periodDelimiters)
 		if sepIdx != -1 {
 			label = host[sepIdx+sepSize(host[sepIdx]) : previousSepIdx]
 		} else {
@@ -284,7 +351,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		if sepIdx != -1 {
 			// if there is a Domain
 			urlParts.Suffix = host[sepIdx+sepSize(host[sepIdx]):]
-			domainStartSepIdx := strings.LastIndexAny(host[0:sepIdx], periodDelimiters)
+			domainStartSepIdx := lastIndexAny(host[0:sepIdx], periodDelimiters)
 			if domainStartSepIdx != -1 {
 				// if SubDomain exists
 				domainStartIdx := domainStartSepIdx + sepSize(host[domainStartSepIdx])
@@ -306,7 +373,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		// No Suffix ; check for SubDomain and Domain
 		if sepIdx != -1 {
 			// if there is a SubDomain
-			domainStartSepIdx := strings.LastIndexAny(host, periodDelimiters)
+			domainStartSepIdx := lastIndexAny(host, periodDelimiters)
 			domainStartIdx := domainStartSepIdx + sepSize(host[domainStartSepIdx])
 			urlParts.Domain = host[domainStartIdx:]
 			if !e.IgnoreSubDomains {
@@ -331,7 +398,7 @@ func New(n SuffixListParams) (*FastTLD, error) {
 	cacheFilePath, err := filepath.Abs(n.CacheFilePath)
 	invalidCacheFilePath := err != nil
 
-	// if cacheFilePath is unreachable, use default Public Suffix List
+	// If cacheFilePath is unreachable, use default Public Suffix List
 	if stat, err := os.Stat(strings.TrimSpace(cacheFilePath)); invalidCacheFilePath || err != nil || stat.IsDir() || stat.Size() == 0 {
 		n.CacheFilePath = getCurrentFilePath() + string(os.PathSeparator) + defaultPSLFileName
 		// Update Public Suffix List if it doesn't exist or is more than 3 days old
