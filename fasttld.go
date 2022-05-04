@@ -26,15 +26,16 @@ const periodDelimiters string = "\u002e\u3002\uff0e\uff61"
 
 const periodDelimitersAndWhiteSpace string = periodDelimiters + " \n\t\r\uFEFF\u200b\u200c\u200d"
 
+// For replacing international period delimiters when converting to punycode.
+var periodDelimitersNewReplacerArgs = []string{"\u002e", ".", "\u3002", ".", "\uff0e", ".", "\uff61", "."}
+var standardPeriodDelimiterReplacer = strings.NewReplacer(periodDelimitersNewReplacerArgs...)
+
 const hostSeparators string = "/:?&#"
 
 var hostSeparatorsSet asciiSet = makeASCIISet(hostSeparators)
 
 // For extracting URL scheme.
 var schemeRegex = regexp.MustCompile("^([A-Za-z0-9+-.]+:)?//")
-
-// For replacing international period delimiters when converting to punycode.
-var periodDelimitersRegex = regexp.MustCompile("[" + periodDelimiters + "]")
 
 // FastTLD provides the Extract() function, to extract
 // URLs using TldTrie generated from the
@@ -175,12 +176,11 @@ func reverse(input []string) {
 
 // formatAsPunycode formats s as punycode.
 func formatAsPunycode(s string) string {
-	asPunyCode, err := idna.ToASCII(periodDelimitersRegex.ReplaceAllLiteralString(s, "."))
+	asPunyCode, err := idna.ToASCII(s)
 	if err != nil {
 		log.Println(strings.SplitAfterN(err.Error(), "idna: invalid label", 2)[0])
 		return ""
 	}
-
 	return asPunyCode
 }
 
@@ -264,12 +264,6 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		return &urlParts
 	}
 
-	if e.ConvertURLToPunyCode {
-		host = formatAsPunycode(netloc)
-	} else {
-		host = netloc
-	}
-
 	// Extract Port and "Path" if any
 	if len(afterHost) != 0 {
 		pathStartIndex := strings.IndexRune(afterHost, '/')
@@ -295,6 +289,12 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 			// For simplicity, we shall call this the "Path".
 			urlParts.Path = afterHost[pathStartIndex+1:]
 		}
+	}
+
+	if e.ConvertURLToPunyCode {
+		host = formatAsPunycode(standardPeriodDelimiterReplacer.Replace(netloc))
+	} else {
+		host = netloc
 	}
 
 	if looksLikeIPv4Address(host) {

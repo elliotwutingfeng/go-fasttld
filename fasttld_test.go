@@ -258,8 +258,29 @@ var ipv4Tests = []extractTest{
 	{urlParams: URLParams{URL: "http://127.0.0.1:5000"},
 		expected: &ExtractResult{
 			Scheme: "http://", Domain: "127.0.0.1", RegisteredDomain: "127.0.0.1", Port: "5000"},
-		description: "Basic IPv4 Address with Scheme"},
+		description: "Basic IPv4 Address with Scheme and Port"},
+	{urlParams: URLParams{URL: "127\uff0e0\u30020\uff611"},
+		expected: &ExtractResult{Domain: "127\uff0e0\u30020\uff611",
+			RegisteredDomain: "127\uff0e0\u30020\uff611"}, description: "Basic IPv4 Address | Internationalised period delimiters"},
+	{urlParams: URLParams{URL: "http://127\uff0e0\u30020\uff611:5000"},
+		expected: &ExtractResult{Scheme: "http://", Domain: "127\uff0e0\u30020\uff611", Port: "5000",
+			RegisteredDomain: "127\uff0e0\u30020\uff611"}, description: "Basic IPv4 Address with Scheme and Port | Internationalised period delimiters"},
 }
+
+var ipv6Tests = []extractTest{
+	// {urlParams: URLParams{URL: "[abcd:ef01:2345:6789:abcd:ef01:2345:6789]"},
+	// 	expected: &ExtractResult{Domain: "[abcd:ef01:2345:6789:abcd:ef01:2345:6789]",
+	// 		RegisteredDomain: "[abcd:ef01:2345:6789:abcd:ef01:2345:6789]"}, description: "Basic IPv6 Address"},
+	// {urlParams: URLParams{URL: "http://[abcd:ef01:2345:6789:abcd:ef01:2345:6789]:5000"},
+	// 	expected: &ExtractResult{
+	// 		Scheme: "http://", Domain: "[abcd:ef01:2345:6789:abcd:ef01:2345:6789]", RegisteredDomain: "[abcd:ef01:2345:6789:abcd:ef01:2345:6789]", Port: "5000"},
+	// 	description: "Basic IPv6 Address with Scheme and Port"},
+	// {urlParams: URLParams{URL: "http://[abcd:ef01:2345:6789:abcd:ef01:127.0.0.1]:5000"},
+	// 	expected: &ExtractResult{
+	// 		Scheme: "http://", Domain: "[abcd:ef01:2345:6789:abcd:ef01:127.0.0.1]", RegisteredDomain: "[abcd:ef01:2345:6789:abcd:ef01:127.0.0.1]", Port: "5000"},
+	// 	description: "Basic IPv6 Address + trailing IPv4 address with Scheme and Port"},
+}
+
 var ignoreSubDomainsTests = []extractTest{
 	{urlParams: URLParams{URL: "maps.google.com.sg",
 		IgnoreSubDomains: true},
@@ -317,6 +338,9 @@ var invalidTests = []extractTest{
 	{urlParams: URLParams{URL: "http://temasek.this-tld-cannot-be-real"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "temasek", Domain: "this-tld-cannot-be-real"}, description: "Basic URL with bad TLD"},
 	{urlParams: URLParams{URL: "http://temasek.temasek.this-tld-cannot-be-real"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "temasek.temasek", Domain: "this-tld-cannot-be-real"}, description: "Basic URL with subdomain and bad TLD"},
 	{urlParams: URLParams{URL: "http://127.0.0.256"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "127.0.0", Domain: "256"}, description: "Basic IPv4 Address URL with bad IP"},
+	{urlParams: URLParams{URL: "http://127\uff0e0\u30020\uff61256:5000"},
+		expected: &ExtractResult{Scheme: "http://", SubDomain: "127\uff0e0\u30020", Port: "5000",
+			Domain: "256"}, description: "Basic IPv4 Address with Scheme and Port and Bad IP | Internationalised period delimiters"},
 	{urlParams: URLParams{URL: "http://a:b@xn--tub-1m9d15sfkkhsifsbqygyujjrw60.com"},
 		expected: &ExtractResult{Scheme: "http://", UserInfo: "a:b"}, description: "Invalid punycode Domain"},
 	// {urlParams: URLParams{URL: "git+ssh://www.!example.com/"}, expected: &ExtractResult{}, description: "Full git+ssh URL with bad Domain"},
@@ -371,6 +395,7 @@ func TestExtract(t *testing.T) {
 		schemeTests,
 		noSchemeTests,
 		ipv4Tests,
+		ipv6Tests,
 		ignoreSubDomainsTests,
 		privateSuffixTests,
 		periodsAndWhiteSpacesTests,
