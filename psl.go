@@ -105,7 +105,7 @@ func downloadFile(url string) ([]byte, error) {
 	if resp.StatusCode == http.StatusOK {
 		bodyBytes, err = io.ReadAll(resp.Body)
 	} else {
-		err = errors.New("Download failed, HTTP status code :" + fmt.Sprint(resp.StatusCode))
+		err = errors.New("Download failed, HTTP status code : " + fmt.Sprint(resp.StatusCode))
 	}
 	return bodyBytes, err
 }

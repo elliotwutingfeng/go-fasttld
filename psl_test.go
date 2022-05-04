@@ -52,7 +52,6 @@ type getPublicSuffixListTest struct {
 }
 
 var getPublicSuffixListTests = []getPublicSuffixListTest{
-
 	{cacheFilePath: "test/public_suffix_list.dat",
 		expectedLists: pslTestLists,
 		hasError:      false,
