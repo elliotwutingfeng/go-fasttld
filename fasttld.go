@@ -251,17 +251,45 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		netloc = netloc[atIdx+1:]
 	}
 
+	var isIPv6 bool
+	var rightSquareBracketIdx int
+
+	// Check for IPv6 address
+	if len(netloc) > 1 && netloc[0] == '[' {
+		if rightSquareBracketIdx = strings.IndexRune(netloc, ']'); rightSquareBracketIdx != -1 && looksLikeIPAddress(netloc[1:rightSquareBracketIdx]) {
+			urlParts.Domain = netloc[0 : rightSquareBracketIdx+1]
+			urlParts.RegisteredDomain = netloc[0 : rightSquareBracketIdx+1]
+			isIPv6 = true
+		} else {
+			// No closing square bracket => Domain is invalid
+			return &urlParts
+		}
+	}
+
 	var afterHost string
+	hostEndIndex := -1
 	// Separate URL host from subcomponents thereafter
-	if hostEndIndex := indexAny(netloc, hostSeparatorsSet); hostEndIndex != -1 {
+	if !isIPv6 {
+		hostEndIndex = indexAny(netloc, hostSeparatorsSet)
+	} else {
+		hostEndIndex = len(netloc[0:rightSquareBracketIdx]) + indexAny(netloc[rightSquareBracketIdx:], hostSeparatorsSet)
+	}
+	if hostEndIndex != -1 {
 		afterHost = netloc[hostEndIndex:]
 		netloc = netloc[0:hostEndIndex]
 	}
+
 	var host string
 	// Check if host cannot be converted to unicode
 	if _, err := idna.ToUnicode(netloc); err != nil {
 		log.Println(strings.SplitAfterN(err.Error(), "idna: invalid label", 2)[0])
 		return &urlParts
+	}
+
+	if e.ConvertURLToPunyCode {
+		host = formatAsPunycode(standardPeriodDelimiterReplacer.Replace(netloc))
+	} else {
+		host = netloc
 	}
 
 	// Extract Port and "Path" if any
@@ -291,13 +319,12 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		}
 	}
 
-	if e.ConvertURLToPunyCode {
-		host = formatAsPunycode(standardPeriodDelimiterReplacer.Replace(netloc))
-	} else {
-		host = netloc
+	if isIPv6 {
+		return &urlParts
 	}
 
-	if looksLikeIPv4Address(host) {
+	// Check for IPv4 address
+	if looksLikeIPAddress(host) {
 		urlParts.Domain = host
 		urlParts.RegisteredDomain = host
 		return &urlParts

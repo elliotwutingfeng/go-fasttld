@@ -259,9 +259,9 @@ func parseIP(s string) IP {
 	return nil
 }
 
-// looksLikeIPv4Address returns true if maybeIPv4Address is an IPv4 address
-func looksLikeIPv4Address(maybeIPv4Address string) bool {
-	return parseIP(maybeIPv4Address) != nil
+// looksLikeIPAddress returns true if maybeIPAddress is an IP address
+func looksLikeIPAddress(maybeIPAddress string) bool {
+	return parseIP(maybeIPAddress) != nil
 }
 
 // getPublicSuffixList retrieves Public Suffixes and Private Suffixes from Public Suffix list located at cacheFilePath.

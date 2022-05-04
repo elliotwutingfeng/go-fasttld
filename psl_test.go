@@ -37,7 +37,7 @@ var looksLikeIPv4AddressTests = []looksLikeIPv4AddressTest{
 
 func TestLooksLikeIPv4Address(t *testing.T) {
 	for _, test := range looksLikeIPv4AddressTests {
-		isIPv4Address := looksLikeIPv4Address(test.maybeIPv4Address)
+		isIPv4Address := looksLikeIPAddress(test.maybeIPv4Address)
 		if isIPv4Address != test.isIPv4Address {
 			t.Errorf("Output %t not equal to expected %t",
 				isIPv4Address, test.isIPv4Address)

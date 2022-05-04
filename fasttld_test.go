@@ -268,17 +268,17 @@ var ipv4Tests = []extractTest{
 }
 
 var ipv6Tests = []extractTest{
-	// {urlParams: URLParams{URL: "[abcd:ef01:2345:6789:abcd:ef01:2345:6789]"},
-	// 	expected: &ExtractResult{Domain: "[abcd:ef01:2345:6789:abcd:ef01:2345:6789]",
-	// 		RegisteredDomain: "[abcd:ef01:2345:6789:abcd:ef01:2345:6789]"}, description: "Basic IPv6 Address"},
-	// {urlParams: URLParams{URL: "http://[abcd:ef01:2345:6789:abcd:ef01:2345:6789]:5000"},
-	// 	expected: &ExtractResult{
-	// 		Scheme: "http://", Domain: "[abcd:ef01:2345:6789:abcd:ef01:2345:6789]", RegisteredDomain: "[abcd:ef01:2345:6789:abcd:ef01:2345:6789]", Port: "5000"},
-	// 	description: "Basic IPv6 Address with Scheme and Port"},
-	// {urlParams: URLParams{URL: "http://[abcd:ef01:2345:6789:abcd:ef01:127.0.0.1]:5000"},
-	// 	expected: &ExtractResult{
-	// 		Scheme: "http://", Domain: "[abcd:ef01:2345:6789:abcd:ef01:127.0.0.1]", RegisteredDomain: "[abcd:ef01:2345:6789:abcd:ef01:127.0.0.1]", Port: "5000"},
-	// 	description: "Basic IPv6 Address + trailing IPv4 address with Scheme and Port"},
+	{urlParams: URLParams{URL: "[abcd:ef01:2345:6789:abcd:ef01:2345:6789]"},
+		expected: &ExtractResult{Domain: "[abcd:ef01:2345:6789:abcd:ef01:2345:6789]",
+			RegisteredDomain: "[abcd:ef01:2345:6789:abcd:ef01:2345:6789]"}, description: "Basic IPv6 Address"},
+	{urlParams: URLParams{URL: "http://[abcd:ef01:2345:6789:abcd:ef01:2345:6789]:5000"},
+		expected: &ExtractResult{
+			Scheme: "http://", Domain: "[abcd:ef01:2345:6789:abcd:ef01:2345:6789]", RegisteredDomain: "[abcd:ef01:2345:6789:abcd:ef01:2345:6789]", Port: "5000"},
+		description: "Basic IPv6 Address with Scheme and Port"},
+	{urlParams: URLParams{URL: "http://[abcd:ef01:2345:6789:abcd:ef01:127.0.0.1]:5000"},
+		expected: &ExtractResult{
+			Scheme: "http://", Domain: "[abcd:ef01:2345:6789:abcd:ef01:127.0.0.1]", RegisteredDomain: "[abcd:ef01:2345:6789:abcd:ef01:127.0.0.1]", Port: "5000"},
+		description: "Basic IPv6 Address + trailing IPv4 address with Scheme and Port"},
 }
 
 var ignoreSubDomainsTests = []extractTest{
