@@ -386,6 +386,23 @@ var invalidTests = []extractTest{
 	{urlParams: URLParams{URL: "http://[]"},
 		expected:    &ExtractResult{Scheme: "http://"},
 		description: "Empty pair of square brackets"},
+
+	// Test cases from net/ip-test.go
+	{urlParams: URLParams{URL: "http://[-0.0.0.0]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[0.-1.0.0]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[0.0.-2.0]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[0.0.0.-3]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[127.0.0.256]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[abc]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[123:]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[fe80::1%lo0]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[fe80::1%911]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[a1:a2:a3:a4::b1:b2:b3:b4]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[127.001.002.003]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[::ffff:127.001.002.003]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[123.000.000.000]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[1.2..4]"}, expected: &ExtractResult{Scheme: "http://"}, description: ""},
+	{urlParams: URLParams{URL: "http://[0123.0.0.1]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
 	// {urlParams: URLParams{URL: "git+ssh://www.!example.com/"}, expected: &ExtractResult{}, description: "Full git+ssh URL with bad Domain"},
 }
 var internationalTLDTests = []extractTest{
