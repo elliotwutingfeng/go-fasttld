@@ -401,7 +401,7 @@ var invalidTests = []extractTest{
 	{urlParams: URLParams{URL: "http://[127.001.002.003]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
 	{urlParams: URLParams{URL: "http://[::ffff:127.001.002.003]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
 	{urlParams: URLParams{URL: "http://[123.000.000.000]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
-	{urlParams: URLParams{URL: "http://[1.2..4]"}, expected: &ExtractResult{Scheme: "http://"}, description: ""},
+	{urlParams: URLParams{URL: "http://[1.2..4]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
 	{urlParams: URLParams{URL: "http://[0123.0.0.1]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
 	// {urlParams: URLParams{URL: "git+ssh://www.!example.com/"}, expected: &ExtractResult{}, description: "Full git+ssh URL with bad Domain"},
 }
