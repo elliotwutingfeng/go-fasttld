@@ -257,8 +257,8 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	// Check for IPv6 address
 	if len(netloc) > 1 && netloc[0] == '[' {
 		if rightSquareBracketIdx = strings.IndexRune(netloc, ']'); rightSquareBracketIdx != -1 && looksLikeIPAddress(netloc[1:rightSquareBracketIdx]) {
-			urlParts.Domain = netloc[0 : rightSquareBracketIdx+1]
-			urlParts.RegisteredDomain = netloc[0 : rightSquareBracketIdx+1]
+			urlParts.Domain = netloc[1:rightSquareBracketIdx]
+			urlParts.RegisteredDomain = netloc[1:rightSquareBracketIdx]
 			isIPv6 = true
 		} else {
 			// No closing square bracket => Domain is invalid
