@@ -137,9 +137,8 @@ func parseIPv6(s string) (ip IP) {
 			return nil
 		}
 
-		// If followed by dot, might be in trailing IPv4.
-		// TODO: handle internationalised period delimiters for trailing IPv4.
-		if c < len(s) && s[c] == '.' {
+		// If followed by any delimiter in periodDelimiters, might be in trailing IPv4.
+		if c < len(s) && strings.IndexAny(s[c:], periodDelimiters) == 0 {
 			if ellipsis < 0 && i != IPv6len-IPv4len {
 				// Not the right place.
 				return nil

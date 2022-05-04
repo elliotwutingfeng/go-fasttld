@@ -279,6 +279,10 @@ var ipv6Tests = []extractTest{
 		expected: &ExtractResult{
 			Scheme: "http://", Domain: "[abcd:ef01:2345:6789:abcd:ef01:127.0.0.1]", RegisteredDomain: "[abcd:ef01:2345:6789:abcd:ef01:127.0.0.1]", Port: "5000"},
 		description: "Basic IPv6 Address + trailing IPv4 address with Scheme and Port"},
+	{urlParams: URLParams{URL: "http://[abcd:ef01:2345:6789:abcd:ef01:127\uff0e0\u30020\uff611]:5000"},
+		expected: &ExtractResult{
+			Scheme: "http://", Domain: "[abcd:ef01:2345:6789:abcd:ef01:127\uff0e0\u30020\uff611]", RegisteredDomain: "[abcd:ef01:2345:6789:abcd:ef01:127\uff0e0\u30020\uff611]", Port: "5000"},
+		description: "Basic IPv6 Address + trailing IPv4 address with Scheme and Port | Internationalised period delimiters"},
 }
 
 var ignoreSubDomainsTests = []extractTest{
