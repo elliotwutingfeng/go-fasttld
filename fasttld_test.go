@@ -268,25 +268,33 @@ var ipv4Tests = []extractTest{
 }
 
 var ipv6Tests = []extractTest{
-	{urlParams: URLParams{URL: "[abcd:ef01:2345:6789:abcd:ef01:2345:6789]"},
-		expected: &ExtractResult{Domain: "abcd:ef01:2345:6789:abcd:ef01:2345:6789",
-			RegisteredDomain: "abcd:ef01:2345:6789:abcd:ef01:2345:6789"}, description: "Basic IPv6 Address"},
-	{urlParams: URLParams{URL: "http://[abcd:ef01:2345:6789:abcd:ef01:2345:6789]:5000"},
+	{urlParams: URLParams{URL: "[aBcD:ef01:2345:6789:aBcD:ef01:2345:6789]"},
+		expected: &ExtractResult{Domain: "aBcD:ef01:2345:6789:aBcD:ef01:2345:6789",
+			RegisteredDomain: "aBcD:ef01:2345:6789:aBcD:ef01:2345:6789"}, description: "Basic IPv6 Address"},
+	{urlParams: URLParams{URL: "http://[aBcD:ef01:2345:6789:aBcD:ef01:2345:6789]:5000"},
 		expected: &ExtractResult{
-			Scheme: "http://", Domain: "abcd:ef01:2345:6789:abcd:ef01:2345:6789", RegisteredDomain: "abcd:ef01:2345:6789:abcd:ef01:2345:6789", Port: "5000"},
+			Scheme: "http://", Domain: "aBcD:ef01:2345:6789:aBcD:ef01:2345:6789", RegisteredDomain: "aBcD:ef01:2345:6789:aBcD:ef01:2345:6789", Port: "5000"},
 		description: "Basic IPv6 Address with Scheme and Port"},
-	{urlParams: URLParams{URL: "http://[abcd:ef01:2345:6789:abcd:ef01:127.0.0.1]:5000"},
+	{urlParams: URLParams{URL: "http://[aBcD:ef01:2345:6789:aBcD:ef01:127.0.0.1]:5000"},
 		expected: &ExtractResult{
-			Scheme: "http://", Domain: "abcd:ef01:2345:6789:abcd:ef01:127.0.0.1", RegisteredDomain: "abcd:ef01:2345:6789:abcd:ef01:127.0.0.1", Port: "5000"},
+			Scheme: "http://", Domain: "aBcD:ef01:2345:6789:aBcD:ef01:127.0.0.1", RegisteredDomain: "aBcD:ef01:2345:6789:aBcD:ef01:127.0.0.1", Port: "5000"},
 		description: "Basic IPv6 Address + trailing IPv4 address with Scheme and Port"},
-	{urlParams: URLParams{URL: "http://[abcd:ef01:2345:6789:abcd:ef01:127\uff0e0\u30020\uff611]:5000"},
+	{urlParams: URLParams{URL: "http://[aBcD:ef01:2345:6789:aBcD:ef01:127\uff0e0\u30020\uff611]:5000"},
 		expected: &ExtractResult{
-			Scheme: "http://", Domain: "abcd:ef01:2345:6789:abcd:ef01:127\uff0e0\u30020\uff611", RegisteredDomain: "abcd:ef01:2345:6789:abcd:ef01:127\uff0e0\u30020\uff611", Port: "5000"},
+			Scheme: "http://", Domain: "aBcD:ef01:2345:6789:aBcD:ef01:127\uff0e0\u30020\uff611", RegisteredDomain: "aBcD:ef01:2345:6789:aBcD:ef01:127\uff0e0\u30020\uff611", Port: "5000"},
 		description: "Basic IPv6 Address + trailing IPv4 address with Scheme and Port | Internationalised period delimiters"},
-	{urlParams: URLParams{URL: "http://[::2345:6789:abcd:ef01:2345:6789]:5000"},
-		expected: &ExtractResult{Scheme: "http://", Domain: "::2345:6789:abcd:ef01:2345:6789",
-			RegisteredDomain: "::2345:6789:abcd:ef01:2345:6789", Port: "5000"},
-		description: "Basic IPv6 Address with Scheme and Port | leading ellipsis"},
+	{urlParams: URLParams{URL: "http://[::2345:6789:aBcD:ef01:2345:678]:5000"},
+		expected: &ExtractResult{Scheme: "http://", Domain: "::2345:6789:aBcD:ef01:2345:678",
+			RegisteredDomain: "::2345:6789:aBcD:ef01:2345:678", Port: "5000"},
+		description: "Basic IPv6 Address with Scheme and Port | have leading ellipsis"},
+	{urlParams: URLParams{URL: "http://[::]:5000"},
+		expected: &ExtractResult{Scheme: "http://", Domain: "::",
+			RegisteredDomain: "::", Port: "5000"},
+		description: "Basic IPv6 Address with Scheme and Port | only ellipsis"},
+	{urlParams: URLParams{URL: "http://[aBcD:ef01:2345:6789:aBcD:ef01::]:5000"},
+		expected: &ExtractResult{Scheme: "http://", Domain: "aBcD:ef01:2345:6789:aBcD:ef01::",
+			RegisteredDomain: "aBcD:ef01:2345:6789:aBcD:ef01::", Port: "5000"},
+		description: "Basic IPv6 Address with Scheme and Port and bad IP | even number of empty hextets"},
 }
 
 var ignoreSubDomainsTests = []extractTest{
@@ -354,12 +362,18 @@ var invalidTests = []extractTest{
 		description: "Basic IPv4 Address with Scheme and Port and bad IP | octet with leading zero"},
 	{urlParams: URLParams{URL: "http://a:b@xn--tub-1m9d15sfkkhsifsbqygyujjrw60.com"},
 		expected: &ExtractResult{Scheme: "http://", UserInfo: "a:b"}, description: "Invalid punycode Domain"},
-	{urlParams: URLParams{URL: "http://[abcd:ef01:2345:6789:abcd:ef01:2345:6789:5000"},
+	{urlParams: URLParams{URL: "http://[aBcD:ef01:2345:6789:aBcD:ef01:2345:6789:5000"},
 		expected:    &ExtractResult{Scheme: "http://"},
 		description: "Basic IPv6 Address with Scheme and Port with no closing bracket"},
-	{urlParams: URLParams{URL: "http://[abcd:ef01:2345:6789:abcd:ef01:2345:fffffffffffffffff]:5000"},
+	{urlParams: URLParams{URL: "http://[aBcD:ef01:2345:6789:aBcD:::]:5000"},
+		expected:    &ExtractResult{Scheme: "http://"},
+		description: "Basic IPv6 Address with Scheme and Port and bad IP | odd number of empty hextets"},
+	{urlParams: URLParams{URL: "http://[aBcD:ef01:2345:6789:aBcD:ef01:2345:fffffffffffffffff]:5000"},
 		expected:    &ExtractResult{Scheme: "http://"},
 		description: "Basic IPv6 Address with Scheme and Port and bad IP | hextet too big"},
+	{urlParams: URLParams{URL: "http://[aBcD:ef01:2345:6789:aBcD:ef01:127\uff0e256\u30020\uff611]:5000"},
+		expected:    &ExtractResult{Scheme: "http://"},
+		description: "Basic IPv6 Address + trailing IPv4 address with Scheme and Port and bad IPv4 | Internationalised period delimiters"},
 	// {urlParams: URLParams{URL: "git+ssh://www.!example.com/"}, expected: &ExtractResult{}, description: "Full git+ssh URL with bad Domain"},
 }
 var internationalTLDTests = []extractTest{
