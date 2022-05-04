@@ -246,23 +246,26 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	urlParts.Scheme = netlocWithScheme[0 : len(netlocWithScheme)-len(netloc)]
 
 	// Extract URL userinfo
-	if atIdx := strings.IndexRune(netloc, '@'); atIdx != -1 {
+	if atIdx := strings.IndexByte(netloc, '@'); atIdx != -1 {
 		urlParts.UserInfo = netloc[0:atIdx]
 		netloc = netloc[atIdx+1:]
 	}
 
-	var isIPv6 bool
-	var rightSquareBracketIdx int
-
 	// Check for IPv6 address
-	if len(netloc) > 1 && netloc[0] == '[' {
-		if rightSquareBracketIdx = strings.IndexRune(netloc, ']'); rightSquareBracketIdx != -1 && looksLikeIPAddress(netloc[1:rightSquareBracketIdx]) {
-			urlParts.Domain = netloc[1:rightSquareBracketIdx]
-			urlParts.RegisteredDomain = netloc[1:rightSquareBracketIdx]
-			isIPv6 = true
-
-		} else {
-			// No closing square bracket => Domain is invalid
+	var isIPv6 bool
+	closingSquareBracketIdx := strings.IndexByte(netloc, ']')
+	if len(netloc) != 0 {
+		if netloc[0] == '[' {
+			if closingSquareBracketIdx > 0 && looksLikeIPAddress(netloc[1:closingSquareBracketIdx]) {
+				urlParts.Domain = netloc[1:closingSquareBracketIdx]
+				urlParts.RegisteredDomain = netloc[1:closingSquareBracketIdx]
+				isIPv6 = true
+			} else {
+				// Have opening square bracket but invalid IPv6 => Domain is invalid
+				return &urlParts
+			}
+		} else if closingSquareBracketIdx != -1 {
+			// netloc not empty and there is an erroneous closing square bracket
 			return &urlParts
 		}
 	}
@@ -271,7 +274,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	hostEndIndex := -1
 	// Separate URL host from subcomponents thereafter
 	if isIPv6 {
-		hostEndIndex = len(netloc[0:rightSquareBracketIdx]) + indexAny(netloc[rightSquareBracketIdx:], hostSeparatorsSet)
+		hostEndIndex = len(netloc[0:closingSquareBracketIdx]) + indexAny(netloc[closingSquareBracketIdx:], hostSeparatorsSet)
 	} else {
 		hostEndIndex = indexAny(netloc, hostSeparatorsSet)
 	}
@@ -295,7 +298,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 
 	// Extract Port and "Path" if any
 	if len(afterHost) != 0 {
-		pathStartIndex := strings.IndexRune(afterHost, '/')
+		pathStartIndex := strings.IndexByte(afterHost, '/')
 		var (
 			maybePort   string
 			invalidPort bool

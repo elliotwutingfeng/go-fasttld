@@ -374,6 +374,18 @@ var invalidTests = []extractTest{
 	{urlParams: URLParams{URL: "http://[aBcD:ef01:2345:6789:aBcD:ef01:127\uff0e256\u30020\uff611]:5000"},
 		expected:    &ExtractResult{Scheme: "http://"},
 		description: "Basic IPv6 Address + trailing IPv4 address with Scheme and Port and bad IPv4 | Internationalised period delimiters"},
+	{urlParams: URLParams{URL: "http://["},
+		expected:    &ExtractResult{Scheme: "http://"},
+		description: "Single opening square bracket"},
+	{urlParams: URLParams{URL: "http://]"},
+		expected:    &ExtractResult{Scheme: "http://"},
+		description: "Single closing square bracket"},
+	{urlParams: URLParams{URL: "http://]["},
+		expected:    &ExtractResult{Scheme: "http://"},
+		description: "closing square bracket before opening square bracket"},
+	{urlParams: URLParams{URL: "http://[]"},
+		expected:    &ExtractResult{Scheme: "http://"},
+		description: "Empty pair of square brackets"},
 	// {urlParams: URLParams{URL: "git+ssh://www.!example.com/"}, expected: &ExtractResult{}, description: "Full git+ssh URL with bad Domain"},
 }
 var internationalTLDTests = []extractTest{
