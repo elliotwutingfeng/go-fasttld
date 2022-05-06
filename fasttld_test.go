@@ -77,6 +77,13 @@ func TestNestedDict(t *testing.T) {
 	}
 }
 
+func TestTrieConstructInvalidPath(t *testing.T) {
+	_, err := trieConstruct(false, "test/this_file_does_not_exist.dat")
+	if err == nil {
+		t.Errorf("error returned by trieConstruct should not be nil")
+	}
+}
+
 func TestTrie(t *testing.T) {
 	trie, err := trieConstruct(false, "test/mini_public_suffix_list.dat")
 	if err != nil {
