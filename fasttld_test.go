@@ -1,9 +1,3 @@
-// go-fasttld is a high performance top level domains (TLD)
-// extraction module implemented with compressed tries.
-//
-// This module is a port of the Python fasttld module,
-// with additional modifications to support extraction
-// of subcomponents from full URLs and IPv4 addresses.
 package fasttld
 
 import (
@@ -11,8 +5,6 @@ import (
 	"reflect"
 	"strings"
 	"testing"
-
-	"github.com/spf13/afero"
 )
 
 func getTestPSLFilePath() string {
@@ -129,45 +121,6 @@ func TestTrie(t *testing.T) {
 	}
 }
 
-type reverseTest struct {
-	original []string
-	expected []string
-}
-
-var reverseTests = []reverseTest{
-	{[]string{"ab", "cd", "ef", "gh", "ij"}, []string{"ij", "gh", "ef", "cd", "ab"}},
-	{[]string{"ab", "cd", "gh", "ij"}, []string{"ij", "gh", "cd", "ab"}},
-}
-
-func TestReverse(t *testing.T) {
-	for _, test := range reverseTests {
-		reverse(test.original)
-		if output := reflect.DeepEqual(test.original, test.expected); !output {
-			t.Errorf("Output %q not equal to expected %q", test.original, test.expected)
-		}
-	}
-}
-
-type punyCodeTest struct {
-	url      string
-	expected string
-}
-
-var punyCodeTests = []punyCodeTest{
-	{"https://google.com", "https://google.com"},
-	{"https://hello.世界.com", "https://hello.xn--rhqv96g.com"},
-	{strings.Repeat("x", 65536) + "\uff00", ""}, // int32 overflow.
-}
-
-func TestPunyCode(t *testing.T) {
-	for _, test := range punyCodeTests {
-		converted := formatAsPunycode(test.url)
-		if output := reflect.DeepEqual(converted, test.expected); !output {
-			t.Errorf("Output %q not equal to expected %q", converted, test.expected)
-		}
-	}
-}
-
 type newTest struct {
 	cacheFilePath        string
 	includePrivateSuffix bool
@@ -261,10 +214,10 @@ var ipv4Tests = []extractTest{
 		description: "Basic IPv4 Address with Scheme and Port"},
 	{urlParams: URLParams{URL: "127\uff0e0\u30020\uff611"},
 		expected: &ExtractResult{Domain: "127\uff0e0\u30020\uff611",
-			RegisteredDomain: "127\uff0e0\u30020\uff611"}, description: "Basic IPv4 Address | Internationalised period delimiters"},
+			RegisteredDomain: "127\uff0e0\u30020\uff611"}, description: "Basic IPv4 Address | Internationalised label separators"},
 	{urlParams: URLParams{URL: "http://127\uff0e0\u30020\uff611:5000"},
 		expected: &ExtractResult{Scheme: "http://", Domain: "127\uff0e0\u30020\uff611", Port: "5000",
-			RegisteredDomain: "127\uff0e0\u30020\uff611"}, description: "Basic IPv4 Address with Scheme and Port | Internationalised period delimiters"},
+			RegisteredDomain: "127\uff0e0\u30020\uff611"}, description: "Basic IPv4 Address with Scheme and Port | Internationalised label separators"},
 }
 
 var ipv6Tests = []extractTest{
@@ -282,7 +235,7 @@ var ipv6Tests = []extractTest{
 	{urlParams: URLParams{URL: "http://[aBcD:ef01:2345:6789:aBcD:ef01:127\uff0e0\u30020\uff611]:5000"},
 		expected: &ExtractResult{
 			Scheme: "http://", Domain: "aBcD:ef01:2345:6789:aBcD:ef01:127\uff0e0\u30020\uff611", RegisteredDomain: "aBcD:ef01:2345:6789:aBcD:ef01:127\uff0e0\u30020\uff611", Port: "5000"},
-		description: "Basic IPv6 Address + trailing IPv4 address with Scheme and Port | Internationalised period delimiters"},
+		description: "Basic IPv6 Address + trailing IPv4 address with Scheme and Port | Internationalised label separators"},
 	{urlParams: URLParams{URL: "http://[::2345:6789:aBcD:ef01:2345:678]:5000"},
 		expected: &ExtractResult{Scheme: "http://", Domain: "::2345:6789:aBcD:ef01:2345:678",
 			RegisteredDomain: "::2345:6789:aBcD:ef01:2345:678", Port: "5000"},
@@ -324,10 +277,10 @@ var periodsAndWhiteSpacesTests = []extractTest{
 		expected: &ExtractResult{
 			Scheme: "https://", SubDomain: "brb\u002ei\u3002am\uff0egoing\uff61to", Domain: "be", Suffix: "a\uff61fk",
 			RegisteredDomain: "be\u3002a\uff61fk",
-		}, description: "Internationalised period delimiters",
+		}, description: "Internationalised label separators",
 	},
 	{urlParams: URLParams{URL: "a\uff61fk"},
-		expected: &ExtractResult{Suffix: "a\uff61fk"}, description: "Internationalised period delimiters | Suffix only",
+		expected: &ExtractResult{Suffix: "a\uff61fk"}, description: "Internationalised label separators | Suffix only",
 	},
 	{urlParams: URLParams{URL: " https://brb\u002ei\u3002am\uff0egoing\uff61to\uff0ebe\u3002a\uff61fk/a/b/c. \uff61"},
 		expected: &ExtractResult{
@@ -340,7 +293,7 @@ var periodsAndWhiteSpacesTests = []extractTest{
 		expected: &ExtractResult{
 			Scheme: "https://", SubDomain: "brb.i.am.going.to", Domain: "be", Suffix: "a.fk",
 			RegisteredDomain: "be.a.fk", Path: "a/B/c",
-		}, description: "Surrounded by extra whitespace and period delimiters | PunyCode"},
+		}, description: "Surrounded by extra whitespace and label separators | PunyCode"},
 }
 var invalidTests = []extractTest{
 	{urlParams: URLParams{}, expected: &ExtractResult{}, description: "empty string"},
@@ -356,7 +309,7 @@ var invalidTests = []extractTest{
 	{urlParams: URLParams{URL: "http://127.0.0.256"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "127.0.0", Domain: "256"}, description: "Basic IPv4 Address URL with bad IP"},
 	{urlParams: URLParams{URL: "http://127\uff0e0\u30020\uff61256:5000"},
 		expected: &ExtractResult{Scheme: "http://", SubDomain: "127\uff0e0\u30020", Port: "5000",
-			Domain: "256"}, description: "Basic IPv4 Address with Scheme and Port and bad IP | Internationalised period delimiters"},
+			Domain: "256"}, description: "Basic IPv4 Address with Scheme and Port and bad IP | Internationalised label separators"},
 	{urlParams: URLParams{URL: "http://192.168.01.1:5000"},
 		expected:    &ExtractResult{Scheme: "http://", SubDomain: "192.168.01", Domain: "1", Port: "5000"},
 		description: "Basic IPv4 Address with Scheme and Port and bad IP | octet with leading zero"},
@@ -373,7 +326,7 @@ var invalidTests = []extractTest{
 		description: "Basic IPv6 Address with Scheme and Port and bad IP | hextet too big"},
 	{urlParams: URLParams{URL: "http://[aBcD:ef01:2345:6789:aBcD:ef01:127\uff0e256\u30020\uff611]:5000"},
 		expected:    &ExtractResult{Scheme: "http://"},
-		description: "Basic IPv6 Address + trailing IPv4 address with Scheme and Port and bad IPv4 | Internationalised period delimiters"},
+		description: "Basic IPv6 Address + trailing IPv4 address with Scheme and Port and bad IPv4 | Internationalised label separators"},
 	{urlParams: URLParams{URL: "http://["},
 		expected:    &ExtractResult{Scheme: "http://"},
 		description: "Single opening square bracket"},
@@ -480,14 +433,4 @@ func TestExtract(t *testing.T) {
 			}
 		}
 	}
-}
-
-func TestFileLastModifiedHours(t *testing.T) {
-	filesystem := new(afero.MemMapFs)
-	file, _ := afero.TempFile(filesystem, "", "ioutil-test")
-	fileinfo, _ := filesystem.Stat(file.Name())
-	if hours := fileLastModifiedHours(fileinfo); int(hours) != 0 {
-		t.Errorf("Expected hours elapsed since last modification to be 0 immediately after file creation. %f", hours)
-	}
-	defer file.Close()
 }

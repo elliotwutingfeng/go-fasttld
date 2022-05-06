@@ -28,6 +28,7 @@ func BenchmarkComparison(b *testing.B) {
 		{"JoeGuoTldExtract"},     // github.com/joeguo/tldextract
 		{"Mjd2021USATldExtract"}, // github.com/mjd2021usa/tldextract
 		{"M507Tlde"},             // github.com/M507/tlde
+		// {"ImVexedFastURL"},       // github.com/ImVexed/fasturl
 		// {"WepposPublicSuffixGo"}, // github.com/weppos/publicsuffix-go
 		// {"ForeEaseGoTld"},        // github.com/forease/gotld
 	}
@@ -92,7 +93,17 @@ func BenchmarkComparison(b *testing.B) {
 					}
 				})
 
-			} /* else if bm.name == "WepposPublicSuffixGo" {
+			} /* else if bm.name == "ImVexedFastURL" {
+				// Uses the Ragel state-machine
+				// this module cannot extract TLDs
+
+				b.Run(fmt.Sprint(bm.name), func(b *testing.B) {
+					for i := 0; i < b.N; i++ {
+						fasturl.ParseURL(benchmarkURL)
+					}
+				})
+
+			}  else if bm.name == "WepposPublicSuffixGo" {
 				// this module cannot handle full URLs with scheme (i.e. https:// ftp:// etc.)
 
 				b.Run(fmt.Sprint(bm.name), func(b *testing.B) {
@@ -102,7 +113,7 @@ func BenchmarkComparison(b *testing.B) {
 				})
 
 			} else if bm.name == "ForeEaseGoTld" {
-				// does not extract subdomain properly, cannot handle ip addresses
+				// this module does not extract subdomain properly and cannot handle ip addresses
 
 				b.Run(fmt.Sprint(bm.name), func(b *testing.B) {
 					for i := 0; i < b.N; i++ {

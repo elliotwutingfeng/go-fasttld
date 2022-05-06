@@ -28,7 +28,7 @@ func main() {
 		log.Fatal(err)
 	}
 	res := extractor.Extract(fasttld.URLParams{URL: url})
-	fmt.Println("Simple Example")
+	fmt.Println("Domain")
 	printRes(url, res)
 	// res.Scheme = https://
 	// res.UserInfo = some-user
@@ -42,6 +42,51 @@ func main() {
 	// Specify custom public suffix list file
 	// cacheFilePath := "/absolute/path/to/file.dat"
 	// extractor, _ = fasttld.New(fasttld.SuffixListParams{CacheFilePath: cacheFilePath})
+
+	// IPv4 Address
+	url = "https://127.0.0.1:5000"
+
+	res = extractor.Extract(fasttld.URLParams{URL: url})
+	fmt.Println("IPv4 Address")
+	printRes(url, res)
+	// res.Scheme = https://
+	// res.UserInfo = <no output>
+	// res.SubDomain = <no output>
+	// res.Domain = 127.0.0.1
+	// res.Suffix = <no output>
+	// res.RegisteredDomain = 127.0.0.1
+	// res.Port = 5000
+	// res.Path = <no output>
+
+	// IPv6 Address
+	url = "https://[aBcD:ef01:2345:6789:aBcD:ef01:2345:6789]:5000"
+
+	res = extractor.Extract(fasttld.URLParams{URL: url})
+	fmt.Println("IPv6 Address")
+	printRes(url, res)
+	// res.Scheme = https://
+	// res.UserInfo = <no output>
+	// res.SubDomain = <no output>
+	// res.Domain = aBcD:ef01:2345:6789:aBcD:ef01:2345:6789
+	// res.Suffix = <no output>
+	// res.RegisteredDomain = aBcD:ef01:2345:6789:aBcD:ef01:2345:6789
+	// res.Port = 5000
+	// res.Path = <no output>
+
+	// Internationalised label separators
+	url = "https://brb\u002ei\u3002am\uff0egoing\uff61to\uff0ebe\u3002a\uff61fk"
+
+	res = extractor.Extract(fasttld.URLParams{URL: url})
+	fmt.Println("Internationalised label separators")
+	printRes(url, res)
+	// res.Scheme = https://
+	// res.UserInfo = <no output>
+	// res.SubDomain = brb\u002ei\u3002am\uff0egoing\uff61to
+	// res.Domain = be
+	// res.Suffix = a\uff61fk
+	// res.RegisteredDomain = be\u3002a\uff61fk
+	// res.Port = <no output>
+	// res.Path = <no output>
 
 	// Manually update local cache
 	if err := extractor.Update(); err != nil {

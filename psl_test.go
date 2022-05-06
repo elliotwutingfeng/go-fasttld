@@ -1,9 +1,3 @@
-// go-fasttld is a high performance top level domains (TLD)
-// extraction module implemented with compressed tries.
-//
-// This module is a port of the Python fasttld module,
-// with additional modifications to support extraction
-// of subcomponents from full URLs and IPv4 addresses.
 package fasttld
 
 import (
@@ -14,36 +8,6 @@ import (
 
 	"github.com/spf13/afero"
 )
-
-type looksLikeIPv4AddressTest struct {
-	maybeIPv4Address string
-	isIPv4Address    bool
-}
-
-var looksLikeIPv4AddressTests = []looksLikeIPv4AddressTest{
-	{maybeIPv4Address: "",
-		isIPv4Address: false,
-	},
-	{maybeIPv4Address: "google.com",
-		isIPv4Address: false,
-	},
-	{maybeIPv4Address: "1google.com",
-		isIPv4Address: false,
-	},
-	{maybeIPv4Address: "127.0.0.1",
-		isIPv4Address: true,
-	},
-}
-
-func TestLooksLikeIPv4Address(t *testing.T) {
-	for _, test := range looksLikeIPv4AddressTests {
-		isIPv4Address := looksLikeIPAddress(test.maybeIPv4Address)
-		if isIPv4Address != test.isIPv4Address {
-			t.Errorf("Output %t not equal to expected %t",
-				isIPv4Address, test.isIPv4Address)
-		}
-	}
-}
 
 type getPublicSuffixListTest struct {
 	cacheFilePath string
@@ -175,4 +139,14 @@ func TestUpdate(t *testing.T) {
 			t.Errorf("Expected no update() error, got an error.")
 		}
 	}
+}
+
+func TestFileLastModifiedHours(t *testing.T) {
+	filesystem := new(afero.MemMapFs)
+	file, _ := afero.TempFile(filesystem, "", "ioutil-test")
+	fileinfo, _ := filesystem.Stat(file.Name())
+	if hours := fileLastModifiedHours(fileinfo); int(hours) != 0 {
+		t.Errorf("Expected hours elapsed since last modification to be 0 immediately after file creation. %f", hours)
+	}
+	defer file.Close()
 }

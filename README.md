@@ -9,7 +9,7 @@
 
 **go-fasttld** is a high performance [top level domains (TLD)](https://en.wikipedia.org/wiki/Top-level_domain) extraction module implemented with [compressed tries](https://en.wikipedia.org/wiki/Trie).
 
-This module is a port of the Python [fasttld](https://github.com/jophy/fasttld) module, with additional modifications to support extraction of subcomponents from full URLs and IPv4 addresses.
+This module is a port of the Python [fasttld](https://github.com/jophy/fasttld) module, with additional modifications to support extraction of subcomponents from full URLs, IPv4 addresses, and IPv6 addresses.
 
 ![Trie](Trie_example.svg)
 
@@ -19,7 +19,7 @@ This module is a port of the Python [fasttld](https://github.com/jophy/fasttld) 
 
 For example, it extracts the `com` TLD, `maps` subdomain, and `google` domain from `https://maps.google.com:8080/a/long/path/?query=42`.
 
-**go-fasttld** also supports extraction of private domains listed in the [Mozilla Public Suffix List](http://www.publicsuffix.org) like 'blogspot.co.uk' and 'sinaapp.com', and extraction of IPv4 addresses (e.g. `https://127.0.0.1`).
+**go-fasttld** also supports extraction of private domains listed in the [Mozilla Public Suffix List](http://www.publicsuffix.org) like 'blogspot.co.uk' and 'sinaapp.com', extraction of IPv4 addresses, and extraction of IPv6 addresses.
 
 ### Why not split on "." and take the last element instead?
 
@@ -67,6 +67,8 @@ go get github.com/elliotwutingfeng/go-fasttld
 
 Full demo available in the _examples_ folder
 
+### Domain
+
 ```go
 // Initialise fasttld extractor
 extractor, _ := fasttld.New(fasttld.SuffixListParams{})
@@ -84,6 +86,67 @@ fmt.Println(res.Suffix)           // ac.uk
 fmt.Println(res.RegisteredDomain) // ox.ac.uk
 fmt.Println(res.Port) // 5000
 fmt.Println(res.Path) // a/b/c/d/e/f/g/h/i?id=42
+```
+
+### IPv4 Address
+
+```go
+extractor, _ := fasttld.New(fasttld.SuffixListParams{})
+
+url = "https://127.0.0.1:5000"
+res = extractor.Extract(fasttld.URLParams{URL: url})
+
+// res.Scheme = https://
+// res.UserInfo = <no output>
+// res.SubDomain = <no output>
+// res.Domain = 127.0.0.1
+// res.Suffix = <no output>
+// res.RegisteredDomain = 127.0.0.1
+// res.Port = 5000
+// res.Path = <no output>
+```
+
+### IPv6 Address
+
+```go
+extractor, _ := fasttld.New(fasttld.SuffixListParams{})
+
+url = "https://[aBcD:ef01:2345:6789:aBcD:ef01:2345:6789]:5000"
+res = extractor.Extract(fasttld.URLParams{URL: url})
+
+// res.Scheme = https://
+// res.UserInfo = <no output>
+// res.SubDomain = <no output>
+// res.Domain = aBcD:ef01:2345:6789:aBcD:ef01:2345:6789
+// res.Suffix = <no output>
+// res.RegisteredDomain = aBcD:ef01:2345:6789:aBcD:ef01:2345:6789
+// res.Port = 5000
+// res.Path = <no output>
+```
+
+### Internationalised label separators
+
+**go-fasttld** supports the following internationalised label separators (IETF RFC 3490)
+
+- U+002E (full stop)
+- U+3002 (ideographic full stop)
+- U+FF0E (fullwidth full stop)
+- U+FF61 (halfwidth ideographic full stop)
+
+```go
+extractor, _ := fasttld.New(fasttld.SuffixListParams{})
+
+url = "https://brb\u002ei\u3002am\uff0egoing\uff61to\uff0ebe\u3002a\uff61fk"
+res = extractor.Extract(fasttld.URLParams{URL: url})
+
+// res.Scheme = https://
+// res.UserInfo = <no output>
+// res.SubDomain = brb\u002ei\u3002am\uff0egoing\uff61to
+// res.Domain = be
+// res.Suffix = a\uff61fk
+// res.RegisteredDomain = be\u3002a\uff61fk
+// res.Port = <no output>
+// res.Path = <no output>
 ```
 
 ## Public Suffix List options
@@ -241,11 +304,11 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 | Benchmark Name       | Iterations | ns/op       | B/op     | allocs/op   | Fastest            |
 |----------------------|------------|-------------|----------|-------------|--------------------|
-| GoFastTld            | 2431232    | 479.7 ns/op | 176 B/op | 4 allocs/op | :heavy_check_mark: |
-| JPilloraGoTld        | 2265168    | 529.5 ns/op | 224 B/op | 2 allocs/op |                    |
-| JoeGuoTldExtract     | 2354530    | 514.4 ns/op | 160 B/op | 5 allocs/op |                    |
-| Mjd2021USATldExtract | 1402000    | 854.6 ns/op | 208 B/op | 7 allocs/op |                    |
-| M507Tlde             | 2282460    | 516.7 ns/op | 160 B/op | 5 allocs/op |                    |
+| GoFastTld            | 2389614    | 496.8 ns/op | 176 B/op | 4 allocs/op | :heavy_check_mark: |
+| JPilloraGoTld        | 2300103    | 521.2 ns/op | 224 B/op | 2 allocs/op |                    |
+| JoeGuoTldExtract     | 1480351    | 822.2 ns/op | 208 B/op | 7 allocs/op |                    |
+| Mjd2021USATldExtract | 1336317    | 876.7 ns/op | 208 B/op | 7 allocs/op |                    |
+| M507Tlde             | 2276070    | 513.1 ns/op | 160 B/op | 5 allocs/op |                    |
 
 ---
 
@@ -255,11 +318,11 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 | Benchmark Name       | Iterations | ns/op       | B/op     | allocs/op   | Fastest            |
 |----------------------|------------|-------------|----------|-------------|--------------------|
-| GoFastTld            | 2249407    | 571.7 ns/op | 304 B/op | 4 allocs/op | :heavy_check_mark: |
-| JPilloraGoTld        | 1559214    | 742.7 ns/op | 224 B/op | 2 allocs/op |                    |
-| JoeGuoTldExtract     | 2034921    | 614.0 ns/op | 272 B/op | 5 allocs/op |                    |
-| Mjd2021USATldExtract | 1437393    | 812.3 ns/op | 288 B/op | 6 allocs/op |                    |
-| M507Tlde             | 2108818    | 589.0 ns/op | 272 B/op | 5 allocs/op |                    |
+| GoFastTld            | 2254648    | 537.6 ns/op | 304 B/op | 4 allocs/op | :heavy_check_mark: |
+| JPilloraGoTld        | 1633924    | 737.0 ns/op | 224 B/op | 2 allocs/op |                    |
+| JoeGuoTldExtract     | 1532829    | 781.0 ns/op | 288 B/op | 6 allocs/op |                    |
+| Mjd2021USATldExtract | 1444665    | 832.5 ns/op | 288 B/op | 6 allocs/op |                    |
+| M507Tlde             | 2032639    | 584.8 ns/op | 272 B/op | 5 allocs/op |                    |
 
 ---
 
@@ -269,11 +332,11 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 | Benchmark Name       | Iterations | ns/op       | B/op      | allocs/op   | Fastest            |
 |----------------------|------------|-------------|-----------|-------------|--------------------|
-| GoFastTld            | 1576870    | 762.6 ns/op | 784 B/op  | 4 allocs/op | :heavy_check_mark: |
-| JPilloraGoTld        | 388676     | 2854 ns/op  | 928 B/op  | 4 allocs/op |                    |
-| JoeGuoTldExtract     | 820498     | 1470 ns/op  | 1120 B/op | 6 allocs/op |                    |
-| Mjd2021USATldExtract | 812426     | 1453 ns/op  | 1120 B/op | 6 allocs/op |                    |
-| M507Tlde             | 829669     | 1383 ns/op  | 1120 B/op | 6 allocs/op |                    |
+| GoFastTld            | 1519119    | 785.9 ns/op | 784 B/op  | 4 allocs/op | :heavy_check_mark: |
+| JPilloraGoTld        | 399526     | 2848 ns/op  | 928 B/op  | 4 allocs/op |                    |
+| JoeGuoTldExtract     | 778827     | 1420 ns/op  | 1120 B/op | 6 allocs/op |                    |
+| Mjd2021USATldExtract | 755976     | 1523 ns/op  | 1120 B/op | 6 allocs/op |                    |
+| M507Tlde             | 806964     | 1584 ns/op  | 1120 B/op | 6 allocs/op |                    |
 
 ---
 
@@ -283,3 +346,4 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 - [tldextract (Python)](https://github.com/john-kurkowski/tldextract)
 - [tldextract (Go)](https://github.com/mjd2021usa/tldextract)
 - [IETF RFC 2396](https://www.ietf.org/rfc/rfc2396.txt)
+- [IETF RFC 3490](https://www.ietf.org/rfc/rfc3490.txt)
