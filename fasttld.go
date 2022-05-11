@@ -271,17 +271,14 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	}
 
 	if hasSuffix {
-		if sepIdx != -1 {
-			// if there is a Domain
+		if sepIdx != -1 { // if there is a Domain
 			urlParts.Suffix = host[sepIdx+sepSize(host[sepIdx]):]
 			domainStartSepIdx := lastIndexAny(host[0:sepIdx], labelSeparators)
-			if domainStartSepIdx != -1 {
-				// if SubDomain exists
+			if domainStartSepIdx != -1 { // if there is a SubDomain
 				domainStartIdx := domainStartSepIdx + sepSize(host[domainStartSepIdx])
 				urlParts.Domain = host[domainStartIdx:sepIdx]
 				urlParts.RegisteredDomain = host[domainStartIdx:]
-				if !e.IgnoreSubDomains {
-					// if SubDomain is to be included
+				if !e.IgnoreSubDomains { // if SubDomain is to be included
 					urlParts.SubDomain = host[0:domainStartSepIdx]
 				}
 			} else {
@@ -292,20 +289,15 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 			// if only Suffix exists
 			urlParts.Suffix = host
 		}
-	} else {
-		// No Suffix ; check for SubDomain and Domain
-		if sepIdx != -1 {
-			// if there is a SubDomain
-			domainStartSepIdx := lastIndexAny(host, labelSeparators)
-			domainStartIdx := domainStartSepIdx + sepSize(host[domainStartSepIdx])
-			urlParts.Domain = host[domainStartIdx:]
-			if !e.IgnoreSubDomains {
-				// if SubDomain is to be included
-				urlParts.SubDomain = host[0:domainStartSepIdx]
-			}
-		} else {
-			urlParts.Domain = host
+	} else if sepIdx != -1 { // if there is a SubDomain
+		domainStartSepIdx := lastIndexAny(host, labelSeparators)
+		domainStartIdx := domainStartSepIdx + sepSize(host[domainStartSepIdx])
+		urlParts.Domain = host[domainStartIdx:]
+		if !e.IgnoreSubDomains { // if SubDomain is to be included
+			urlParts.SubDomain = host[0:domainStartSepIdx]
 		}
+	} else { // if there is no SubDomain
+		urlParts.Domain = host
 	}
 
 	return &urlParts
