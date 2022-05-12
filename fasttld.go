@@ -17,6 +17,8 @@ import (
 )
 
 const defaultPSLFileName string = "public_suffix_list.dat"
+const largestPortNumber int = 65535
+const pslMaxAgeHours float64 = 72
 
 // FastTLD provides the Extract() function, to extract
 // URLs using TldTrie generated from the
@@ -201,7 +203,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 			} else {
 				maybePort = afterHost[1:pathStartIndex]
 			}
-			if port, err := strconv.Atoi(maybePort); !(err == nil && 0 <= port && port <= 65535) {
+			if port, err := strconv.Atoi(maybePort); !(err == nil && 0 <= port && port <= largestPortNumber) {
 				invalidPort = true
 			} else {
 				urlParts.Port = maybePort
@@ -311,8 +313,8 @@ func New(n SuffixListParams) (*FastTLD, error) {
 	// If cacheFilePath is unreachable, use default Public Suffix List
 	if stat, err := os.Stat(strings.TrimSpace(cacheFilePath)); invalidCacheFilePath || err != nil || stat.IsDir() || stat.Size() == 0 {
 		n.CacheFilePath = getCurrentFilePath() + string(os.PathSeparator) + defaultPSLFileName
-		// Update Public Suffix List if it doesn't exist or is more than 3 days old
-		if fileinfo, err := os.Stat(n.CacheFilePath); err != nil || fileLastModifiedHours(fileinfo) > 72 {
+		// Update Public Suffix List if it doesn't exist or is older than pslMaxAgeHours
+		if fileinfo, err := os.Stat(n.CacheFilePath); err != nil || fileLastModifiedHours(fileinfo) > pslMaxAgeHours {
 			// Create local file at n.CacheFilePath
 			if file, err := os.Create(n.CacheFilePath); err == nil {
 				err = update(file, publicSuffixListSources)
