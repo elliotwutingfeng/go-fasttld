@@ -1,4 +1,4 @@
-// go-fasttld is a high performance top level domains (TLD)
+// Package fasttld is a high performance top level domains (TLD)
 // extraction module implemented with compressed tries.
 //
 // This module is a port of the Python fasttld module,
