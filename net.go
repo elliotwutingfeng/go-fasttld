@@ -76,7 +76,6 @@ func parseIPv4(s string) IP {
 			} else {
 				return nil
 			}
-
 		}
 		n, c, ok := dtoi(s)
 		if !ok || n > 0xFF {
@@ -134,10 +133,7 @@ func parseIPv6(s string) (ip IP) {
 			if ip4 == nil {
 				return nil
 			}
-			ip[i] = ip4[12]
-			ip[i+1] = ip4[13]
-			ip[i+2] = ip4[14]
-			ip[i+3] = ip4[15]
+			copy(ip[i:i+4], ip4[12:16])
 			s = ""
 			i += IPv4len
 			break
