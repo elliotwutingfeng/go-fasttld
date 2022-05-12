@@ -21,7 +21,7 @@ const labelSeparators string = "\u002e\u3002\uff0e\uff61"
 const labelSeparatorsAndWhiteSpace string = labelSeparators + " \n\t\r\uFEFF\u200b\u200c\u200d"
 
 // For replacing internationalised label separators when converting URL to punycode.
-var standardLabelSeparatorReplacer = strings.NewReplacer([]string{"\u002e", ".", "\u3002", ".", "\uff0e", ".", "\uff61", "."}...)
+var standardLabelSeparatorReplacer = strings.NewReplacer(makeNewReplacerParams(labelSeparators, ".")...)
 
 const endOfHostDelimiters string = "/:?&#"
 
@@ -117,4 +117,17 @@ func formatAsPunycode(s string) string {
 		return ""
 	}
 	return asPunyCode
+}
+
+// makeNewReplacerParams generates parameters for
+// the strings.NewReplacer function
+// where all runes in toBeReplaced are to be
+// replaced by toReplaceWith
+func makeNewReplacerParams(toBeReplaced string, toReplaceWith string) []string {
+	var params = make([]string, 8)
+	for _, r := range toBeReplaced {
+		params = append(params, string(r))
+		params = append(params, toReplaceWith)
+	}
+	return params
 }
