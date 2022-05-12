@@ -71,7 +71,7 @@ func parseIPv4(s string) IP {
 		}
 		if i > 0 {
 			r, size := utf8.DecodeRuneInString(s)
-			if r == '.' || r == '\u3002' || r == '\uff0e' || r == '\uff61' {
+			if strings.ContainsRune(labelSeparators, r) {
 				s = s[size:]
 			} else {
 				return nil
@@ -227,10 +227,10 @@ func xtoi(s string) (n int, i int, ok bool) {
 // ParseIP returns nil.
 func parseIP(s string) IP {
 	for _, char := range s {
-		switch char {
-		case '\u002e', '\u3002', '\uff0e', '\uff61':
+		if strings.ContainsRune(labelSeparators, char) {
 			return parseIPv4(s)
-		case ':':
+		}
+		if char == ':' {
 			return parseIPv6(s)
 		}
 	}
