@@ -3,7 +3,7 @@
 //
 // This module is a port of the Python fasttld module,
 // with additional modifications to support extraction
-// of subcomponents from full URLs and IPv4 addresses.
+// of subcomponents from full URLs, IPv4 addresses, and IPv6 addresses.
 package fasttld
 
 import (
