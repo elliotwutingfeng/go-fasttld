@@ -21,6 +21,8 @@ const labelSeparators string = "\u002e\u3002\uff0e\uff61"
 // Characters that cannot appear in UserInfo
 const invalidUserInfoChars string = "/?#[]"
 
+var invalidUserInfoCharsSet asciiSet = makeASCIISet(invalidUserInfoChars)
+
 const whitespace string = " \n\t\r\uFEFF\u200b\u200c\u200d"
 
 // For replacing internationalised label separators when converting URL to punycode.
@@ -83,7 +85,7 @@ func indexAny(s string, as asciiSet) int {
 // Similar to strings.LastIndexAny but skips input validation.
 func lastIndexAny(s string, chars string) int {
 	for i := len(s); i > 0; {
-		r, size := utf8.DecodeLastRuneInString(s[:i])
+		r, size := utf8.DecodeLastRuneInString(s[0:i])
 		i -= size
 		if strings.IndexRune(chars, r) >= 0 {
 			return i
@@ -135,16 +137,11 @@ func makeNewReplacerParams(toBeReplaced string, toReplaceWith string) []string {
 	return params
 }
 
-// indexRuneExceptAfter returns the index of the first instance of the Unicode code point
-// r, otherwise -1 if any rune in notAfterChars is found first or if rune is not present in s.
-func indexRuneExceptAfter(s string, r rune, notAfterChars string) int {
-	for i, c := range s {
-		if strings.IndexRune(notAfterChars, c) != -1 {
-			return -1
-		}
-		if r == c {
-			return i
-		}
+// indexByteExceptAfter returns the index of the first instance of byte b,
+// otherwise -1 if any byte in notAfterCharsSet is found first or if b is not present in s.
+func indexByteExceptAfter(s string, b byte, notAfterCharsSet asciiSet) int {
+	if firstNotAfterCharIdx := indexAny(s, notAfterCharsSet); firstNotAfterCharIdx != -1 {
+		return strings.IndexByte(s[0:firstNotAfterCharIdx], b)
 	}
-	return -1
+	return strings.IndexByte(s, b)
 }

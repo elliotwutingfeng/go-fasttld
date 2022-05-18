@@ -140,7 +140,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	urlParts.Scheme = netlocWithScheme[0 : len(netlocWithScheme)-len(netloc)]
 
 	// Extract URL userinfo
-	if atIdx := indexRuneExceptAfter(netloc, '@', invalidUserInfoChars); atIdx != -1 {
+	if atIdx := indexByteExceptAfter(netloc, '@', invalidUserInfoCharsSet); atIdx != -1 {
 		urlParts.UserInfo = netloc[0:atIdx]
 		netloc = netloc[atIdx+1:]
 	}
