@@ -18,6 +18,9 @@ import (
 // Obtained from IETF RFC 3490
 const labelSeparators string = "\u002e\u3002\uff0e\uff61"
 
+// Characters that cannot appear in UserInfo
+const invalidUserInfoChars string = "/?#[]"
+
 const whitespace string = " \n\t\r\uFEFF\u200b\u200c\u200d"
 
 // For replacing internationalised label separators when converting URL to punycode.
@@ -130,4 +133,18 @@ func makeNewReplacerParams(toBeReplaced string, toReplaceWith string) []string {
 		params = append(params, toReplaceWith)
 	}
 	return params
+}
+
+// indexRuneExceptAfter returns the index of the first instance of the Unicode code point
+// r, otherwise -1 if any rune in notAfterChars is found first or if rune is not present in s.
+func indexRuneExceptAfter(s string, r rune, notAfterChars string) int {
+	for i, c := range s {
+		if strings.IndexRune(notAfterChars, c) != -1 {
+			return -1
+		}
+		if r == c {
+			return i
+		}
+	}
+	return -1
 }
