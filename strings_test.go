@@ -32,8 +32,10 @@ type reverseTest struct {
 }
 
 var reverseTests = []reverseTest{
-	{[]string{"ab", "cd", "ef", "gh", "ij"}, []string{"ij", "gh", "ef", "cd", "ab"}},
+	{[]string{}, []string{}},
+	{[]string{"ab"}, []string{"ab"}},
 	{[]string{"ab", "cd", "gh", "ij"}, []string{"ij", "gh", "cd", "ab"}},
+	{[]string{"ab", "cd", "ef", "gh", "ij"}, []string{"ij", "gh", "ef", "cd", "ab"}},
 }
 
 func TestReverse(t *testing.T) {

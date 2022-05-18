@@ -18,7 +18,7 @@ import (
 // Obtained from IETF RFC 3490
 const labelSeparators string = "\u002e\u3002\uff0e\uff61"
 
-const labelSeparatorsAndWhiteSpace string = labelSeparators + " \n\t\r\uFEFF\u200b\u200c\u200d"
+const whitespace string = " \n\t\r\uFEFF\u200b\u200c\u200d"
 
 // For replacing internationalised label separators when converting URL to punycode.
 var standardLabelSeparatorReplacer = strings.NewReplacer(makeNewReplacerParams(labelSeparators, ".")...)

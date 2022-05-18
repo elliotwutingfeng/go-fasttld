@@ -347,3 +347,4 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 - [tldextract (Go)](https://github.com/mjd2021usa/tldextract)
 - [IETF RFC 2396](https://www.ietf.org/rfc/rfc2396.txt)
 - [IETF RFC 3490](https://www.ietf.org/rfc/rfc3490.txt)
+- [IETF RFC 3986](https://www.ietf.org/rfc/rfc3986.txt)
