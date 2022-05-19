@@ -28,9 +28,13 @@ const whitespace string = " \n\t\r\uFEFF\u200b\u200c\u200d"
 // For replacing internationalised label separators when converting URL to punycode.
 var standardLabelSeparatorReplacer = strings.NewReplacer(makeNewReplacerParams(labelSeparators, ".")...)
 
-const endOfHostDelimiters string = "/:?&#"
+const endOfHostDelimiters string = "/:?#"
 
 var endOfHostDelimitersSet asciiSet = makeASCIISet(endOfHostDelimiters)
+
+const endOfHostPortDelimiters string = "/?#"
+
+var endOfHostPortDelimitersSet asciiSet = makeASCIISet(endOfHostPortDelimiters)
 
 // For extracting URL scheme.
 var schemeRegex = regexp.MustCompile("^([A-Za-z0-9+-.]+:)?//")
@@ -131,8 +135,7 @@ func formatAsPunycode(s string) string {
 func makeNewReplacerParams(toBeReplaced string, toReplaceWith string) []string {
 	var params = make([]string, 8)
 	for _, r := range toBeReplaced {
-		params = append(params, string(r))
-		params = append(params, toReplaceWith)
+		params = append(params, string(r), toReplaceWith)
 	}
 	return params
 }

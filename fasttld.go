@@ -138,6 +138,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	netlocWithScheme := strings.Trim(e.URL, whitespace)
 	netloc := schemeRegex.ReplaceAllLiteralString(netlocWithScheme, "")
 	urlParts.Scheme = netlocWithScheme[0 : len(netlocWithScheme)-len(netloc)]
+	netloc = strings.TrimLeft(netloc, `\/`)
 
 	// Extract URL userinfo
 	if atIdx := indexByteExceptAfter(netloc, '@', invalidUserInfoCharsSet); atIdx != -1 {
@@ -149,7 +150,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	var isIPv6 bool
 	closingSquareBracketIdx := strings.IndexByte(netloc, ']')
 	if len(netloc) != 0 {
-		if netloc[0] == '[' {
+		if strings.IndexByte(netloc, '[') == 0 {
 			if closingSquareBracketIdx > 0 && looksLikeIPAddress(netloc[1:closingSquareBracketIdx]) {
 				urlParts.Domain = netloc[1:closingSquareBracketIdx]
 				urlParts.RegisteredDomain = netloc[1:closingSquareBracketIdx]
@@ -192,7 +193,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 
 	// Extract Port and "Path" if any
 	if len(afterHost) != 0 {
-		pathStartIndex := strings.IndexByte(afterHost, '/')
+		pathStartIndex := indexAny(afterHost, endOfHostPortDelimitersSet)
 		var (
 			maybePort   string
 			invalidPort bool
@@ -213,6 +214,11 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 			// If there is any path/query/fragment after the URL authority component...
 			// See https://stackoverflow.com/questions/47543432/what-do-we-call-the-combined-path-query-and-fragment-in-a-uri
 			// For simplicity, we shall call this the "Path".
+
+			// Only ignore first character if path begins with '/'
+			if afterHost[pathStartIndex] != '/' {
+				pathStartIndex--
+			}
 			urlParts.Path = afterHost[pathStartIndex+1:]
 		}
 	}
