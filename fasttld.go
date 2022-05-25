@@ -137,8 +137,9 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	// Extract URL scheme
 	netlocWithScheme := strings.Trim(e.URL, whitespace)
 	netloc := schemeRegex.ReplaceAllLiteralString(netlocWithScheme, "")
-	urlParts.Scheme = netlocWithScheme[0 : len(netlocWithScheme)-len(netloc)]
-	netloc = strings.TrimLeft(netloc, `\/`)
+	if len(netloc) != len(netlocWithScheme) {
+		urlParts.Scheme = netlocWithScheme[0 : len(netlocWithScheme)-len(netloc)]
+	}
 
 	// Extract URL userinfo
 	if atIdx := indexByteExceptAfter(netloc, '@', invalidUserInfoCharsSet); atIdx != -1 {
@@ -216,9 +217,10 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 			// For simplicity, we shall call this the "Path".
 
 			// Only ignore first character if path begins with '/'
-			if afterHost[pathStartIndex] != '/' {
+			if afterHost[pathStartIndex] != '/' && afterHost[pathStartIndex] != '\\' {
 				pathStartIndex--
 			}
+
 			urlParts.Path = afterHost[pathStartIndex+1:]
 		}
 	}
