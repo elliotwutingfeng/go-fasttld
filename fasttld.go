@@ -179,7 +179,6 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		netloc = netloc[0:hostEndIndex]
 	}
 
-	var host string
 	// host is invalid if host cannot be converted to unicode
 	if _, err := idna.ToUnicode(netloc); err != nil {
 		log.Println(strings.SplitAfterN(err.Error(), "idna: invalid label", 2)[0])
@@ -187,9 +186,11 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	}
 
 	if e.ConvertURLToPunyCode {
-		host = formatAsPunycode(standardLabelSeparatorReplacer.Replace(netloc))
-	} else {
-		host = netloc
+		netloc = formatAsPunycode(standardLabelSeparatorReplacer.Replace(netloc))
+	}
+
+	if strings.IndexAny(netloc, whitespace) != -1 {
+		return &urlParts
 	}
 
 	// Extract Port and "Path" if any
@@ -224,9 +225,9 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	}
 
 	// Check for IPv4 address
-	if looksLikeIPAddress(host) {
-		urlParts.Domain = host
-		urlParts.RegisteredDomain = host
+	if looksLikeIPAddress(netloc) {
+		urlParts.Domain = netloc
+		urlParts.RegisteredDomain = netloc
 		return &urlParts
 	}
 
@@ -235,17 +236,17 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 
 	var hasSuffix bool
 	var end bool
-	sepIdx := len(host)
+	sepIdx := len(netloc)
 	previousSepIdx := sepIdx
 
 	for !end {
 		var label string
 		previousSepIdx = sepIdx
-		sepIdx = lastIndexAny(host[0:sepIdx], labelSeparators)
+		sepIdx = lastIndexAny(netloc[0:sepIdx], labelSeparators)
 		if sepIdx != -1 {
-			label = host[sepIdx+sepSize(host[sepIdx]) : previousSepIdx]
+			label = netloc[sepIdx+sepSize(netloc[sepIdx]) : previousSepIdx]
 		} else {
-			label = host[0:previousSepIdx]
+			label = netloc[0:previousSepIdx]
 			end = true
 		}
 
@@ -267,7 +268,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 				break
 			}
 		} else {
-			if previousSepIdx != len(host) {
+			if previousSepIdx != len(netloc) {
 				sepIdx = previousSepIdx
 			}
 			break
@@ -276,32 +277,32 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 
 	if hasSuffix {
 		if sepIdx != -1 { // if there is a Domain
-			urlParts.Suffix = host[sepIdx+sepSize(host[sepIdx]):]
-			domainStartSepIdx := lastIndexAny(host[0:sepIdx], labelSeparators)
+			urlParts.Suffix = netloc[sepIdx+sepSize(netloc[sepIdx]):]
+			domainStartSepIdx := lastIndexAny(netloc[0:sepIdx], labelSeparators)
 			if domainStartSepIdx != -1 { // if there is a SubDomain
-				domainStartIdx := domainStartSepIdx + sepSize(host[domainStartSepIdx])
-				urlParts.Domain = host[domainStartIdx:sepIdx]
-				urlParts.RegisteredDomain = host[domainStartIdx:]
+				domainStartIdx := domainStartSepIdx + sepSize(netloc[domainStartSepIdx])
+				urlParts.Domain = netloc[domainStartIdx:sepIdx]
+				urlParts.RegisteredDomain = netloc[domainStartIdx:]
 				if !e.IgnoreSubDomains { // if SubDomain is to be included
-					urlParts.SubDomain = host[0:domainStartSepIdx]
+					urlParts.SubDomain = netloc[0:domainStartSepIdx]
 				}
 			} else {
-				urlParts.Domain = host[domainStartSepIdx+1 : sepIdx]
-				urlParts.RegisteredDomain = host[domainStartSepIdx+1:]
+				urlParts.Domain = netloc[domainStartSepIdx+1 : sepIdx]
+				urlParts.RegisteredDomain = netloc[domainStartSepIdx+1:]
 			}
 		} else {
 			// if only Suffix exists
-			urlParts.Suffix = host
+			urlParts.Suffix = netloc
 		}
 	} else if sepIdx != -1 { // if there is a SubDomain
-		domainStartSepIdx := lastIndexAny(host, labelSeparators)
-		domainStartIdx := domainStartSepIdx + sepSize(host[domainStartSepIdx])
-		urlParts.Domain = host[domainStartIdx:]
+		domainStartSepIdx := lastIndexAny(netloc, labelSeparators)
+		domainStartIdx := domainStartSepIdx + sepSize(netloc[domainStartSepIdx])
+		urlParts.Domain = netloc[domainStartIdx:]
 		if !e.IgnoreSubDomains { // if SubDomain is to be included
-			urlParts.SubDomain = host[0:domainStartSepIdx]
+			urlParts.SubDomain = netloc[0:domainStartSepIdx]
 		}
 	} else { // if there is no SubDomain
-		urlParts.Domain = host
+		urlParts.Domain = netloc
 	}
 
 	return &urlParts

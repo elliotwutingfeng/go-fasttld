@@ -23,7 +23,7 @@ const invalidUserInfoChars string = "/?#[]"
 
 var invalidUserInfoCharsSet asciiSet = makeASCIISet(invalidUserInfoChars)
 
-const whitespace string = " \n\t\r\uFEFF\u200b\u200c\u200d"
+const whitespace string = " \n\t\r\uFEFF\u200b\u200c\u200d\u00a0"
 
 // For replacing internationalised label separators when converting URL to punycode.
 var standardLabelSeparatorReplacer = strings.NewReplacer(makeNewReplacerParams(labelSeparators, ".")...)
