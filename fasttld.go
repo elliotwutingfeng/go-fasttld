@@ -135,10 +135,10 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	urlParts := ExtractResult{}
 
 	// Extract URL scheme
-	netlocWithScheme := strings.Trim(e.URL, whitespace)
-	netloc := schemeRegex.ReplaceAllLiteralString(netlocWithScheme, "")
-	if len(netloc) != len(netlocWithScheme) {
-		urlParts.Scheme = netlocWithScheme[0 : len(netlocWithScheme)-len(netloc)]
+	netloc := strings.Trim(e.URL, whitespace)
+	if schemeIndices := schemeRegex.FindStringIndex(netloc); schemeIndices != nil {
+		urlParts.Scheme = netloc[schemeIndices[0]:schemeIndices[1]]
+		netloc = netloc[schemeIndices[1]:]
 	}
 
 	// Extract URL userinfo

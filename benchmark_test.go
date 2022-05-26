@@ -61,6 +61,7 @@ func BenchmarkComparison(b *testing.B) {
 				// this module also provides the PORT and PATH subcomponents
 				// it cannot handle "+://google.com" and IP addresses
 				// it cannot handle urls without scheme component
+				// it cannot handle trailing whitespace
 
 				b.Run(fmt.Sprint(bm.name), func(b *testing.B) {
 					for i := 0; i < b.N; i++ {
