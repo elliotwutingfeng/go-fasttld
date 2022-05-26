@@ -37,7 +37,7 @@ func main() {
 	// res.Suffix = ac.uk
 	// res.RegisteredDomain = ox.ac.uk
 	// res.Port = 5000
-	// res.Path = a/b/c/d/e/f/g/h/i?id=42
+	// res.Path = /a/b/c/d/e/f/g/h/i?id=42
 
 	// Specify custom public suffix list file
 	// cacheFilePath := "/absolute/path/to/file.dat"

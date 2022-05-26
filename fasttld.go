@@ -180,7 +180,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	}
 
 	var host string
-	// Check if host cannot be converted to unicode
+	// host is invalid if host cannot be converted to unicode
 	if _, err := idna.ToUnicode(netloc); err != nil {
 		log.Println(strings.SplitAfterN(err.Error(), "idna: invalid label", 2)[0])
 		return &urlParts
@@ -215,13 +215,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 			// If there is any path/query/fragment after the URL authority component...
 			// See https://stackoverflow.com/questions/47543432/what-do-we-call-the-combined-path-query-and-fragment-in-a-uri
 			// For simplicity, we shall call this the "Path".
-
-			// Only ignore first character if path begins with '/'
-			if afterHost[pathStartIndex] != '/' && afterHost[pathStartIndex] != '\\' {
-				pathStartIndex--
-			}
-
-			urlParts.Path = afterHost[pathStartIndex+1:]
+			urlParts.Path = afterHost[pathStartIndex:]
 		}
 	}
 

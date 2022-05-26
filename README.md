@@ -85,7 +85,7 @@ fmt.Println(res.Domain)           // ox
 fmt.Println(res.Suffix)           // ac.uk
 fmt.Println(res.RegisteredDomain) // ox.ac.uk
 fmt.Println(res.Port) // 5000
-fmt.Println(res.Path) // a/b/c/d/e/f/g/h/i?id=42
+fmt.Println(res.Path) // /a/b/c/d/e/f/g/h/i?id=42
 ```
 
 ### IPv4 Address
