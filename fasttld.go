@@ -170,9 +170,9 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	hostEndIndex := -1
 	// Separate URL host from subcomponents thereafter
 	if isIPv6 {
-		hostEndIndex = len(netloc[0:closingSquareBracketIdx]) + indexAny(netloc[closingSquareBracketIdx:], endOfHostDelimitersSet)
+		hostEndIndex = len(netloc[0:closingSquareBracketIdx]) + indexAnyASCII(netloc[closingSquareBracketIdx:], endOfHostDelimitersSet)
 	} else {
-		hostEndIndex = indexAny(netloc, endOfHostDelimitersSet)
+		hostEndIndex = indexAnyASCII(netloc, endOfHostDelimitersSet)
 	}
 	if hostEndIndex != -1 {
 		afterHost = netloc[hostEndIndex:]
@@ -189,13 +189,13 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		netloc = formatAsPunycode(standardLabelSeparatorReplacer.Replace(netloc))
 	}
 
-	if strings.IndexAny(netloc, whitespace) != -1 {
+	if indexAny(netloc, whitespace) != -1 {
 		return &urlParts
 	}
 
 	// Extract Port and "Path" if any
 	if len(afterHost) != 0 {
-		pathStartIndex := indexAny(afterHost, endOfHostPortDelimitersSet)
+		pathStartIndex := indexAnyASCII(afterHost, endOfHostPortDelimitersSet)
 		var (
 			maybePort   string
 			invalidPort bool

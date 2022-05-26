@@ -68,14 +68,28 @@ func (as *asciiSet) contains(c byte) bool {
 	return (as[c/32] & (1 << (c % 32))) != 0
 }
 
-// indexAny returns the index of the first instance of any Unicode code point
+// indexAnyASCII returns the index of the first instance of any Unicode code point
 // from asciiSet in s, or -1 if no Unicode code point from asciiSet is present in s.
 //
 // Similar to strings.IndexAny but takes in an asciiSet instead of a string
 // and skips input validation.
-func indexAny(s string, as asciiSet) int {
+func indexAnyASCII(s string, as asciiSet) int {
 	for i := 0; i < len(s); i++ {
 		if as.contains(s[i]) {
+			return i
+		}
+	}
+	return -1
+}
+
+// indexAny returns the index of the first instance of any Unicode code point
+// from chars in s, or -1 if no Unicode code point from chars is present in s.
+//
+// Similar to strings.IndexAny but does not attempt to make an asciiSet
+// and skips input validation.
+func indexAny(s, chars string) int {
+	for i, c := range s {
+		if strings.IndexRune(chars, c) >= 0 {
 			return i
 		}
 	}
@@ -143,7 +157,7 @@ func makeNewReplacerParams(toBeReplaced string, toReplaceWith string) []string {
 // indexByteExceptAfter returns the index of the first instance of byte b,
 // otherwise -1 if any byte in notAfterCharsSet is found first or if b is not present in s.
 func indexByteExceptAfter(s string, b byte, notAfterCharsSet asciiSet) int {
-	if firstNotAfterCharIdx := indexAny(s, notAfterCharsSet); firstNotAfterCharIdx != -1 {
+	if firstNotAfterCharIdx := indexAnyASCII(s, notAfterCharsSet); firstNotAfterCharIdx != -1 {
 		return strings.IndexByte(s[0:firstNotAfterCharIdx], b)
 	}
 	return strings.IndexByte(s, b)
