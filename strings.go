@@ -89,7 +89,7 @@ func indexAnyASCII(s string, as asciiSet) int {
 // and skips input validation.
 func indexAny(s, chars string) int {
 	for i, c := range s {
-		if strings.IndexRune(chars, c) >= 0 {
+		if strings.IndexRune(chars, c) != -1 {
 			return i
 		}
 	}

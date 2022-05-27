@@ -189,6 +189,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		netloc = formatAsPunycode(standardLabelSeparatorReplacer.Replace(netloc))
 	}
 
+	// Reject if whitespace appears before Path
 	if indexAny(netloc, whitespace) != -1 {
 		return &urlParts
 	}
