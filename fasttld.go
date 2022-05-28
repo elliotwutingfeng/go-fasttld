@@ -143,7 +143,12 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 
 	// Extract URL userinfo
 	if atIdx := indexByteExceptAfter(netloc, '@', invalidUserInfoCharsSet); atIdx != -1 {
-		urlParts.UserInfo = netloc[0:atIdx]
+		// Check if UserInfo contains whitespace
+		maybeUserInfo := netloc[0:atIdx]
+		if indexAny(maybeUserInfo, whitespace) != -1 {
+			return &urlParts
+		}
+		urlParts.UserInfo = maybeUserInfo
 		netloc = netloc[atIdx+1:]
 	}
 

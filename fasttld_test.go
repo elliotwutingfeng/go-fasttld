@@ -353,6 +353,9 @@ var invalidTests = []extractTest{
 	{urlParams: URLParams{URL: "http://[]"},
 		expected:    &ExtractResult{Scheme: "http://"},
 		description: "Empty pair of square brackets"},
+	{urlParams: URLParams{URL: "http://a @example.com"},
+		expected:    &ExtractResult{Scheme: "http://"},
+		description: "UserInfo has whitespace"},
 
 	// Test cases from net/ip-test.go
 	{urlParams: URLParams{URL: "http://[-0.0.0.0]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
