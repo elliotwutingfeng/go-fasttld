@@ -445,7 +445,7 @@ var lookoutTests = []extractTest{ // some tests from lookout.net
 	{urlParams: URLParams{URL: "http://\u0dc1\u0dca\u200d\u0dbb\u0dd3.com.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, description: ""},
 	{urlParams: URLParams{URL: "http://\u0dc1\u0dca\u200d\u0dbb\u0dd3.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, description: ""},
 	{urlParams: URLParams{URL: "http://\u15ef\u15ef\u15ef.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "\u15ef\u15ef\u15ef.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net"}, description: ""},
-	{urlParams: URLParams{URL: "http://\u1680.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "\u1680.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net"}, description: ""},
+	{urlParams: URLParams{URL: "http://\u1680.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, description: ""},
 	{urlParams: URLParams{URL: "http://\u180e.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "\u180e.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net"}, description: ""},
 	{urlParams: URLParams{URL: "http://\u1e9e.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "\u1e9e.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net"}, description: ""},
 	{urlParams: URLParams{URL: "http://\u2183.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "\u2183.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net"}, description: ""},

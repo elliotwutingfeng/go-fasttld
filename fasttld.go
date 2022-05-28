@@ -185,13 +185,13 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		return &urlParts
 	}
 
-	if e.ConvertURLToPunyCode {
-		netloc = formatAsPunycode(standardLabelSeparatorReplacer.Replace(netloc))
-	}
-
 	// Reject if whitespace appears before Path
 	if indexAny(netloc, whitespace) != -1 {
 		return &urlParts
+	}
+
+	if e.ConvertURLToPunyCode {
+		netloc = formatAsPunycode(standardLabelSeparatorReplacer.Replace(netloc))
 	}
 
 	// Extract Port and "Path" if any
