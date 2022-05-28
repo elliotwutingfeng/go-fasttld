@@ -162,6 +162,15 @@ type extractTest struct {
 }
 
 var schemeTests = []extractTest{
+	{urlParams: URLParams{URL: "h://example.com"},
+		expected: &ExtractResult{
+			Scheme: "h://", Domain: "example", Suffix: "com", RegisteredDomain: "example.com"}, description: "Single character Scheme"},
+	{urlParams: URLParams{URL: "hTtPs://example.com"},
+		expected: &ExtractResult{
+			Scheme: "hTtPs://", Domain: "example", Suffix: "com", RegisteredDomain: "example.com"}, description: "Capitalised Scheme"},
+	{urlParams: URLParams{URL: "git-ssh://example.com"},
+		expected: &ExtractResult{
+			Scheme: "git-ssh://", Domain: "example", Suffix: "com", RegisteredDomain: "example.com"}, description: "Scheme with -"},
 	{urlParams: URLParams{URL: "https://username:password@foo.example.com:999/some/path?param1=value1&param2=葡萄"},
 		expected: &ExtractResult{
 			Scheme: "https://", UserInfo: "username:password", SubDomain: "foo",
@@ -301,6 +310,7 @@ var periodsAndWhiteSpacesTests = []extractTest{
 }
 var invalidTests = []extractTest{
 	{urlParams: URLParams{}, expected: &ExtractResult{}, description: "empty string"},
+	{urlParams: URLParams{URL: "1b://example.com"}, expected: &ExtractResult{Domain: "1b"}, description: "Scheme beginning with non-alphabet"},
 	{urlParams: URLParams{URL: "maps.google.com.sg:8589934592/this/path/will/not/be/parsed"},
 		expected: &ExtractResult{
 			SubDomain: "maps", Domain: "google", Suffix: "com.sg",

@@ -37,7 +37,7 @@ const endOfHostPortDelimiters string = "/?#\\"
 var endOfHostPortDelimitersSet asciiSet = makeASCIISet(endOfHostPortDelimiters)
 
 // For extracting URL scheme.
-var schemeRegex = regexp.MustCompile(`^([A-Za-z0-9+-.]+:)?[\\/]{2,}`)
+var schemeRegex = regexp.MustCompile(`(?i)^([a-z][a-z0-9+-.]*:)?[\\/]{2,}`)
 
 // asciiSet is a 32-byte value, where each bit represents the presence of a
 // given ASCII character in the set. The 128-bits of the lower 16 bytes,
