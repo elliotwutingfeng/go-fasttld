@@ -84,8 +84,8 @@ fmt.Println(res.SubDomain)        // a.long.subdomain
 fmt.Println(res.Domain)           // ox
 fmt.Println(res.Suffix)           // ac.uk
 fmt.Println(res.RegisteredDomain) // ox.ac.uk
-fmt.Println(res.Port) // 5000
-fmt.Println(res.Path) // /a/b/c/d/e/f/g/h/i?id=42
+fmt.Println(res.Port)             // 5000
+fmt.Println(res.Path)             // /a/b/c/d/e/f/g/h/i?id=42
 ```
 
 ### IPv4 Address
@@ -304,11 +304,11 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 | Benchmark Name       | Iterations | ns/op       | B/op     | allocs/op   | Fastest            |
 |----------------------|------------|-------------|----------|-------------|--------------------|
-| GoFastTld            | 2341306    | 511.3 ns/op | 144 B/op | 2 allocs/op |                    |
-| JPilloraGoTld        | 2428166    | 491.0 ns/op | 224 B/op | 2 allocs/op | :heavy_check_mark: |
-| JoeGuoTldExtract     | 2360973    | 505.6 ns/op | 160 B/op | 5 allocs/op |                    |
-| Mjd2021USATldExtract | 1452428    | 834.7 ns/op | 208 B/op | 7 allocs/op |                    |
-| M507Tlde             | 2430883    | 492.8 ns/op | 160 B/op | 5 allocs/op |                    |
+| GoFastTld            | 2252775    | 537.1 ns/op | 144 B/op | 2 allocs/op |                    |
+| JPilloraGoTld        | 2421658    | 497.3 ns/op | 224 B/op | 2 allocs/op | :heavy_check_mark: |
+| JoeGuoTldExtract     | 2336356    | 501.1 ns/op | 160 B/op | 5 allocs/op |                    |
+| Mjd2021USATldExtract | 1342712    | 830.7 ns/op | 208 B/op | 7 allocs/op |                    |
+| M507Tlde             | 2406886    | 506.4 ns/op | 160 B/op | 5 allocs/op |                    |
 
 ---
 
@@ -318,11 +318,11 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 | Benchmark Name       | Iterations | ns/op       | B/op     | allocs/op   | Fastest            |
 |----------------------|------------|-------------|----------|-------------|--------------------|
-| GoFastTld            | 2404617    | 474.8 ns/op | 144 B/op | 2 allocs/op | :heavy_check_mark: |
-| JPilloraGoTld        | 1615161    | 718.2 ns/op | 224 B/op | 2 allocs/op |                    |
-| JoeGuoTldExtract     | 2151549    | 553.1 ns/op | 272 B/op | 5 allocs/op |                    |
-| Mjd2021USATldExtract | 1495000    | 798.9 ns/op | 288 B/op | 6 allocs/op |                    |
-| M507Tlde             | 2145702    | 554.7 ns/op | 272 B/op | 5 allocs/op |                    |
+| GoFastTld            | 2360563    | 499.6 ns/op | 144 B/op | 2 allocs/op | :heavy_check_mark: |
+| JPilloraGoTld        | 1651546    | 728.8 ns/op | 224 B/op | 2 allocs/op |                    |
+| JoeGuoTldExtract     | 2154034    | 549.6 ns/op | 272 B/op | 5 allocs/op |                    |
+| Mjd2021USATldExtract | 1497088    | 801.8 ns/op | 288 B/op | 6 allocs/op |                    |
+| M507Tlde             | 2148830    | 554.8 ns/op | 272 B/op | 5 allocs/op |                    |
 
 ---
 
@@ -332,11 +332,11 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 | Benchmark Name       | Iterations | ns/op       | B/op      | allocs/op   | Fastest            |
 |----------------------|------------|-------------|-----------|-------------|--------------------|
-| GoFastTld            | 2195161    | 548.4 ns/op | 144 B/op  | 2 allocs/op | :heavy_check_mark: |
-| JPilloraGoTld        | 404686     | 2753 ns/op  | 928 B/op  | 4 allocs/op |                    |
-| JoeGuoTldExtract     | 844623     | 1327 ns/op  | 1120 B/op | 6 allocs/op |                    |
-| Mjd2021USATldExtract | 813936     | 1354 ns/op  | 1120 B/op | 6 allocs/op |                    |
-| M507Tlde             | 820394     | 1326 ns/op  | 1120 B/op | 6 allocs/op |                    |
+| GoFastTld            | 2185510    | 546.8 ns/op | 144 B/op  | 2 allocs/op | :heavy_check_mark: |
+| JPilloraGoTld        | 387694     | 2740 ns/op  | 928 B/op  | 4 allocs/op |                    |
+| JoeGuoTldExtract     | 801040     | 1349 ns/op  | 1120 B/op | 6 allocs/op |                    |
+| Mjd2021USATldExtract | 768145     | 1327 ns/op  | 1120 B/op | 6 allocs/op |                    |
+| M507Tlde             | 889660     | 1339 ns/op  | 1120 B/op | 6 allocs/op |                    |
 
 ---
 
@@ -344,7 +344,6 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 - [fasttld (Python)](https://github.com/jophy/fasttld)
 - [tldextract (Python)](https://github.com/john-kurkowski/tldextract)
-- [tldextract (Go)](https://github.com/mjd2021usa/tldextract)
 - [IETF RFC 2396](https://www.ietf.org/rfc/rfc2396.txt)
 - [IETF RFC 3490](https://www.ietf.org/rfc/rfc3490.txt)
 - [IETF RFC 3986](https://www.ietf.org/rfc/rfc3986.txt)

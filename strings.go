@@ -105,7 +105,7 @@ func lastIndexAny(s string, chars string) int {
 	for i := len(s); i > 0; {
 		r, size := utf8.DecodeLastRuneInString(s[0:i])
 		i -= size
-		if strings.IndexRune(chars, r) >= 0 {
+		if strings.IndexRune(chars, r) != -1 {
 			return i
 		}
 	}
@@ -147,7 +147,7 @@ func formatAsPunycode(s string) string {
 // where all runes in toBeReplaced are to be
 // replaced by toReplaceWith
 func makeNewReplacerParams(toBeReplaced string, toReplaceWith string) []string {
-	var params = make([]string, 8)
+	var params = make([]string, len(toBeReplaced))
 	for _, r := range toBeReplaced {
 		params = append(params, string(r), toReplaceWith)
 	}
