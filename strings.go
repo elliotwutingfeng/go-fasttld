@@ -12,23 +12,23 @@ import (
 // Obtained from IETF RFC 3490
 const labelSeparators string = "\u002e\u3002\uff0e\uff61"
 
-// Characters that cannot appear in UserInfo
-const invalidUserInfoChars string = "/\\?#[]"
-
-var invalidUserInfoCharsSet asciiSet = makeASCIISet(invalidUserInfoChars)
-
 const whitespace string = " \t\n\v\f\r\uFEFF\u200b\u200c\u200d\u00a0\u1680\u0085\u00a0"
 
 // For replacing internationalised label separators when converting URL to punycode.
 var standardLabelSeparatorReplacer = strings.NewReplacer(makeNewReplacerParams(labelSeparators, ".")...)
 
-const endOfHostDelimiters string = "/:?#\\"
+const endOfHostWithPortDelimiters string = `/\?#`
+
+var endOfHostWithPortDelimitersSet asciiSet = makeASCIISet(endOfHostWithPortDelimiters)
+
+const endOfHostDelimiters string = endOfHostWithPortDelimiters + ":"
 
 var endOfHostDelimitersSet asciiSet = makeASCIISet(endOfHostDelimiters)
 
-const endOfHostPortDelimiters string = "/?#\\"
+// Characters that cannot appear in UserInfo
+const invalidUserInfoChars string = endOfHostWithPortDelimiters + "[]"
 
-var endOfHostPortDelimitersSet asciiSet = makeASCIISet(endOfHostPortDelimiters)
+var invalidUserInfoCharsSet asciiSet = makeASCIISet(invalidUserInfoChars)
 
 // For extracting URL scheme.
 var schemeRegex = regexp.MustCompile(`(?i)^([a-z][a-z0-9+-.]*:)?[\\/]{2,}`)
