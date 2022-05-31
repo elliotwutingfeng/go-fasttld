@@ -210,6 +210,7 @@ var schemeTests = []extractTest{
 			Domain: "www", Suffix: "net", RegisteredDomain: "www.net"}, description: "Multiple www"},
 }
 var noSchemeTests = []extractTest{
+	{urlParams: URLParams{URL: "localhost"}, expected: &ExtractResult{Domain: "localhost"}, description: "localhost"},
 	{urlParams: URLParams{URL: "org"}, expected: &ExtractResult{Suffix: "org"}, description: "Single TLD | Suffix Only"},
 	{urlParams: URLParams{URL: "co.th"}, expected: &ExtractResult{Suffix: "co.th"}, description: "Double TLD | Suffix Only"},
 	{urlParams: URLParams{URL: "users@example.com"}, expected: &ExtractResult{UserInfo: "users", Domain: "example", Suffix: "com", RegisteredDomain: "example.com"}, description: "UserInfo + Domain | No Scheme"},
@@ -315,6 +316,7 @@ var periodsAndWhiteSpacesTests = []extractTest{
 }
 var invalidTests = []extractTest{
 	{urlParams: URLParams{}, expected: &ExtractResult{}, description: "empty string"},
+	{urlParams: URLParams{URL: "https://"}, expected: &ExtractResult{Scheme: "https://"}, description: "Scheme only"},
 	{urlParams: URLParams{URL: "1b://example.com"}, expected: &ExtractResult{Domain: "1b"}, description: "Scheme beginning with non-alphabet"},
 	{urlParams: URLParams{URL: "maps.google.com.sg:8589934592/this/path/will/not/be/parsed"},
 		expected: &ExtractResult{
