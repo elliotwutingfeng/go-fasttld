@@ -156,7 +156,10 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	var isIPv6 bool
 	closingSquareBracketIdx := strings.IndexByte(netloc, ']')
 	if len(netloc) != 0 {
-		if strings.IndexByte(netloc, '[') == 0 {
+		if openingSquareBracketIdx := strings.IndexByte(netloc, '['); openingSquareBracketIdx > 0 {
+			// netloc not empty and there is an erroneous opening square bracket
+			return &urlParts
+		} else if openingSquareBracketIdx == 0 {
 			if closingSquareBracketIdx > 0 && parseIPv6(netloc[1:closingSquareBracketIdx]) != nil {
 				urlParts.Domain = netloc[1:closingSquareBracketIdx]
 				urlParts.RegisteredDomain = netloc[1:closingSquareBracketIdx]
@@ -175,7 +178,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	var hostEndIndex int
 	// Separate URL host from subcomponents thereafter
 	if isIPv6 {
-		hostEndIndex = len(netloc[0:closingSquareBracketIdx]) + indexAnyASCII(netloc[closingSquareBracketIdx:], endOfHostDelimitersSet)
+		hostEndIndex = closingSquareBracketIdx + indexAnyASCII(netloc[closingSquareBracketIdx:], endOfHostDelimitersSet)
 	} else {
 		hostEndIndex = indexAnyASCII(netloc, endOfHostDelimitersSet)
 	}
