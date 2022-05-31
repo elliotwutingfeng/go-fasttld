@@ -157,7 +157,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	closingSquareBracketIdx := strings.IndexByte(netloc, ']')
 	if len(netloc) != 0 {
 		if strings.IndexByte(netloc, '[') == 0 {
-			if closingSquareBracketIdx > 0 && looksLikeIPAddress(netloc[1:closingSquareBracketIdx]) {
+			if closingSquareBracketIdx > 0 && parseIPv6(netloc[1:closingSquareBracketIdx]) != nil {
 				urlParts.Domain = netloc[1:closingSquareBracketIdx]
 				urlParts.RegisteredDomain = netloc[1:closingSquareBracketIdx]
 				isIPv6 = true
@@ -172,7 +172,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	}
 
 	var afterHost string
-	hostEndIndex := -1
+	var hostEndIndex int
 	// Separate URL host from subcomponents thereafter
 	if isIPv6 {
 		hostEndIndex = len(netloc[0:closingSquareBracketIdx]) + indexAnyASCII(netloc[closingSquareBracketIdx:], endOfHostDelimitersSet)
@@ -212,10 +212,10 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 			} else {
 				maybePort = afterHost[1:pathStartIndex]
 			}
-			if port, err := strconv.Atoi(maybePort); !(err == nil && 0 <= port && port <= largestPortNumber) {
-				invalidPort = true
-			} else {
+			if port, err := strconv.Atoi(maybePort); err == nil && 0 <= port && port <= largestPortNumber {
 				urlParts.Port = maybePort
+			} else {
+				invalidPort = true
 			}
 		}
 		if !invalidPort && pathStartIndex != -1 && pathStartIndex != len(afterHost) {
@@ -231,7 +231,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	}
 
 	// Check for IPv4 address
-	if looksLikeIPAddress(netloc) {
+	if parseIPv4(netloc) != nil {
 		urlParts.Domain = netloc
 		urlParts.RegisteredDomain = netloc
 		return &urlParts
@@ -242,8 +242,8 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 
 	var hasSuffix bool
 	var end bool
+	var previousSepIdx int
 	sepIdx := len(netloc)
-	previousSepIdx := sepIdx
 
 	for !end {
 		var label string
@@ -326,7 +326,9 @@ func New(n SuffixListParams) (*FastTLD, error) {
 		if fileinfo, err := os.Stat(n.CacheFilePath); err != nil || fileLastModifiedHours(fileinfo) > pslMaxAgeHours {
 			// Create local file at n.CacheFilePath
 			if file, err := os.Create(n.CacheFilePath); err == nil {
-				err = update(file, publicSuffixListSources)
+				if err := update(file, publicSuffixListSources); err != nil {
+					log.Println(err)
+				}
 				defer file.Close()
 			}
 		}

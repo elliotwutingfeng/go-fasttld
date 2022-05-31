@@ -1,9 +1,3 @@
-// Package fasttld is a high performance top level domains (TLD)
-// extraction module implemented with compressed tries.
-//
-// This module is a port of the Python fasttld module,
-// with additional modifications to support extraction
-// of subcomponents from full URLs, IPv4 addresses, and IPv6 addresses.
 package fasttld
 
 import (
@@ -218,26 +212,4 @@ func xtoi(s string) (n int, i int, ok bool) {
 		return 0, i, false
 	}
 	return n, i, true
-}
-
-// ParseIP parses s as an IP address, returning the result.
-// The string s can be in IPv4 dotted decimal ("192.0.2.1"), IPv6
-// ("2001:db8::68"), or IPv4-mapped IPv6 ("::ffff:192.0.2.1") form.
-// If s is not a valid textual representation of an IP address,
-// ParseIP returns nil.
-func parseIP(s string) IP {
-	for _, char := range s {
-		if strings.ContainsRune(labelSeparators, char) {
-			return parseIPv4(s)
-		}
-		if char == ':' {
-			return parseIPv6(s)
-		}
-	}
-	return nil
-}
-
-// looksLikeIPAddress returns true if maybeIPAddress is an IP address
-func looksLikeIPAddress(maybeIPAddress string) bool {
-	return parseIP(maybeIPAddress) != nil
 }

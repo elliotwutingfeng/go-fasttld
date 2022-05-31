@@ -1,15 +1,13 @@
 package fasttld
 
-import (
-	"testing"
-)
+import "testing"
 
 type looksLikeIPAddressTest struct {
 	maybeIPAddress string
 	isIPAddress    bool
 }
 
-var looksLikeIPAddressTests = []looksLikeIPAddressTest{
+var looksLikeIPv4AddressTests = []looksLikeIPAddressTest{
 	{maybeIPAddress: "",
 		isIPAddress: false,
 	},
@@ -28,6 +26,21 @@ var looksLikeIPAddressTests = []looksLikeIPAddressTest{
 	{maybeIPAddress: "127.0.0.256",
 		isIPAddress: false,
 	},
+}
+
+var looksLikeIPv6AddressTests = []looksLikeIPAddressTest{
+	{maybeIPAddress: "",
+		isIPAddress: false,
+	},
+	{maybeIPAddress: " ",
+		isIPAddress: false,
+	},
+	{maybeIPAddress: "google.com",
+		isIPAddress: false,
+	},
+	{maybeIPAddress: "1google.com",
+		isIPAddress: false,
+	},
 	{maybeIPAddress: "aBcD:ef01:2345:6789:aBcD:ef01:2345:6789",
 		isIPAddress: true,
 	},
@@ -42,12 +55,22 @@ var looksLikeIPAddressTests = []looksLikeIPAddressTest{
 	},
 }
 
-func TestLooksLikeIPAddress(t *testing.T) {
-	for _, test := range looksLikeIPAddressTests {
-		isIPAddress := looksLikeIPAddress(test.maybeIPAddress)
-		if isIPAddress != test.isIPAddress {
+func TestParseIPv4(t *testing.T) {
+	for _, test := range looksLikeIPv4AddressTests {
+		isIPv4Address := parseIPv4(test.maybeIPAddress) != nil
+		if isIPv4Address != test.isIPAddress {
 			t.Errorf("Output %t not equal to expected %t",
-				isIPAddress, test.isIPAddress)
+				isIPv4Address, test.isIPAddress)
+		}
+	}
+}
+
+func TestParseIPv6(t *testing.T) {
+	for _, test := range looksLikeIPv6AddressTests {
+		isIPv6Address := parseIPv6(test.maybeIPAddress) != nil
+		if isIPv6Address != test.isIPAddress {
+			t.Errorf("Output %t not equal to expected %t",
+				isIPv6Address, test.isIPAddress)
 		}
 	}
 }
