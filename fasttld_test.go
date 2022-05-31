@@ -307,6 +307,11 @@ var periodsAndWhiteSpacesTests = []extractTest{
 			Scheme: "https://", SubDomain: "brb.i.am.going.to", Domain: "be", Suffix: "a.fk",
 			RegisteredDomain: "be.a.fk", Path: "/a/B/c. \uff61",
 		}, description: "Surrounded by extra whitespace | PunyCode"},
+	{urlParams: URLParams{URL: "http://1.1.1.1 &@2.2.2.2:33/4.4.4.4?1.1.1.1# @3.3.3.3/"},
+		expected: &ExtractResult{
+			Scheme: "http://", UserInfo: "1.1.1.1 &", Domain: "2.2.2.2",
+			RegisteredDomain: "2.2.2.2", Port: "33", Path: "/4.4.4.4?1.1.1.1# @3.3.3.3/",
+		}, description: "Whitespace in UserInfo"},
 }
 var invalidTests = []extractTest{
 	{urlParams: URLParams{}, expected: &ExtractResult{}, description: "empty string"},
@@ -371,9 +376,6 @@ var invalidTests = []extractTest{
 	{urlParams: URLParams{URL: "http://a[aBcD:ef01:2345:6789:aBcD:ef01:127\uff0e255\u30020\uff611]"},
 		expected:    &ExtractResult{Scheme: "http://"},
 		description: "IPv6 in square brackets after alphabet"},
-	{urlParams: URLParams{URL: "http://a @example.com"},
-		expected:    &ExtractResult{Scheme: "http://"},
-		description: "UserInfo has whitespace"},
 	{urlParams: URLParams{URL: "http://[127.0.0.1]"}, expected: &ExtractResult{Scheme: "http://"}, description: "IPv4 in square brackets"},
 
 	// Test cases from net/ip-test.go
