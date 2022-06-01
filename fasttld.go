@@ -112,7 +112,7 @@ func trieConstruct(includePrivateSuffix bool, cacheFilePath string) (*trie, erro
 	}
 
 	for _, suffix := range suffixList {
-		if strings.Contains(suffix, ".") {
+		if strings.ContainsRune(suffix, '.') {
 			sp := strings.Split(suffix, ".")
 			reverse(sp)
 			nestedDict(tldTrie, sp)
@@ -150,20 +150,20 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	// Check for IPv6 address
 	var netlocIsIPv6 bool
 	openingSquareBracketIdx := strings.IndexByte(netloc, '[')
-	closingSquareBracketIdx := strings.IndexByte(netloc, ']')
 	if openingSquareBracketIdx > 0 {
 		// Erroneous opening square bracket
 		return &urlParts
-	} else if openingSquareBracketIdx == 0 {
-		if closingSquareBracketIdx > 0 && isIPv6(netloc[1:closingSquareBracketIdx]) {
-			// Closing square bracket in correct place and IPv6 is valid
-			urlParts.Domain = netloc[1:closingSquareBracketIdx]
-			urlParts.RegisteredDomain = netloc[1:closingSquareBracketIdx]
-			netlocIsIPv6 = true
-		} else {
+	}
+	closingSquareBracketIdx := strings.IndexByte(netloc, ']')
+	if openingSquareBracketIdx == 0 {
+		if !(closingSquareBracketIdx > 0 && isIPv6(netloc[1:closingSquareBracketIdx])) {
 			// Have opening square bracket but invalid IPv6 => Domain is invalid
 			return &urlParts
 		}
+		// Closing square bracket in correct place and IPv6 is valid
+		urlParts.Domain = netloc[1:closingSquareBracketIdx]
+		urlParts.RegisteredDomain = netloc[1:closingSquareBracketIdx]
+		netlocIsIPv6 = true
 	} else if closingSquareBracketIdx != -1 {
 		// Erroneous closing square bracket
 		return &urlParts
@@ -238,9 +238,11 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	// Define the root node
 	node := f.TldTrie
 
-	var hasSuffix bool
-	var end bool
-	var previousSepIdx int
+	var (
+		hasSuffix      bool
+		end            bool
+		previousSepIdx int
+	)
 	sepIdx := len(netloc)
 
 	for !end {

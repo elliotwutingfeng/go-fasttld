@@ -48,8 +48,7 @@ type asciiSet [8]uint32
 // Similar to strings.makeASCIISet but skips input validation.
 func makeASCIISet(chars string) (as asciiSet) {
 	// all characters in chars are expected to be valid ASCII characters
-	for i := 0; i < len(chars); i++ {
-		c := chars[i]
+	for _, c := range chars {
 		as[c/32] |= 1 << (c % 32)
 	}
 	return as
