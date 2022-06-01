@@ -122,7 +122,7 @@ func sepSize(r byte) int {
 		return 1
 	}
 	// First byte of any label separator other than '.' is not 46
-	// size of delimiter is 3
+	// size of separator is 3
 	return 3
 }
 

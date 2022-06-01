@@ -65,11 +65,10 @@ func parseIPv4(s string) IP {
 		}
 		if i > 0 {
 			r, size := utf8.DecodeRuneInString(s)
-			if strings.ContainsRune(labelSeparators, r) {
-				s = s[size:]
-			} else {
+			if !strings.ContainsRune(labelSeparators, r) {
 				return nil
 			}
+			s = s[size:]
 		}
 		n, c, ok := dtoi(s)
 		if !ok || n > 0xFF {
@@ -113,8 +112,8 @@ func parseIPv6(s string) (ip IP) {
 			return nil
 		}
 
-		// If followed by any delimiter in labelSeparators, might be in trailing IPv4.
-		if c < len(s) && strings.IndexAny(s[c:], labelSeparators) == 0 {
+		// If followed by any separator in labelSeparators, might be in trailing IPv4.
+		if c < len(s) && strings.ContainsRune(labelSeparators, []rune(s[c:])[0]) {
 			if ellipsis < 0 && i != IPv6len-IPv4len {
 				// Not the right place.
 				return nil
