@@ -148,18 +148,18 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	}
 
 	// Check for IPv6 address
-	var isIPv6 bool
+	var netlocIsIPv6 bool
 	openingSquareBracketIdx := strings.IndexByte(netloc, '[')
 	closingSquareBracketIdx := strings.IndexByte(netloc, ']')
 	if openingSquareBracketIdx > 0 {
 		// Erroneous opening square bracket
 		return &urlParts
 	} else if openingSquareBracketIdx == 0 {
-		if closingSquareBracketIdx > 0 && parseIPv6(netloc[1:closingSquareBracketIdx]) != nil {
+		if closingSquareBracketIdx > 0 && isIPv6(netloc[1:closingSquareBracketIdx]) {
 			// Closing square bracket in correct place and IPv6 is valid
 			urlParts.Domain = netloc[1:closingSquareBracketIdx]
 			urlParts.RegisteredDomain = netloc[1:closingSquareBracketIdx]
-			isIPv6 = true
+			netlocIsIPv6 = true
 		} else {
 			// Have opening square bracket but invalid IPv6 => Domain is invalid
 			return &urlParts
@@ -172,7 +172,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	var afterHost string
 	var hostEndIndex int
 	// Separate URL host from subcomponents thereafter
-	if isIPv6 {
+	if netlocIsIPv6 {
 		hostEndIndex = closingSquareBracketIdx + indexAnyASCII(netloc[closingSquareBracketIdx:], endOfHostDelimitersSet)
 	} else {
 		hostEndIndex = indexAnyASCII(netloc, endOfHostDelimitersSet)
@@ -224,12 +224,12 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		}
 	}
 
-	if isIPv6 {
+	if netlocIsIPv6 {
 		return &urlParts
 	}
 
 	// Check for IPv4 address
-	if parseIPv4(netloc) != nil {
+	if isIPv4(netloc) {
 		urlParts.Domain = netloc
 		urlParts.RegisteredDomain = netloc
 		return &urlParts
