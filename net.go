@@ -9,6 +9,7 @@ import (
 const (
 	IPv4len = 4
 	IPv6len = 16
+	lenDiff = 12 // difference between IPv4len and IPv6len
 )
 
 // Bigger than we need, not too big to worry about overflow
@@ -113,11 +114,11 @@ func isIPv6(s string) bool {
 
 		// If followed by any separator in labelSeparators, might be in trailing IPv4.
 		if c < len(s) && strings.IndexRune(labelSeparators, []rune(s[c:])[0]) != -1 {
-			if ellipsis < 0 && i != IPv6len-IPv4len {
+			if ellipsis < 0 && i != lenDiff {
 				// Not the right place.
 				return false
 			}
-			if i+IPv4len > IPv6len {
+			if i > lenDiff {
 				// Not enough room.
 				return false
 			}
