@@ -237,6 +237,8 @@ var userInfoTests = []extractTest{
 		UserInfo: "usern@me:", Domain: "example", Suffix: "com", RegisteredDomain: "example.com"}, description: "colon but empty password; @ in username"},
 	{urlParams: URLParams{URL: "https://:p@ssword@example.com"}, expected: &ExtractResult{Scheme: "https://",
 		UserInfo: ":p@ssword", Domain: "example", Suffix: "com", RegisteredDomain: "example.com"}, description: "colon but empty username; @ in password"},
+	{urlParams: URLParams{URL: "https://usern@m%40e:password@example.com/p@th?q=@go"}, expected: &ExtractResult{Scheme: "https://",
+		UserInfo: "usern@m%40e:password", Domain: "example", Suffix: "com", RegisteredDomain: "example.com", Path: "/p@th?q=@go"}, description: "@ in UserInfo and Path"},
 }
 var ipv4Tests = []extractTest{
 	{urlParams: URLParams{URL: "127.0.0.1"},
@@ -341,7 +343,7 @@ var invalidTests = []extractTest{
 			SubDomain: "maps", Domain: "google", Suffix: "com.sg",
 			RegisteredDomain: "google.com.sg",
 		}, description: "Invalid Port number"},
-	{urlParams: URLParams{URL: "//server.example.com/path"}, expected: &ExtractResult{Scheme: "//", SubDomain: "server", Domain: "example", Suffix: "com", RegisteredDomain: "example.com", Path: "/path"}, description: "Missing protocol URL with subdomain"},
+	{urlParams: URLParams{URL: "//server.example.com/path"}, expected: &ExtractResult{Scheme: "//", SubDomain: "server", Domain: "example", Suffix: "com", RegisteredDomain: "example.com", Path: "/path"}, description: "Double-slash only Scheme with subdomain"},
 	{urlParams: URLParams{URL: "http://temasek"}, expected: &ExtractResult{Scheme: "http://", Suffix: "temasek"}, description: "Basic URL with TLD only"},
 	{urlParams: URLParams{URL: "http://temasek.this-tld-cannot-be-real"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "temasek", Domain: "this-tld-cannot-be-real"}, description: "Basic URL with bad TLD"},
 	{urlParams: URLParams{URL: "http://temasek.temasek.this-tld-cannot-be-real"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "temasek.temasek", Domain: "this-tld-cannot-be-real"}, description: "Basic URL with subdomain and bad TLD"},
@@ -433,6 +435,9 @@ var domainOnlySingleTLDTests = []extractTest{
 	{urlParams: URLParams{URL: "https://example.co/en"}, expected: &ExtractResult{Scheme: "https://", Domain: "example", Suffix: "co", RegisteredDomain: "example.co", Path: "/en"}, description: "Domain only + co"},
 	{urlParams: URLParams{URL: "https://example.sg/en"}, expected: &ExtractResult{Scheme: "https://", Domain: "example", Suffix: "sg", RegisteredDomain: "example.sg", Path: "/en"}, description: "Domain only + sg"},
 	{urlParams: URLParams{URL: "https://example.tv/en"}, expected: &ExtractResult{Scheme: "https://", Domain: "example", Suffix: "tv", RegisteredDomain: "example.tv", Path: "/en"}, description: "Domain only + tv"},
+}
+var pathTests = []extractTest{
+	{urlParams: URLParams{URL: "http://www.example.com/this:that"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "www", Domain: "example", Suffix: "com", RegisteredDomain: "example.com", Path: "/this:that"}, description: "Colon in Path"},
 }
 var wildcardTests = []extractTest{
 	{urlParams: URLParams{URL: "https://asdf.wwe.ck"},
@@ -613,6 +618,7 @@ func TestExtract(t *testing.T) {
 		invalidTests,
 		internationalTLDTests,
 		domainOnlySingleTLDTests,
+		pathTests,
 		wildcardTests,
 		lookoutTests,
 	} {
