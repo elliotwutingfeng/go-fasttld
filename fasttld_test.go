@@ -438,6 +438,7 @@ var domainOnlySingleTLDTests = []extractTest{
 }
 var pathTests = []extractTest{
 	{urlParams: URLParams{URL: "http://www.example.com/this:that"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "www", Domain: "example", Suffix: "com", RegisteredDomain: "example.com", Path: "/this:that"}, description: "Colon in Path"},
+	{urlParams: URLParams{URL: "http://example.com/oid/[order_id]"}, expected: &ExtractResult{Scheme: "http://", Domain: "example", Suffix: "com", RegisteredDomain: "example.com", Path: "/oid/[order_id]"}, description: "Square brackets in Path"},
 }
 var wildcardTests = []extractTest{
 	{urlParams: URLParams{URL: "https://asdf.wwe.ck"},
