@@ -67,8 +67,8 @@ func (as *asciiSet) contains(c byte) bool {
 // Similar to strings.IndexAny but takes in an asciiSet instead of a string
 // and skips input validation.
 func indexAnyASCII(s string, as asciiSet) int {
-	for i := 0; i < len(s); i++ {
-		if as.contains(s[i]) {
+	for i, b := range []byte(s) {
+		if as.contains(b) {
 			return i
 		}
 	}
@@ -147,11 +147,11 @@ func makeNewReplacerParams(toBeReplaced string, toReplaceWith string) []string {
 	return params
 }
 
-// indexByteExceptAfter returns the index of the first instance of byte b,
-// otherwise -1 if any byte in notAfterCharsSet is found first or if b is not present in s.
-func indexByteExceptAfter(s string, b byte, notAfterCharsSet asciiSet) int {
+// indexLastByteBefore returns the index of the last instance of byte b
+// before any byte in notAfterCharsSet, otherwise -1
+func indexLastByteBefore(s string, b byte, notAfterCharsSet asciiSet) int {
 	if firstNotAfterCharIdx := indexAnyASCII(s, notAfterCharsSet); firstNotAfterCharIdx != -1 {
-		return strings.IndexByte(s[0:firstNotAfterCharIdx], b)
+		return strings.LastIndexByte(s[0:firstNotAfterCharIdx], b)
 	}
 	return strings.IndexByte(s, b)
 }
