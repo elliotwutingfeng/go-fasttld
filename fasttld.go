@@ -149,12 +149,12 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 
 	// Check for IPv6 address
 	var netlocIsIPv6 bool
-	openingSquareBracketIdx := indexFirstByteBefore(netloc, '[', endOfHostWithPortDelimitersSet)
+	openingSquareBracketIdx := indexByteBefore(netloc, '[', endOfHostWithPortDelimitersSet)
 	if openingSquareBracketIdx > 0 {
 		// Erroneous opening square bracket
 		return &urlParts
 	}
-	closingSquareBracketIdx := indexFirstByteBefore(netloc, ']', endOfHostWithPortDelimitersSet)
+	closingSquareBracketIdx := indexByteBefore(netloc, ']', endOfHostWithPortDelimitersSet)
 	if openingSquareBracketIdx == 0 {
 		if !(closingSquareBracketIdx > 0 && isIPv6(netloc[1:closingSquareBracketIdx])) {
 			// Have opening square bracket but invalid IPv6 => Domain is invalid

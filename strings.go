@@ -147,9 +147,9 @@ func makeNewReplacerParams(toBeReplaced string, toReplaceWith string) []string {
 	return params
 }
 
-// indexFirstByteBefore returns the index of the first instance of byte b
+// indexByteBefore returns the index of the first instance of byte b
 // before any byte in notAfterCharsSet, otherwise -1
-func indexFirstByteBefore(s string, b byte, notAfterCharsSet asciiSet) int {
+func indexByteBefore(s string, b byte, notAfterCharsSet asciiSet) int {
 	if firstNotAfterCharIdx := indexAnyASCII(s, notAfterCharsSet); firstNotAfterCharIdx != -1 {
 		return strings.IndexByte(s[0:firstNotAfterCharIdx], b)
 	}
