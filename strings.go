@@ -153,5 +153,5 @@ func indexLastByteBefore(s string, b byte, notAfterCharsSet asciiSet) int {
 	if firstNotAfterCharIdx := indexAnyASCII(s, notAfterCharsSet); firstNotAfterCharIdx != -1 {
 		return strings.LastIndexByte(s[0:firstNotAfterCharIdx], b)
 	}
-	return strings.IndexByte(s, b)
+	return strings.LastIndexByte(s, b)
 }

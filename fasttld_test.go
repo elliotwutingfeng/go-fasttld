@@ -220,6 +220,24 @@ var noSchemeTests = []extractTest{
 	{urlParams: URLParams{URL: "255.255.example.com"}, expected: &ExtractResult{SubDomain: "255.255", Domain: "example", Suffix: "com", RegisteredDomain: "example.com"}, description: "Numeric SubDomain + Domain | No Scheme"},
 	{urlParams: URLParams{URL: "server.example.com/path"}, expected: &ExtractResult{SubDomain: "server", Domain: "example", Suffix: "com", RegisteredDomain: "example.com", Path: "/path"}, description: "SubDomain, Domain and Path | No Scheme"},
 }
+var userInfoTests = []extractTest{
+	{urlParams: URLParams{URL: "https://username@example.com"}, expected: &ExtractResult{Scheme: "https://",
+		UserInfo: "username", Domain: "example", Suffix: "com", RegisteredDomain: "example.com"}, description: "username"},
+	{urlParams: URLParams{URL: "https://password@example.com"}, expected: &ExtractResult{Scheme: "https://",
+		UserInfo: "password", Domain: "example", Suffix: "com", RegisteredDomain: "example.com"}, description: "username + password"},
+	{urlParams: URLParams{URL: "https://:password@example.com"}, expected: &ExtractResult{Scheme: "https://",
+		UserInfo: ":password", Domain: "example", Suffix: "com", RegisteredDomain: "example.com"}, description: "colon but empty username"},
+	{urlParams: URLParams{URL: "https://username:@example.com"}, expected: &ExtractResult{Scheme: "https://",
+		UserInfo: "username:", Domain: "example", Suffix: "com", RegisteredDomain: "example.com"}, description: "colon but empty password"},
+	{urlParams: URLParams{URL: "https://usern@me:password@example.com"}, expected: &ExtractResult{Scheme: "https://",
+		UserInfo: "usern@me:password", Domain: "example", Suffix: "com", RegisteredDomain: "example.com"}, description: "@ in username"},
+	{urlParams: URLParams{URL: "https://usern@me:p@ssword@example.com"}, expected: &ExtractResult{Scheme: "https://",
+		UserInfo: "usern@me:p@ssword", Domain: "example", Suffix: "com", RegisteredDomain: "example.com"}, description: "@ in password"},
+	{urlParams: URLParams{URL: "https://usern@me:@example.com"}, expected: &ExtractResult{Scheme: "https://",
+		UserInfo: "usern@me:", Domain: "example", Suffix: "com", RegisteredDomain: "example.com"}, description: "colon but empty password; @ in username"},
+	{urlParams: URLParams{URL: "https://:p@ssword@example.com"}, expected: &ExtractResult{Scheme: "https://",
+		UserInfo: ":p@ssword", Domain: "example", Suffix: "com", RegisteredDomain: "example.com"}, description: "colon but empty username; @ in password"},
+}
 var ipv4Tests = []extractTest{
 	{urlParams: URLParams{URL: "127.0.0.1"},
 		expected: &ExtractResult{Domain: "127.0.0.1",
@@ -586,6 +604,7 @@ func TestExtract(t *testing.T) {
 	for _, testCollection := range []([]extractTest){
 		schemeTests,
 		noSchemeTests,
+		userInfoTests,
 		ipv4Tests,
 		ipv6Tests,
 		ignoreSubDomainsTests,
