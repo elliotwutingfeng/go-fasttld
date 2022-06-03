@@ -12,7 +12,7 @@ import (
 // Obtained from IETF RFC 3490
 const labelSeparators string = "\u002e\u3002\uff0e\uff61"
 
-const whitespace string = " \t\n\v\f\r\uFEFF\u200b\u200c\u200d\u00a0\u1680\u0085\u00a0"
+const whitespace string = " \t\n\v\f\r\uFEFF\u200b\u200c\u200d\u00a0\u1680\u0085"
 
 // For replacing internationalised label separators when converting URL to punycode.
 var standardLabelSeparatorReplacer = strings.NewReplacer(makeNewReplacerParams(labelSeparators, ".")...)
@@ -75,6 +75,18 @@ func indexAnyASCII(s string, as asciiSet) int {
 	return -1
 }
 
+// indexRune returns the index of the first instance of the Unicode code point
+// r, or -1 if rune is not present in s.
+// Similar to strings.IndexRune but skips utf.RuneError and utf8.ValidRune checks
+func indexRune(s string, r rune) int {
+	switch {
+	case 0 <= r && r < utf8.RuneSelf:
+		return strings.IndexByte(s, byte(r))
+	default:
+		return strings.Index(s, string(r))
+	}
+}
+
 // indexAny returns the index of the first instance of any Unicode code point
 // from chars in s, or -1 if no Unicode code point from chars is present in s.
 //
@@ -82,7 +94,7 @@ func indexAnyASCII(s string, as asciiSet) int {
 // and skips input validation.
 func indexAny(s, chars string) int {
 	for i, c := range s {
-		if strings.IndexRune(chars, c) != -1 {
+		if indexRune(chars, c) != -1 {
 			return i
 		}
 	}
@@ -145,15 +157,6 @@ func makeNewReplacerParams(toBeReplaced string, toReplaceWith string) []string {
 		params = append(params, string(r), toReplaceWith)
 	}
 	return params
-}
-
-// indexByteBefore returns the index of the first instance of byte b
-// before any byte in notAfterCharsSet, otherwise -1
-func indexByteBefore(s string, b byte, notAfterCharsSet asciiSet) int {
-	if firstNotAfterCharIdx := indexAnyASCII(s, notAfterCharsSet); firstNotAfterCharIdx != -1 {
-		return strings.IndexByte(s[0:firstNotAfterCharIdx], b)
-	}
-	return strings.IndexByte(s, b)
 }
 
 // indexLastByteBefore returns the index of the last instance of byte b
