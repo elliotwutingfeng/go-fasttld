@@ -3,7 +3,7 @@
     "ignoreTests": false,
     "packageRules": [
       {
-        "updateTypes": ["minor", "patch", "digest"],
+        "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
         "automerge": true
       }
     ],
