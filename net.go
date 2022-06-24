@@ -9,7 +9,7 @@ import (
 const (
 	IPv4len = 4
 	IPv6len = 16
-	lenDiff = 12 // difference between IPv4len and IPv6len
+	lenDiff = IPv6len - IPv4len
 )
 
 // Bigger than we need, not too big to worry about overflow
@@ -82,10 +82,7 @@ func isIPv4(s string) bool {
 		}
 		s = s[c:]
 	}
-	if len(s) != 0 {
-		return false
-	}
-	return true
+	return len(s) == 0
 }
 
 // isIPv6 returns true if s is a literal IPv6 address as described in RFC 4291
