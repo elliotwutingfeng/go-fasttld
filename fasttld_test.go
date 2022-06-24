@@ -461,7 +461,7 @@ var wildcardTests = []extractTest{
 var lookoutTests = []extractTest{ // some tests from lookout.net
 	{urlParams: URLParams{URL: "http://GOO\u200b\u2060\ufeffgoo.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, description: ""},
 	{urlParams: URLParams{URL: "http://\u0646\u0627\u0645\u0647\u200c\u0627\u06cc.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, description: ""},
-	{urlParams: URLParams{URL: "http://\u0dc1\u0dca\u200d\u0dbb\u0dd3.com.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, description: ""},
+	{urlParams: URLParams{URL: "http://\u0000\u0dc1\u0dca\u200d\u0dbb\u0dd3.com.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, description: ""},
 	{urlParams: URLParams{URL: "http://\u0dc1\u0dca\u200d\u0dbb\u0dd3.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, description: ""},
 	{urlParams: URLParams{URL: "http://look\ufeffout.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, description: ""},
 	{urlParams: URLParams{URL: "http://www\u00A0.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, description: ""},
