@@ -136,9 +136,9 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 
 	// Extract URL scheme
 	netloc := strings.Trim(e.URL, whitespace)
-	if schemeIndices := schemeRegex.FindStringIndex(netloc); schemeIndices != nil {
-		urlParts.Scheme = netloc[schemeIndices[0]:schemeIndices[1]]
-		netloc = netloc[schemeIndices[1]:]
+	if schemeEndIndex := getSchemeEndIndex(netloc); schemeEndIndex != -1 {
+		urlParts.Scheme = netloc[0:schemeEndIndex]
+		netloc = netloc[schemeEndIndex:]
 	}
 
 	// Extract URL userinfo
@@ -310,8 +310,8 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		sepIdx = len(netloc)
 	}
 
-	// host is invalid if host cannot be converted to unicode
-	if _, err := idna.ToUnicode(netloc[0:sepIdx]); err != nil {
+	// host is invalid if host cannot be converted to ASCII
+	if _, err := idna.ToASCII(netloc[0:sepIdx]); err != nil {
 		log.Println(strings.SplitAfterN(err.Error(), "idna: invalid label", 2)[0])
 		return &urlParts
 	}

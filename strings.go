@@ -2,7 +2,6 @@ package fasttld
 
 import (
 	"log"
-	"regexp"
 	"strings"
 	"unicode/utf8"
 
@@ -31,7 +30,62 @@ const invalidUserInfoChars string = endOfHostWithPortDelimiters + "[]"
 var invalidUserInfoCharsSet asciiSet = makeASCIISet(invalidUserInfoChars)
 
 // For extracting URL scheme.
-var schemeRegex = regexp.MustCompile(`(?i)^([a-z][a-z0-9+-.]*:)?[\\/]{2,}`)
+var schemeFirstCharSet asciiSet = makeASCIISet("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
+var schemeRemainingCharSet asciiSet = makeASCIISet("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890+-.")
+
+// getSchemeEndIndex checks if string s begins with a URL Scheme and
+// returns its last index. Returns -1 if no Scheme exists.
+func getSchemeEndIndex(s string) int {
+	var colon bool
+	var slashCount int
+
+	for i := 0; i < len(s); i++ {
+		// first character
+		if i == 0 {
+			// expecting schemeFirstCharSet or slash
+			if schemeFirstCharSet.contains(s[i]) {
+				continue
+			}
+			if s[i] == '/' || s[i] == '\\' {
+				slashCount++
+				continue
+			}
+			return -1
+		}
+		// second character onwards
+		// if no slashes yet, look for schemeRemainingCharSet or colon
+		// otherwise look for slashes
+		if slashCount == 0 {
+			if !colon {
+				if schemeRemainingCharSet.contains(s[i]) {
+					continue
+				}
+				if s[i] == ':' {
+					colon = true
+					continue
+				}
+			}
+			if s[i] == '/' || s[i] == '\\' {
+				slashCount++
+				continue
+			}
+			return -1
+		}
+		// expecting only slashes
+		if s[i] == '/' || s[i] == '\\' {
+			slashCount++
+			continue
+		}
+		if slashCount < 2 {
+			return -1
+		}
+		return i
+	}
+	if slashCount >= 2 {
+		return len(s)
+	}
+	return -1
+}
 
 // asciiSet is a 32-byte value, where each bit represents the presence of a
 // given ASCII character in the set. The 128-bits of the lower 16 bytes,

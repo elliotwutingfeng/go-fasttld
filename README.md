@@ -302,13 +302,13 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 <code>https://news.google.com</code>
 
-| Benchmark Name       | Iterations | ns/op       | B/op      | allocs/op   | Fastest            |
-|----------------------|------------|-------------|-----------|-------------|--------------------|
-| GoFastTld            | 2393121    | 502.8 ns/op | 144 B/op  | 2 allocs/op | :heavy_check_mark: |
-| JPilloraGoTld        | 2417242    | 522.0 ns/op | 224 B/op  | 2 allocs/op |                    |
-| JoeGuoTldExtract     | 2215990    | 529.9 ns/op | 160 B/op  | 5 allocs/op |                    |
-| Mjd2021USATldExtract | 1396657    | 843.7 ns/op | 208 B/op  | 7 allocs/op |                    |
-| M507Tlde             | 2302858    | 516.1 ns/op | 160 B/op  | 5 allocs/op |                    |
+| Benchmark Name       | Iterations | ns/op       | B/op     | allocs/op   | Fastest            |
+|----------------------|------------|-------------|----------|-------------|--------------------|
+| GoFastTld            | 3442214    | 336.9 ns/op | 128 B/op | 1 allocs/op | :heavy_check_mark: |
+| JPilloraGoTld        | 2348770    | 512.2 ns/op | 224 B/op | 2 allocs/op |                    |
+| JoeGuoTldExtract     | 2185634    | 540.7 ns/op | 160 B/op | 5 allocs/op |                    |
+| Mjd2021USATldExtract | 1377514    | 853.8 ns/op | 208 B/op | 7 allocs/op |                    |
+| M507Tlde             | 2241205    | 509.1 ns/op | 160 B/op | 5 allocs/op |                    |
 
 ---
 
@@ -316,13 +316,13 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 <code>https://iupac.org/iupac-announces-the-2021-top-ten-emerging-technologies-in-chemistry/</code>
 
-| Benchmark Name       | Iterations | ns/op       | B/op      | allocs/op   | Fastest            |
-|----------------------|------------|-------------|-----------|-------------|--------------------|
-| GoFastTld            | 2606239    | 454.3 ns/op | 144 B/op  | 2 allocs/op | :heavy_check_mark: |
-| JPilloraGoTld        | 1658902    | 721.3 ns/op | 224 B/op  | 2 allocs/op |                    |
-| JoeGuoTldExtract     | 2141043    | 557.7 ns/op | 272 B/op  | 5 allocs/op |                    |
-| Mjd2021USATldExtract | 1491565    | 802.7 ns/op | 288 B/op  | 6 allocs/op |                    |
-| M507Tlde             | 2100087    | 568.8 ns/op | 272 B/op  | 5 allocs/op |                    |
+| Benchmark Name       | Iterations | ns/op       | B/op     | allocs/op   | Fastest            |
+|----------------------|------------|-------------|----------|-------------|--------------------|
+| GoFastTld            | 4466224    | 283.4 ns/op | 128 B/op | 1 allocs/op | :heavy_check_mark: |
+| JPilloraGoTld        | 1585011    | 759.0 ns/op | 224 B/op | 2 allocs/op |                    |
+| JoeGuoTldExtract     | 2051017    | 618.3 ns/op | 272 B/op | 5 allocs/op |                    |
+| Mjd2021USATldExtract | 1377840    | 885.7 ns/op | 288 B/op | 6 allocs/op |                    |
+| M507Tlde             | 2007570    | 599.9 ns/op | 272 B/op | 5 allocs/op |                    |
 
 ---
 
@@ -332,11 +332,11 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 | Benchmark Name       | Iterations | ns/op       | B/op      | allocs/op   | Fastest            |
 |----------------------|------------|-------------|-----------|-------------|--------------------|
-| GoFastTld            | 2206548    | 542.1 ns/op | 144 B/op  | 2 allocs/op | :heavy_check_mark: |
-| JPilloraGoTld        | 395850     | 2757 ns/op  | 928 B/op  | 4 allocs/op |                    |
-| JoeGuoTldExtract     | 782208     | 1352 ns/op  | 1120 B/op | 6 allocs/op |                    |
-| Mjd2021USATldExtract | 776947     | 1333 ns/op  | 1120 B/op | 6 allocs/op |                    |
-| M507Tlde             | 755616     | 1359 ns/op  | 1120 B/op | 6 allocs/op |                    |
+| GoFastTld            | 3441763    | 335.1 ns/op | 128 B/op  | 1 allocs/op | :heavy_check_mark: |
+| JPilloraGoTld        | 383143     | 2963 ns/op  | 928 B/op  | 4 allocs/op |                    |
+| JoeGuoTldExtract     | 819870     | 1436 ns/op  | 1120 B/op | 6 allocs/op |                    |
+| Mjd2021USATldExtract | 740437     | 1383 ns/op  | 1120 B/op | 6 allocs/op |                    |
+| M507Tlde             | 865392     | 1484 ns/op  | 1120 B/op | 6 allocs/op |                    |
 
 ---
 
