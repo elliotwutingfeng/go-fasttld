@@ -2,6 +2,7 @@ package fasttld
 
 import (
 	"log"
+	"sort"
 	"strings"
 	"unicode/utf8"
 
@@ -11,7 +12,23 @@ import (
 // Obtained from IETF RFC 3490
 const labelSeparators string = "\u002e\u3002\uff0e\uff61"
 
+// makeSortedRuneSlice converts a string to a
+// slice of runes sorted by integer value in ascending order
+func makeSortedRuneSlice(s string) runeSlice {
+	var slice runeSlice = []rune(s)
+	sort.Sort(runeSlice(slice))
+	return slice
+}
+
+type runeSlice []rune
+
+func (p runeSlice) Len() int           { return len(p) }
+func (p runeSlice) Less(i, j int) bool { return p[i] < p[j] }
+func (p runeSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+
 const whitespace string = " \t\n\v\f\r\uFEFF\u200b\u200c\u200d\u00a0\u1680\u0085\u0000"
+
+var sortedWhitespace runeSlice = makeSortedRuneSlice(whitespace)
 
 // For replacing internationalised label separators when converting URL to punycode.
 var standardLabelSeparatorReplacer = strings.NewReplacer(makeNewReplacerParams(labelSeparators, ".")...)
@@ -131,6 +148,7 @@ func indexAnyASCII(s string, as asciiSet) int {
 
 // indexRune returns the index of the first instance of the Unicode code point
 // r, or -1 if rune is not present in s.
+//
 // Similar to strings.IndexRune but skips utf.RuneError and utf8.ValidRune checks
 func indexRune(s string, r rune) int {
 	switch {
@@ -144,15 +162,38 @@ func indexRune(s string, r rune) int {
 // indexAny returns the index of the first instance of any Unicode code point
 // from chars in s, or -1 if no Unicode code point from chars is present in s.
 //
-// Similar to strings.IndexAny but does not attempt to make an asciiSet
+// chars is assumed to be sorted by integer value in ascending order.
+//
+// Similar to strings.IndexAny but uses runeSlice
 // and skips input validation.
-func indexAny(s, chars string) int {
+func indexAny(s string, chars runeSlice) int {
 	for i, c := range s {
-		if indexRune(chars, c) != -1 {
+		if runeBinarySearch(c, chars) {
 			return i
 		}
 	}
 	return -1
+}
+
+// runeBinarySearch returns true if target exists in sortedRunes
+// otherwise it returns false.
+//
+// sortedRunes must be already sorted by integer value in ascending order.
+func runeBinarySearch(target rune, sortedRunes runeSlice) bool {
+	var low int
+	high := len(sortedRunes) - 1
+
+	for low <= high {
+		median := (low + high) / 2
+
+		if sortedRunes[median] < target {
+			low = median + 1
+		} else {
+			high = median - 1
+		}
+	}
+
+	return low != len(sortedRunes) && sortedRunes[low] == target
 }
 
 // lastIndexAny returns the index of the last instance of any Unicode code

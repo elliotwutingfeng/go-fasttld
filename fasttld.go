@@ -317,7 +317,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	}
 
 	// Reject if whitespace appears before Path
-	if indexAny(netloc[0:sepIdx], whitespace) != -1 {
+	if indexAny(netloc[0:sepIdx], sortedWhitespace) != -1 {
 		return &urlParts
 	}
 
