@@ -46,3 +46,31 @@ func TestReverse(t *testing.T) {
 		}
 	}
 }
+
+type runeBinarySearchTest struct {
+	target      rune
+	sortedRunes runeSlice
+	exists      bool
+}
+
+var runeBinarySearchTests = []runeBinarySearchTest{
+	{'r', runeSlice{'a', 'b', 'k', '水'}, false},
+	{'a', runeSlice{'a', 'b', 'k', '水'}, true},
+	{'水', runeSlice{'a', 'b', 'k', '水'}, true},
+	{'r', runeSlice{'a', 'b', '土', '木', '水', '火', '金'}, false},
+	{'0', runeSlice{'a', 'b', '土', '木', '水', '火', '金'}, false},
+	{'日', runeSlice{'a', 'b', '土', '木', '水', '火', '金'}, false},
+	{'界', runeSlice{'a', 'b', '土', '木', '水', '火', '金'}, false},
+	{'a', runeSlice{'a', 'b', '土', '木', '水', '火', '金'}, true},
+	{'火', runeSlice{'a', 'b', '土', '木', '水', '火', '金'}, true},
+	{'b', runeSlice{'a', 'b', '土', '木', '水', '火', '金'}, true},
+	{'水', runeSlice{'a', 'b', '土', '木', '水', '火', '金'}, true},
+}
+
+func TestRuneBinarySearch(t *testing.T) {
+	for _, test := range runeBinarySearchTests {
+		if exists := runeBinarySearch(test.target, test.sortedRunes); exists != test.exists {
+			t.Errorf("Output %t not equal to expected %t", exists, test.exists)
+		}
+	}
+}
