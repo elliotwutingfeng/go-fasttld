@@ -190,7 +190,13 @@ func runeBinarySearch(target rune, sortedRunes runeSlice) bool {
 // Similar to strings.LastIndexAny but skips input validation.
 func lastIndexAny(s string, chars string) int {
 	for i := len(s); i > 0; {
-		r, size := utf8.DecodeLastRuneInString(s[0:i])
+		var lowerBound int
+		if i > 4 {
+			// minimises size of slice to search
+			// rune is an alias of int32 with maximum size of 4 bytes
+			lowerBound = i - 4
+		}
+		r, size := utf8.DecodeLastRuneInString(s[lowerBound:i])
 		i -= size
 		if strings.IndexRune(chars, r) != -1 {
 			return i
