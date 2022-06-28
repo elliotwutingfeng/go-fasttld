@@ -146,19 +146,6 @@ func indexAnyASCII(s string, as asciiSet) int {
 	return -1
 }
 
-// indexRune returns the index of the first instance of the Unicode code point
-// r, or -1 if rune is not present in s.
-//
-// Similar to strings.IndexRune but skips utf.RuneError and utf8.ValidRune checks
-func indexRune(s string, r rune) int {
-	switch {
-	case 0 <= r && r < utf8.RuneSelf:
-		return strings.IndexByte(s, byte(r))
-	default:
-		return strings.Index(s, string(r))
-	}
-}
-
 // indexAny returns the index of the first instance of any Unicode code point
 // from chars in s, or -1 if no Unicode code point from chars is present in s.
 //
