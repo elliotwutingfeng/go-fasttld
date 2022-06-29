@@ -12,8 +12,8 @@ type punyCodeTest struct {
 }
 
 var punyCodeTests = []punyCodeTest{
-	{"https://google.com", "https://google.com"},
-	{"https://hello.世界.com", "https://hello.xn--rhqv96g.com"},
+	{"google.com", "google.com"},
+	{"hello.世界.com", "hello.xn--rhqv96g.com"},
 	{strings.Repeat("x", 65536) + "\uff00", ""}, // int32 overflow.
 }
 
@@ -43,6 +43,24 @@ func TestReverse(t *testing.T) {
 		reverse(test.original)
 		if output := reflect.DeepEqual(test.original, test.expected); !output {
 			t.Errorf("Output %q not equal to expected %q", test.original, test.expected)
+		}
+	}
+}
+
+func TestRuneSliceAscending(t *testing.T) {
+	slices := []runeSlice{whitespaceRuneSlice, labelSeparatorsRuneSlice, invalidHostNameCharsRuneSlice, validHostNameCharsRuneSlice}
+	for sIdx, slice := range slices {
+		if len(slice) == 0 {
+			t.Errorf("Slice at index %d : is empty", sIdx)
+		} else {
+			val := int(slice[0])
+			for idx, r := range slice {
+				rVal := int(r)
+				if idx != 0 && rVal <= val {
+					t.Errorf("Slice at index %d :Element value at index %d less than or equal to element value at index %d", sIdx, idx, idx-1)
+				}
+				val = rVal
+			}
 		}
 	}
 }

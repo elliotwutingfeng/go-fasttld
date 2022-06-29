@@ -2,36 +2,38 @@ package fasttld
 
 import (
 	"log"
-	"sort"
 	"strings"
 	"unicode/utf8"
 
 	"golang.org/x/net/idna"
 )
 
-// Obtained from IETF RFC 3490
-const labelSeparators string = "\u002e\u3002\uff0e\uff61"
-
-// makeSortedRuneSlice converts a string to a
-// slice of runes sorted by integer value in ascending order
-func makeSortedRuneSlice(s string) runeSlice {
-	var slice runeSlice = []rune(s)
-	sort.Sort(runeSlice(slice))
-	return slice
-}
+var idnaM *idna.Profile = idna.New(idna.MapForLookup(), idna.Transitional(true))
 
 type runeSlice []rune
 
-func (p runeSlice) Len() int           { return len(p) }
-func (p runeSlice) Less(i, j int) bool { return p[i] < p[j] }
-func (p runeSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+const alphabets = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+const numbers = "0123456789"
 
-const whitespace string = " \t\n\v\f\r\uFEFF\u200b\u200c\u200d\u00a0\u1680\u0085\u0000"
+// Obtained from IETF RFC 3490
+const labelSeparators string = "\u002e\u3002\uff0e\uff61"
 
-var sortedWhitespace runeSlice = makeSortedRuneSlice(whitespace)
+var labelSeparatorsRuneSlice runeSlice = runeSlice(labelSeparators)
 
-// For replacing internationalised label separators when converting URL to punycode.
-var standardLabelSeparatorReplacer = strings.NewReplacer(makeNewReplacerParams(labelSeparators, ".")...)
+const controlChars string = "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\t\n\v\f\r\u000e\u000f" +
+	"\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f"
+
+const whitespace string = controlChars + " \u0085\u0086\u00a0\u1680\u200b\u200c\u200d\uFEFF"
+
+var whitespaceRuneSlice runeSlice = runeSlice(whitespace)
+
+const invalidHostNameChars = controlChars + " !\u0085\u0086\u00a0\u1680\u200b\u200c\u200d\u2025\uFEFF\uff1a"
+
+var invalidHostNameCharsRuneSlice runeSlice = runeSlice(invalidHostNameChars)
+
+const validHostNameChars = "-." + numbers + alphabets + "\u3002\uff0e\uff61"
+
+var validHostNameCharsRuneSlice runeSlice = runeSlice(validHostNameChars)
 
 const endOfHostWithPortDelimiters string = `/\?#`
 
@@ -47,8 +49,8 @@ const invalidUserInfoChars string = endOfHostWithPortDelimiters + "[]"
 var invalidUserInfoCharsSet asciiSet = makeASCIISet(invalidUserInfoChars)
 
 // For extracting URL scheme.
-var schemeFirstCharSet asciiSet = makeASCIISet("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
-var schemeRemainingCharSet asciiSet = makeASCIISet("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890+-.")
+var schemeFirstCharSet asciiSet = makeASCIISet(alphabets)
+var schemeRemainingCharSet asciiSet = makeASCIISet(alphabets + "+-.0123456789")
 
 // getSchemeEndIndex checks if string s begins with a URL Scheme and
 // returns its last index. Returns -1 if no Scheme exists.
@@ -227,24 +229,12 @@ func sepSize(r byte) int {
 
 // formatAsPunycode formats s as punycode.
 func formatAsPunycode(s string) string {
-	asPunyCode, err := idna.ToASCII(s)
+	asPunyCode, err := idnaM.ToASCII(s)
 	if err != nil {
 		log.Println(strings.SplitAfterN(err.Error(), "idna: invalid label", 2)[0])
 		return ""
 	}
 	return asPunyCode
-}
-
-// makeNewReplacerParams generates parameters for
-// the strings.NewReplacer function
-// where all runes in toBeReplaced are to be
-// replaced by toReplaceWith
-func makeNewReplacerParams(toBeReplaced string, toReplaceWith string) []string {
-	var params = make([]string, len(toBeReplaced))
-	for _, r := range toBeReplaced {
-		params = append(params, string(r), toReplaceWith)
-	}
-	return params
 }
 
 // indexLastByteBefore returns the index of the last instance of byte b

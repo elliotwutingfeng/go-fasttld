@@ -217,10 +217,6 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		netloc = netloc[0:hostEndIdx]
 	}
 
-	if e.ConvertURLToPunyCode {
-		netloc = formatAsPunycode(standardLabelSeparatorReplacer.Replace(netloc))
-	}
-
 	// Extract Port and "Path" if any
 	if len(afterHost) != 0 {
 		pathStartIndex := indexAnyASCII(afterHost, endOfHostWithPortDelimitersSet)
@@ -258,6 +254,12 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		urlParts.Domain = netloc
 		urlParts.RegisteredDomain = netloc
 		return &urlParts
+	}
+
+	var convertedToPunyCode bool
+	if e.ConvertURLToPunyCode {
+		netloc = formatAsPunycode(netloc)
+		convertedToPunyCode = true
 	}
 
 	// Define the root node
@@ -310,14 +312,23 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		sepIdx = len(netloc)
 	}
 
-	// host is invalid if host cannot be converted to ASCII
-	if _, err := idna.ToASCII(netloc[0:sepIdx]); err != nil {
-		log.Println(strings.SplitAfterN(err.Error(), "idna: invalid label", 2)[0])
+	// host is invalid if it starts or ends with '-', or starts with a label separator
+	if len(netloc[0:sepIdx]) != 0 && (indexAny(netloc[0:1], labelSeparatorsRuneSlice) != -1 || netloc[0] == '-' || netloc[len(netloc)-1] == '-') {
 		return &urlParts
 	}
 
-	// Reject if whitespace appears before Path
-	if indexAny(netloc[0:sepIdx], sortedWhitespace) != -1 {
+	// host is invalid if host cannot be converted to ASCII
+	//
+	// skip if host already converted to punycode
+	if !convertedToPunyCode {
+		if _, err := idna.ToASCII(netloc[0:sepIdx]); err != nil {
+			log.Println(strings.SplitAfterN(err.Error(), "idna: invalid label", 2)[0])
+			return &urlParts
+		}
+	}
+
+	// Reject if invalidHostNameChars appears before Path
+	if indexAny(netloc[0:sepIdx], invalidHostNameCharsRuneSlice) != -1 {
 		return &urlParts
 	}
 
