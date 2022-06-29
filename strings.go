@@ -189,8 +189,8 @@ func runeBinarySearch(target rune, sortedRunes runeSlice) bool {
 // point from chars in s, or -1 if no Unicode code point from chars is
 // present in s.
 //
-// Similar to strings.LastIndexAny but skips input validation.
-func lastIndexAny(s string, chars string) int {
+// Similar to strings.LastIndexAny but skips input validation and uses runeSlice.
+func lastIndexAny(s string, chars runeSlice) int {
 	for i := len(s); i > 0; {
 		var lowerBound int
 		if i > 4 {
@@ -200,7 +200,7 @@ func lastIndexAny(s string, chars string) int {
 		}
 		r, size := utf8.DecodeLastRuneInString(s[lowerBound:i])
 		i -= size
-		if strings.IndexRune(chars, r) != -1 {
+		if runeBinarySearch(r, chars) {
 			return i
 		}
 	}

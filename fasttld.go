@@ -256,10 +256,19 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		return &urlParts
 	}
 
-	var convertedToPunyCode bool
 	if e.ConvertURLToPunyCode {
 		netloc = formatAsPunycode(netloc)
-		convertedToPunyCode = true
+	} else if _, err := idna.ToASCII(netloc); err != nil {
+		// host is invalid if host cannot be converted to ASCII
+		//
+		// skip if host already converted to punycode
+		log.Println(strings.SplitAfterN(err.Error(), "idna: invalid label", 2)[0])
+		return &urlParts
+	}
+
+	// Reject if invalidHostNameChars appears before Path
+	if indexAny(netloc, invalidHostNameCharsRuneSlice) != -1 {
+		return &urlParts
 	}
 
 	// Define the root node
@@ -275,9 +284,13 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	for !end {
 		var label string
 		previousSepIdx = sepIdx
-		sepIdx = lastIndexAny(netloc[0:sepIdx], labelSeparators)
+		sepIdx = lastIndexAny(netloc[0:sepIdx], labelSeparatorsRuneSlice)
 		if sepIdx != -1 {
 			label = netloc[sepIdx+sepSize(netloc[sepIdx]) : previousSepIdx]
+			if len(label) == 0 {
+				// skip consecutive labelSeparators like "com..sg"
+				continue
+			}
 		} else {
 			label = netloc[0:previousSepIdx]
 			end = true
@@ -313,29 +326,14 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	}
 
 	// host is invalid if it starts or ends with '-', or starts with a label separator
-	if len(netloc[0:sepIdx]) != 0 && (indexAny(netloc[0:1], labelSeparatorsRuneSlice) != -1 || netloc[0] == '-' || netloc[len(netloc)-1] == '-') {
-		return &urlParts
-	}
-
-	// host is invalid if host cannot be converted to ASCII
-	//
-	// skip if host already converted to punycode
-	if !convertedToPunyCode {
-		if _, err := idna.ToASCII(netloc[0:sepIdx]); err != nil {
-			log.Println(strings.SplitAfterN(err.Error(), "idna: invalid label", 2)[0])
-			return &urlParts
-		}
-	}
-
-	// Reject if invalidHostNameChars appears before Path
-	if indexAny(netloc[0:sepIdx], invalidHostNameCharsRuneSlice) != -1 {
+	if len(netloc) != 0 && (indexAny(netloc[0:1], labelSeparatorsRuneSlice) != -1 || netloc[0] == '-' || netloc[sepIdx-1] == '-') {
 		return &urlParts
 	}
 
 	if hasSuffix {
 		if sepIdx < len(netloc) { // If there is a Domain
 			urlParts.Suffix = netloc[sepIdx+sepSize(netloc[sepIdx]):]
-			domainStartSepIdx := lastIndexAny(netloc[0:sepIdx], labelSeparators)
+			domainStartSepIdx := lastIndexAny(netloc[0:sepIdx], labelSeparatorsRuneSlice)
 			if domainStartSepIdx != -1 { // If there is a SubDomain
 				domainStartIdx := domainStartSepIdx + sepSize(netloc[domainStartSepIdx])
 				urlParts.Domain = netloc[domainStartIdx:sepIdx]
@@ -352,7 +350,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 			urlParts.Suffix = netloc
 		}
 	} else if sepIdx < len(netloc) { // If there is a SubDomain
-		domainStartSepIdx := lastIndexAny(netloc, labelSeparators)
+		domainStartSepIdx := lastIndexAny(netloc, labelSeparatorsRuneSlice)
 		domainStartIdx := domainStartSepIdx + sepSize(netloc[domainStartSepIdx])
 		urlParts.Domain = netloc[domainStartIdx:]
 		if !e.IgnoreSubDomains { // If SubDomain is to be included

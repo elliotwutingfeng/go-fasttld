@@ -1,7 +1,6 @@
 package fasttld
 
 import (
-	"strings"
 	"unicode/utf8"
 )
 
@@ -67,7 +66,7 @@ func isIPv4(s string) bool {
 		}
 		if i > 0 {
 			r, size := utf8.DecodeRuneInString(s)
-			if strings.IndexRune(labelSeparators, r) == -1 {
+			if !runeBinarySearch(r, labelSeparatorsRuneSlice) {
 				return false
 			}
 			s = s[size:]
@@ -110,7 +109,7 @@ func isIPv6(s string) bool {
 		}
 
 		// If followed by any separator in labelSeparators, might be in trailing IPv4.
-		if c < len(s) && strings.IndexRune(labelSeparators, []rune(s[c:])[0]) != -1 {
+		if c < len(s) && runeBinarySearch([]rune(s[c:])[0], labelSeparatorsRuneSlice) {
 			if ellipsis < 0 && i != lenDiff {
 				// Not the right place.
 				return false
