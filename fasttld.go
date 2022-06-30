@@ -341,7 +341,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 
 	// host is invalid if it starts or ends with '-', or starts with a label separator
 	if len(netloc) != 0 {
-		upperBound := 4
+		upperBound := 4 // rune is up to 4 bytes long
 		if len(netloc) < upperBound {
 			upperBound = len(netloc)
 		}
@@ -374,8 +374,8 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 					urlParts.SubDomain = netloc[0:domainStartSepIdx]
 				}
 			} else {
-				urlParts.Domain = netloc[domainStartSepIdx+1 : sepIdx]
-				urlParts.RegisteredDomain = netloc[domainStartSepIdx+1 : suffixEndIdx]
+				urlParts.Domain = netloc[0:sepIdx]
+				urlParts.RegisteredDomain = netloc[0:suffixEndIdx]
 			}
 		} else {
 			// If only Suffix exists
