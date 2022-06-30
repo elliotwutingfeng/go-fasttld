@@ -307,6 +307,12 @@ var privateSuffixTests = []extractTest{
 		}, description: "Include Private Suffix | Suffix only"},
 }
 var periodsAndWhiteSpacesTests = []extractTest{
+	// {urlParams: URLParams{URL: "localhost.\u3002"}, expected: &ExtractResult{Domain: "localhost"}, description: "localhost with trailing periods"},
+	{urlParams: URLParams{URL: "https://brb\u002ei\u3002am\uff0egoing\uff61to\uff0ebe\u3002a\uff61fk\uff0e\u002e\u3002"},
+		expected: &ExtractResult{Scheme: "https://", SubDomain: "brb\u002ei\u3002am\uff0egoing\uff61to", Domain: "be",
+			Suffix: "a\uff61fk", RegisteredDomain: "be\u3002a\uff61fk"},
+		description: "Consecutive label separators after Suffix",
+	},
 	{urlParams: URLParams{URL: "https://brb\u002ei\u3002am\uff0egoing\uff61to\uff0ebe\u3002a\uff61fk"},
 		expected: &ExtractResult{
 			Scheme: "https://", SubDomain: "brb\u002ei\u3002am\uff0egoing\uff61to", Domain: "be", Suffix: "a\uff61fk",
@@ -343,6 +349,14 @@ var invalidTests = []extractTest{
 			SubDomain: "maps", Domain: "google", Suffix: "com.sg",
 			RegisteredDomain: "google.com.sg",
 		}, description: "Invalid Port number"},
+	{urlParams: URLParams{URL: "https://brb\u002ei\u3002am\uff0egoing\uff61to\uff0ebe\u3002a\uff61\u3002fk"},
+		expected: &ExtractResult{Scheme: "https://"}, description: "Consecutive label separators within Suffix",
+	},
+	{urlParams: URLParams{URL: ".\u3002a\uff61fk"}, expected: &ExtractResult{}, description: "TLD only, multiple leading label separators"},
+	// {urlParams: URLParams{URL: "https://brb\u002ei\u3002am\uff0egoing\uff61to\uff0ebe.\u3002a\uff61fk"}, expected: &ExtractResult{Scheme: "https://"}, description: "Consecutive label separators between Domain and Suffix"},
+	// {urlParams: URLParams{URL: "https://brb\u002ei\u3002am\uff0egoing\uff61to.\uff0ebe\u3002a\uff61fk"}, expected: &ExtractResult{Scheme: "https://"}, description: "Consecutive label separators between SubDomain and Domain"},
+	// {urlParams: URLParams{URL: "https://brb\u002ei\u3002.am.\uff0egoing\uff61to\uff0ebe\u3002a\uff61fk"}, expected: &ExtractResult{Scheme: "https://"}, description: "Consecutive label separators within SubDomain"},
+	{urlParams: URLParams{URL: "https://\uff0eexample.com"}, expected: &ExtractResult{Scheme: "https://"}, description: "Hostname starting with label separator"},
 	{urlParams: URLParams{URL: "//server.example.com/path"}, expected: &ExtractResult{Scheme: "//", SubDomain: "server", Domain: "example", Suffix: "com", RegisteredDomain: "example.com", Path: "/path"}, description: "Double-slash only Scheme with subdomain"},
 	{urlParams: URLParams{URL: "http://temasek"}, expected: &ExtractResult{Scheme: "http://", Suffix: "temasek"}, description: "Basic URL with TLD only"},
 	{urlParams: URLParams{URL: "http://temasek.this-tld-cannot-be-real"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "temasek", Domain: "this-tld-cannot-be-real"}, description: "Basic URL with bad TLD"},

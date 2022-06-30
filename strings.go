@@ -8,7 +8,7 @@ import (
 	"golang.org/x/net/idna"
 )
 
-var idnaM *idna.Profile = idna.New(idna.MapForLookup(), idna.Transitional(true))
+var idnaM *idna.Profile = idna.New(idna.MapForLookup(), idna.Transitional(true), idna.BidiRule())
 
 type runeSlice []rune
 

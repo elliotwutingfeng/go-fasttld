@@ -280,6 +280,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		previousSepIdx int
 	)
 	sepIdx := len(netloc)
+	suffixEndIdx := len(netloc)
 
 	for !end {
 		var label string
@@ -288,8 +289,13 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		if sepIdx != -1 {
 			label = netloc[sepIdx+sepSize(netloc[sepIdx]) : previousSepIdx]
 			if len(label) == 0 {
-				// skip consecutive labelSeparators like "com..sg"
-				continue
+				// allow consecutive label separators if suffix not found yet
+				if !hasSuffix {
+					continue
+				}
+				// any occurrences of consecutive label separators on left-hand side of
+				// partial or full suffix are illegal.
+				return &urlParts
 			}
 		} else {
 			label = netloc[0:previousSepIdx]
@@ -307,7 +313,11 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 
 		// check if label is part of a TLD
 		if val, ok := node.matches[label]; ok {
-			hasSuffix = true
+			if !hasSuffix {
+				// index of end of suffix without trailing label separators
+				suffixEndIdx = previousSepIdx
+				hasSuffix = true
+			}
 			node = val
 			if len(val.matches) == 0 {
 				// label is at a leaf node (no children) ; break out of loop
@@ -326,28 +336,34 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	}
 
 	// host is invalid if it starts or ends with '-', or starts with a label separator
-	if len(netloc) != 0 && (indexAny(netloc[0:1], labelSeparatorsRuneSlice) != -1 || netloc[0] == '-' || netloc[sepIdx-1] == '-') {
-		return &urlParts
+	if len(netloc) != 0 {
+		upperBound := 4
+		if len(netloc) < upperBound {
+			upperBound = len(netloc)
+		}
+		if indexAny(netloc[0:upperBound], labelSeparatorsRuneSlice) == 0 || netloc[0] == '-' || netloc[sepIdx-1] == '-' {
+			return &urlParts
+		}
 	}
 
 	if hasSuffix {
 		if sepIdx < len(netloc) { // If there is a Domain
-			urlParts.Suffix = netloc[sepIdx+sepSize(netloc[sepIdx]):]
+			urlParts.Suffix = netloc[sepIdx+sepSize(netloc[sepIdx]) : suffixEndIdx]
 			domainStartSepIdx := lastIndexAny(netloc[0:sepIdx], labelSeparatorsRuneSlice)
 			if domainStartSepIdx != -1 { // If there is a SubDomain
 				domainStartIdx := domainStartSepIdx + sepSize(netloc[domainStartSepIdx])
 				urlParts.Domain = netloc[domainStartIdx:sepIdx]
-				urlParts.RegisteredDomain = netloc[domainStartIdx:]
+				urlParts.RegisteredDomain = netloc[domainStartIdx:suffixEndIdx]
 				if !e.IgnoreSubDomains { // If SubDomain is to be included
 					urlParts.SubDomain = netloc[0:domainStartSepIdx]
 				}
 			} else {
 				urlParts.Domain = netloc[domainStartSepIdx+1 : sepIdx]
-				urlParts.RegisteredDomain = netloc[domainStartSepIdx+1:]
+				urlParts.RegisteredDomain = netloc[domainStartSepIdx+1 : suffixEndIdx]
 			}
 		} else {
 			// If only Suffix exists
-			urlParts.Suffix = netloc
+			urlParts.Suffix = netloc[0:suffixEndIdx]
 		}
 	} else if sepIdx < len(netloc) { // If there is a SubDomain
 		domainStartSepIdx := lastIndexAny(netloc, labelSeparatorsRuneSlice)
