@@ -148,6 +148,26 @@ func indexAnyASCII(s string, as asciiSet) int {
 	return -1
 }
 
+// hasInvalidCharsOrConsecutiveLabelSeparators checks s for
+// invalid runes or consecutive label separators
+func hasInvalidCharsOrConsecutiveLabelSeparators(s string) bool {
+	var isLabelSeparator bool
+	for _, c := range s {
+		if runeBinarySearch(c, labelSeparatorsRuneSlice) {
+			if isLabelSeparator {
+				return true
+			}
+			isLabelSeparator = true
+		} else {
+			isLabelSeparator = false
+		}
+		if runeBinarySearch(c, invalidHostNameCharsRuneSlice) {
+			return true
+		}
+	}
+	return false
+}
+
 // indexAny returns the index of the first instance of any Unicode code point
 // from chars in s, or -1 if no Unicode code point from chars is present in s.
 //
