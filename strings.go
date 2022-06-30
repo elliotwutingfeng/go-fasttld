@@ -148,11 +148,23 @@ func indexAnyASCII(s string, as asciiSet) int {
 	return -1
 }
 
-// hasInvalidCharsOrConsecutiveLabelSeparators checks s for
-// invalid runes or consecutive label separators
-func hasInvalidCharsOrConsecutiveLabelSeparators(s string) bool {
+// hasInvalidChars checks s for invalid runes
+//
+// or leading/consecutive label separators
+//
+// or leading/trailing dash
+func hasInvalidChars(s string) bool {
 	var isLabelSeparator bool
-	for _, c := range s {
+	lastByteIdx := len(s) - 1
+	for idx, c := range s {
+		if idx == 0 && (c == '-' || runeBinarySearch(c, labelSeparatorsRuneSlice)) {
+			// starts with a label separator or dash
+			return true
+		}
+		if idx == lastByteIdx && c == '-' {
+			// ends with a dash
+			return true
+		}
 		if runeBinarySearch(c, labelSeparatorsRuneSlice) {
 			if isLabelSeparator {
 				return true

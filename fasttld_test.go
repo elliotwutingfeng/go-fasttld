@@ -307,6 +307,9 @@ var privateSuffixTests = []extractTest{
 		}, description: "Include Private Suffix | Suffix only"},
 }
 var periodsAndWhiteSpacesTests = []extractTest{
+	// {urlParams: URLParams{URL: "http://127.0.0.1.."},
+	// 	expected: &ExtractResult{Scheme: "http://", Domain: "127.0.0.1", RegisteredDomain: "127.0.0.1"}, description: "Consecutive label separators after IPv4 address",
+	// },
 	{urlParams: URLParams{URL: "localhost.\u3002"}, expected: &ExtractResult{Domain: "localhost"}, description: "localhost with trailing periods"},
 	{urlParams: URLParams{URL: "https://brb\u002ei\u3002am\uff0egoing\uff61to\uff0ebe\u3002a\uff61fk\uff0e\u002e\u3002"},
 		expected: &ExtractResult{Scheme: "https://", SubDomain: "brb\u002ei\u3002am\uff0egoing\uff61to", Domain: "be",
@@ -349,6 +352,9 @@ var invalidTests = []extractTest{
 			SubDomain: "maps", Domain: "google", Suffix: "com.sg",
 			RegisteredDomain: "google.com.sg",
 		}, description: "Invalid Port number"},
+	// {urlParams: URLParams{URL: "http://[aBcD:ef01:2345:6789:aBcD:ef01:2345:6789].."},
+	// 	expected: &ExtractResult{Scheme: "http://"}, description: "Consecutive label separators after IPv6 address",
+	// },
 	{urlParams: URLParams{URL: "https://brb\u002ei\u3002am\uff0egoing\uff61to\uff0ebe\u3002a\uff61\u3002fk"},
 		expected: &ExtractResult{Scheme: "https://"}, description: "Consecutive label separators within Suffix",
 	},
