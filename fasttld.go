@@ -151,6 +151,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	openingSquareBracketIdx := -1
 	closingSquareBracketIdx := -1
 	hostEndIdx := -1
+
 	for i, r := range []byte(netloc) {
 		if r == '[' {
 			// Check for opening square bracket
@@ -205,15 +206,10 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 			// Have square brackets but invalid IPv6 => Domain is invalid
 			return &urlParts
 		}
-		// Check if afterHost starts with label separator => there are trailing label separators after hostname
 		if hostEndIdx != -1 {
 			afterHost := netloc[hostEndIdx:]
-			upperBound := 3 // largest label separator byte length is 3
-			if len(afterHost) < upperBound {
-				upperBound = len(afterHost)
-			}
-			if indexAny(afterHost[0:upperBound], labelSeparatorsRuneSlice) != -1 {
-				// Reject IPv6 if there are trailing label separators
+			if indexAnyBefore(afterHost, invalidIPv6TrailingCharsRuneSlice, endOfHostDelimitersSet) != -1 {
+				// Reject IPv6 if there are invalid trailing characters after IPv6 address
 				return &urlParts
 			}
 		}
@@ -258,13 +254,6 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 
 	if closingSquareBracketIdx > 0 {
 		// Is IPv6 address
-		return &urlParts
-	}
-
-	// Check for IPv4 address
-	if isIPv4(netloc) {
-		urlParts.Domain = netloc
-		urlParts.RegisteredDomain = netloc
 		return &urlParts
 	}
 
@@ -341,6 +330,13 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		}
 	}
 
+	// Check for IPv4 address
+	if isIPv4(netloc) {
+		urlParts.Domain = netloc[0:previousSepIdx]
+		urlParts.RegisteredDomain = urlParts.Domain
+		return &urlParts
+	}
+
 	if sepIdx == -1 {
 		sepIdx = len(netloc)
 		suffixStartIdx = sepIdx
@@ -354,7 +350,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 			return &urlParts
 		}
 	} else {
-		if hasInvalidChars(netloc[0:sepIdx]) {
+		if hasInvalidChars(netloc[0:previousSepIdx]) {
 			return &urlParts
 		}
 	}

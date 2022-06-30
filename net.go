@@ -1,6 +1,7 @@
 package fasttld
 
 import (
+	"strings"
 	"unicode/utf8"
 )
 
@@ -58,7 +59,10 @@ func xtoi(s string) (n int, i int, ok bool) {
 }
 
 // isIPv4 returns true if s is a literal IPv4 address
+//
+// trailing label separators are accepted
 func isIPv4(s string) bool {
+	s = strings.TrimRight(s, labelSeparators)
 	for i := 0; i < IPv4len; i++ {
 		if len(s) == 0 {
 			// Missing octets.

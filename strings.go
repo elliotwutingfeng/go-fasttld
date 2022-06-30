@@ -2,6 +2,7 @@ package fasttld
 
 import (
 	"log"
+	"sort"
 	"strings"
 	"unicode/utf8"
 
@@ -10,7 +11,19 @@ import (
 
 var idnaM *idna.Profile = idna.New(idna.MapForLookup(), idna.Transitional(true), idna.BidiRule())
 
+// makeSortedRuneSlice converts a string to a
+// slice of runes sorted by integer value in ascending order
+func makeSortedRuneSlice(s string) runeSlice {
+	var slice runeSlice = []rune(s)
+	sort.Sort(runeSlice(slice))
+	return slice
+}
+
 type runeSlice []rune
+
+func (p runeSlice) Len() int           { return len(p) }
+func (p runeSlice) Less(i, j int) bool { return p[i] < p[j] }
+func (p runeSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
 const alphabets = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 const numbers = "0123456789"
@@ -30,6 +43,10 @@ var whitespaceRuneSlice runeSlice = runeSlice(whitespace)
 const invalidHostNameChars = controlChars + " !\u0085\u0086\u00a0\u1680\u200b\u200c\u200d\u2025\uFEFF\uff1a"
 
 var invalidHostNameCharsRuneSlice runeSlice = runeSlice(invalidHostNameChars)
+
+const invalidIPv6TrailingChars string = invalidHostNameChars + labelSeparators
+
+var invalidIPv6TrailingCharsRuneSlice runeSlice = makeSortedRuneSlice(invalidIPv6TrailingChars)
 
 const validHostNameChars = "-." + numbers + alphabets + "\u3002\uff0e\uff61"
 
@@ -189,6 +206,20 @@ func hasInvalidChars(s string) bool {
 // and skips input validation.
 func indexAny(s string, chars runeSlice) int {
 	for i, c := range s {
+		if runeBinarySearch(c, chars) {
+			return i
+		}
+	}
+	return -1
+}
+
+// indexAnyBefore returns the index of the first instance of any Unicode code point
+// from chars in s, before any byte in notAfterCharsSet, otherwise -1
+func indexAnyBefore(s string, chars runeSlice, notAfterCharsSet asciiSet) int {
+	for i, c := range s {
+		if notAfterCharsSet.contains(byte(c)) {
+			return -1
+		}
 		if runeBinarySearch(c, chars) {
 			return i
 		}
