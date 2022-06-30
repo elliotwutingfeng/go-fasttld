@@ -205,6 +205,18 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 			// Have square brackets but invalid IPv6 => Domain is invalid
 			return &urlParts
 		}
+		// Check if afterHost starts with label separator => there are trailing label separators after hostname
+		if hostEndIdx != -1 {
+			afterHost := netloc[hostEndIdx:]
+			upperBound := 3 // largest label separator byte length is 3
+			if len(afterHost) < upperBound {
+				upperBound = len(afterHost)
+			}
+			if indexAny(afterHost[0:upperBound], labelSeparatorsRuneSlice) != -1 {
+				// Reject IPv6 if there are trailing label separators
+				return &urlParts
+			}
+		}
 		// Closing square bracket in correct place and IPv6 is valid
 		urlParts.Domain = netloc[1:closingSquareBracketIdx]
 		urlParts.RegisteredDomain = netloc[1:closingSquareBracketIdx]
