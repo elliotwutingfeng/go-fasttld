@@ -12,7 +12,7 @@ const (
 )
 
 // Bigger than we need, not too big to worry about overflow
-const big = 0xFFFFFF
+const big int = 0xFFFFFF
 
 // Decimal to integer.
 // Returns number, characters consumed, success.

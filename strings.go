@@ -25,8 +25,10 @@ func (p runeSlice) Len() int           { return len(p) }
 func (p runeSlice) Less(i, j int) bool { return p[i] < p[j] }
 func (p runeSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
-const alphabets = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-const numbers = "0123456789"
+const alphabets string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+const numbers string = "0123456789"
+
+var alphaNumericSet asciiSet = makeASCIISet(alphabets + numbers)
 
 // Obtained from IETF RFC 3490
 const labelSeparators string = "\u002e\u3002\uff0e\uff61"
@@ -40,13 +42,9 @@ const whitespace string = controlChars + " \u0085\u0086\u00a0\u1680\u200b\u200c\
 
 var whitespaceRuneSlice runeSlice = makeSortedRuneSlice(whitespace)
 
-const invalidHostNameChars = whitespace + "*\"<>|!,~@$^&'(){}_\u2025\uff1a"
+const invalidHostNameChars string = whitespace + "*\"<>|!,~@$^&'(){}_\u2025\uff1a"
 
 var invalidHostNameCharsRuneSlice runeSlice = makeSortedRuneSlice(invalidHostNameChars)
-
-const validHostNameChars = "-" + numbers + alphabets + labelSeparators
-
-var validHostNameCharsRuneSlice runeSlice = makeSortedRuneSlice(validHostNameChars)
 
 const endOfHostWithPortDelimiters string = `/\?#`
 
@@ -170,6 +168,11 @@ func hasInvalidChars(s string) bool {
 	var isLabelSeparator bool
 	lastByteIdx := len(s) - 1
 	for idx, c := range s {
+		if alphaNumericSet.contains(byte(c)) {
+			// check for alphanumeric characters early to avoid expensive runeBinarySearch
+			isLabelSeparator = false
+			continue
+		}
 		if idx == 0 && (c == '-' || runeBinarySearch(c, labelSeparatorsRuneSlice)) {
 			// starts with a label separator or dash
 			return true
