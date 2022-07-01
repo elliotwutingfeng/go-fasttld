@@ -355,17 +355,15 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		}
 	}
 
+	var domainStartSepIdx int
 	if hasSuffix {
 		if sepIdx < len(netloc) { // If there is a Domain
 			urlParts.Suffix = netloc[sepIdx+sepSize(netloc[sepIdx]) : suffixEndIdx]
-			domainStartSepIdx := lastIndexAny(netloc[0:sepIdx], labelSeparatorsRuneSlice)
+			domainStartSepIdx = lastIndexAny(netloc[0:sepIdx], labelSeparatorsRuneSlice)
 			if domainStartSepIdx != -1 { // If there is a SubDomain
 				domainStartIdx := domainStartSepIdx + sepSize(netloc[domainStartSepIdx])
 				urlParts.Domain = netloc[domainStartIdx:sepIdx]
 				urlParts.RegisteredDomain = netloc[domainStartIdx:suffixEndIdx]
-				if !e.IgnoreSubDomains { // If SubDomain is to be included
-					urlParts.SubDomain = netloc[0:domainStartSepIdx]
-				}
 			} else {
 				urlParts.Domain = netloc[0:sepIdx]
 				urlParts.RegisteredDomain = netloc[0:suffixEndIdx]
@@ -375,15 +373,15 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 			urlParts.Suffix = netloc[0:suffixEndIdx]
 		}
 	} else {
-		domainStartSepIdx := lastIndexAny(netloc[0:previousSepIdx], labelSeparatorsRuneSlice)
+		domainStartSepIdx = lastIndexAny(netloc[0:previousSepIdx], labelSeparatorsRuneSlice)
 		var domainStartIdx int
 		if domainStartSepIdx != -1 { // If there is a SubDomain
 			domainStartIdx = domainStartSepIdx + sepSize(netloc[domainStartSepIdx])
-			if !e.IgnoreSubDomains { // If SubDomain is to be included
-				urlParts.SubDomain = netloc[0:domainStartSepIdx]
-			}
 		}
 		urlParts.Domain = netloc[domainStartIdx:previousSepIdx]
+	}
+	if domainStartSepIdx != -1 && !e.IgnoreSubDomains { // If SubDomain is to be included
+		urlParts.SubDomain = netloc[0:domainStartSepIdx]
 	}
 	return &urlParts
 }

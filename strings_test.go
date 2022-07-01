@@ -48,7 +48,8 @@ func TestReverse(t *testing.T) {
 }
 
 func TestRuneSliceAscending(t *testing.T) {
-	slices := []runeSlice{whitespaceRuneSlice, labelSeparatorsRuneSlice, invalidHostNameCharsRuneSlice, validHostNameCharsRuneSlice}
+	slices := []runeSlice{whitespaceRuneSlice, labelSeparatorsRuneSlice, invalidHostNameCharsRuneSlice,
+		validHostNameCharsRuneSlice, invalidIPv6TrailingCharsRuneSlice}
 	for sIdx, slice := range slices {
 		if len(slice) == 0 {
 			t.Errorf("Slice at index %d : is empty", sIdx)

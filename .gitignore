@@ -1,4 +1,5 @@
 .mypy_cache
+*.prof
 
 # Binaries for programs and plugins
 *.exe

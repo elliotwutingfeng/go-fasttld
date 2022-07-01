@@ -14,8 +14,8 @@ var idnaM *idna.Profile = idna.New(idna.MapForLookup(), idna.Transitional(true),
 // makeSortedRuneSlice converts a string to a
 // slice of runes sorted by integer value in ascending order
 func makeSortedRuneSlice(s string) runeSlice {
-	var slice runeSlice = []rune(s)
-	sort.Sort(runeSlice(slice))
+	slice := runeSlice(s)
+	sort.Sort(slice)
 	return slice
 }
 
@@ -31,26 +31,26 @@ const numbers = "0123456789"
 // Obtained from IETF RFC 3490
 const labelSeparators string = "\u002e\u3002\uff0e\uff61"
 
-var labelSeparatorsRuneSlice runeSlice = runeSlice(labelSeparators)
+var labelSeparatorsRuneSlice runeSlice = makeSortedRuneSlice(labelSeparators)
 
 const controlChars string = "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\t\n\v\f\r\u000e\u000f" +
 	"\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f"
 
 const whitespace string = controlChars + " \u0085\u0086\u00a0\u1680\u200b\u200c\u200d\uFEFF"
 
-var whitespaceRuneSlice runeSlice = runeSlice(whitespace)
+var whitespaceRuneSlice runeSlice = makeSortedRuneSlice(whitespace)
 
-const invalidHostNameChars = controlChars + " !\u0085\u0086\u00a0\u1680\u200b\u200c\u200d\u2025\uFEFF\uff1a"
+const invalidHostNameChars = whitespace + "!\u2025\uff1a"
 
-var invalidHostNameCharsRuneSlice runeSlice = runeSlice(invalidHostNameChars)
+var invalidHostNameCharsRuneSlice runeSlice = makeSortedRuneSlice(invalidHostNameChars)
 
 const invalidIPv6TrailingChars string = invalidHostNameChars + labelSeparators
 
 var invalidIPv6TrailingCharsRuneSlice runeSlice = makeSortedRuneSlice(invalidIPv6TrailingChars)
 
-const validHostNameChars = "-." + numbers + alphabets + "\u3002\uff0e\uff61"
+const validHostNameChars = "-" + numbers + alphabets + labelSeparators
 
-var validHostNameCharsRuneSlice runeSlice = runeSlice(validHostNameChars)
+var validHostNameCharsRuneSlice runeSlice = makeSortedRuneSlice(validHostNameChars)
 
 const endOfHostWithPortDelimiters string = `/\?#`
 
@@ -67,7 +67,7 @@ var invalidUserInfoCharsSet asciiSet = makeASCIISet(invalidUserInfoChars)
 
 // For extracting URL scheme.
 var schemeFirstCharSet asciiSet = makeASCIISet(alphabets)
-var schemeRemainingCharSet asciiSet = makeASCIISet(alphabets + "+-.0123456789")
+var schemeRemainingCharSet asciiSet = makeASCIISet(alphabets + numbers + "+-.")
 
 // getSchemeEndIndex checks if string s begins with a URL Scheme and
 // returns its last index. Returns -1 if no Scheme exists.
