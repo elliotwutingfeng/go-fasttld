@@ -208,7 +208,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		}
 		if hostEndIdx != -1 {
 			afterHost := netloc[hostEndIdx:]
-			if indexAnyBefore(afterHost, invalidIPv6TrailingCharsRuneSlice, endOfHostDelimitersSet) != -1 {
+			if indexAnyASCII(afterHost, endOfHostDelimitersSet) != 0 {
 				// Reject IPv6 if there are invalid trailing characters after IPv6 address
 				return &urlParts
 			}

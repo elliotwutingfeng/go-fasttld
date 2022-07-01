@@ -44,10 +44,6 @@ const invalidHostNameChars = whitespace + "!\u2025\uff1a"
 
 var invalidHostNameCharsRuneSlice runeSlice = makeSortedRuneSlice(invalidHostNameChars)
 
-const invalidIPv6TrailingChars string = invalidHostNameChars + labelSeparators
-
-var invalidIPv6TrailingCharsRuneSlice runeSlice = makeSortedRuneSlice(invalidIPv6TrailingChars)
-
 const validHostNameChars = "-" + numbers + alphabets + labelSeparators
 
 var validHostNameCharsRuneSlice runeSlice = makeSortedRuneSlice(validHostNameChars)
@@ -195,36 +191,6 @@ func hasInvalidChars(s string) bool {
 		}
 	}
 	return false
-}
-
-// indexAny returns the index of the first instance of any Unicode code point
-// from chars in s, or -1 if no Unicode code point from chars is present in s.
-//
-// chars is assumed to be sorted by integer value in ascending order.
-//
-// Similar to strings.IndexAny but uses runeSlice
-// and skips input validation.
-func indexAny(s string, chars runeSlice) int {
-	for i, c := range s {
-		if runeBinarySearch(c, chars) {
-			return i
-		}
-	}
-	return -1
-}
-
-// indexAnyBefore returns the index of the first instance of any Unicode code point
-// from chars in s, before any byte in notAfterCharsSet, otherwise -1
-func indexAnyBefore(s string, chars runeSlice, notAfterCharsSet asciiSet) int {
-	for i, c := range s {
-		if notAfterCharsSet.contains(byte(c)) {
-			return -1
-		}
-		if runeBinarySearch(c, chars) {
-			return i
-		}
-	}
-	return -1
 }
 
 // runeBinarySearch returns true if target exists in sortedRunes

@@ -351,6 +351,8 @@ var periodsAndWhiteSpacesTests = []extractTest{
 		}, description: "Whitespace in UserInfo"},
 }
 var invalidTests = []extractTest{
+	{urlParams: URLParams{URL: "localhost!"}, expected: &ExtractResult{}, description: "localhost + invalid character !"},
+	{urlParams: URLParams{URL: "localhost-"}, expected: &ExtractResult{}, description: "localhost + invalid character -"},
 	{urlParams: URLParams{}, expected: &ExtractResult{}, description: "empty string"},
 	{urlParams: URLParams{URL: "https://"}, expected: &ExtractResult{Scheme: "https://"}, description: "Scheme only"},
 	{urlParams: URLParams{URL: "1b://example.com"}, expected: &ExtractResult{Domain: "1b"}, description: "Scheme beginning with non-alphabet"},
