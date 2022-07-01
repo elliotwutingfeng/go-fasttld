@@ -274,3 +274,42 @@ func indexLastByteBefore(s string, b byte, notAfterCharsSet asciiSet) int {
 	}
 	return strings.LastIndexByte(s, b)
 }
+
+// trimMode specifies which parts of string to trim for fastTrim()
+type trimMode int
+
+const (
+	trimBoth trimMode = iota
+	trimLeft
+	trimRight
+)
+
+// fastTrim works like strings.Trim but uses binary search
+func fastTrim(s string, charsToTrim runeSlice, mode trimMode) string {
+	if len(s) == 0 {
+		return s
+	}
+	var startIdx int
+	endIdx := len(s) - 1
+	if mode != trimRight {
+		// Trim left-hand side
+		for idx, c := range s {
+			startIdx = idx
+			if !runeBinarySearch(c, charsToTrim) {
+				break
+			}
+		}
+	}
+	if mode != trimLeft {
+		// Trim right-hand side
+		for i := len(s); i > 0; {
+			endIdx = i
+			r, size := utf8.DecodeLastRuneInString(s[0:i])
+			i -= size
+			if !runeBinarySearch(r, charsToTrim) {
+				break
+			}
+		}
+	}
+	return s[startIdx:endIdx]
+}

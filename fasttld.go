@@ -135,7 +135,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	urlParts := ExtractResult{}
 
 	// Extract URL scheme
-	netloc := strings.Trim(e.URL, whitespace)
+	netloc := fastTrim(e.URL, whitespaceRuneSlice, trimBoth)
 	if schemeEndIndex := getSchemeEndIndex(netloc); schemeEndIndex != -1 {
 		urlParts.Scheme = netloc[0:schemeEndIndex]
 		netloc = netloc[schemeEndIndex:]

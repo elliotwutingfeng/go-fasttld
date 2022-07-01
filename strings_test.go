@@ -93,3 +93,15 @@ func TestRuneBinarySearch(t *testing.T) {
 		}
 	}
 }
+
+func TestFastTrim(t *testing.T) {
+	ss := []string{".abc\u002e", "\u002eabc.", ".abc", "abc\u002e",
+		"..abc\u002e", "\u002e.abc\u002e.",
+	}
+	expected := "abc"
+	for _, s := range ss {
+		if output := fastTrim(s, labelSeparatorsRuneSlice, trimBoth); output != expected {
+			t.Errorf("Output %q not equal to expected %q", output, expected)
+		}
+	}
+}
