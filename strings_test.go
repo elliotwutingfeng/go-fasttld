@@ -104,4 +104,13 @@ func TestFastTrim(t *testing.T) {
 			t.Errorf("Output %q not equal to expected %q", output, expected)
 		}
 	}
+	if output := fastTrim(".", labelSeparatorsRuneSlice, trimBoth); output != "" {
+		t.Errorf("Output %q not equal to expected %q", output, "")
+	}
+	if output := fastTrim(".", labelSeparatorsRuneSlice, trimLeft); output != "" {
+		t.Errorf("Output %q not equal to expected %q", output, "")
+	}
+	if output := fastTrim(".", labelSeparatorsRuneSlice, trimRight); output != "" {
+		t.Errorf("Output %q not equal to expected %q", output, "")
+	}
 }

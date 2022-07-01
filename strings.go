@@ -286,29 +286,42 @@ const (
 
 // fastTrim works like strings.Trim but uses binary search
 func fastTrim(s string, charsToTrim runeSlice, mode trimMode) string {
-	if len(s) == 0 {
-		return s
-	}
-	var startIdx int
-	endIdx := len(s) - 1
+	var (
+		startIdx int
+		endIdx   int
+	)
 	if mode != trimRight {
 		// Trim left-hand side
+		var trimCharsExist bool
+		var broken bool
 		for idx, c := range s {
 			startIdx = idx
 			if !runeBinarySearch(c, charsToTrim) {
+				broken = true
 				break
 			}
+			trimCharsExist = true
+		}
+		if trimCharsExist && !broken {
+			return ""
 		}
 	}
 	if mode != trimLeft {
 		// Trim right-hand side
+		var trimCharsExist bool
+		var broken bool
 		for i := len(s); i > 0; {
 			endIdx = i
 			r, size := utf8.DecodeLastRuneInString(s[0:i])
 			i -= size
 			if !runeBinarySearch(r, charsToTrim) {
+				broken = true
 				break
 			}
+			trimCharsExist = true
+		}
+		if trimCharsExist && !broken {
+			return ""
 		}
 	}
 	return s[startIdx:endIdx]
