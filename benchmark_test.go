@@ -23,11 +23,11 @@ func BenchmarkComparison(b *testing.B) {
 	benchmarks := []struct {
 		name string
 	}{
-		{"GoFastTld"},            // this module
-		{"JPilloraGoTld"},        // github.com/jpillora/go-tld
-		{"JoeGuoTldExtract"},     // github.com/joeguo/tldextract
-		{"Mjd2021USATldExtract"}, // github.com/mjd2021usa/tldextract
-		{"M507Tlde"},             // github.com/M507/tlde
+		{"GoFastTld"}, // this module
+		//{"JPilloraGoTld"},        // github.com/jpillora/go-tld
+		//{"JoeGuoTldExtract"},     // github.com/joeguo/tldextract
+		//{"Mjd2021USATldExtract"}, // github.com/mjd2021usa/tldextract
+		//{"M507Tlde"},             // github.com/M507/tlde
 		// {"ImVexedFastURL"},       // github.com/ImVexed/fasturl
 		// {"WepposPublicSuffixGo"}, // github.com/weppos/publicsuffix-go
 		// {"ForeEaseGoTld"},        // github.com/forease/gotld

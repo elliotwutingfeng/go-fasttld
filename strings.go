@@ -40,7 +40,7 @@ const whitespace string = controlChars + " \u0085\u0086\u00a0\u1680\u200b\u200c\
 
 var whitespaceRuneSlice runeSlice = makeSortedRuneSlice(whitespace)
 
-const invalidHostNameChars = whitespace + "!\u2025\uff1a"
+const invalidHostNameChars = whitespace + "*\"<>|!,~@$^&'(){}_\u2025\uff1a"
 
 var invalidHostNameCharsRuneSlice runeSlice = makeSortedRuneSlice(invalidHostNameChars)
 
