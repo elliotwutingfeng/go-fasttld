@@ -9,7 +9,7 @@ import (
 	"golang.org/x/net/idna"
 )
 
-var idnaM *idna.Profile = idna.New(idna.MapForLookup(), idna.Transitional(true), idna.BidiRule())
+var idnaToPuny *idna.Profile = idna.New(idna.MapForLookup(), idna.Transitional(true), idna.BidiRule(), idna.CheckHyphens(true))
 
 // makeSortedRuneSlice converts a string to a
 // slice of runes sorted by integer value in ascending order
@@ -255,7 +255,7 @@ func sepSize(r byte) int {
 
 // formatAsPunycode formats s as punycode.
 func formatAsPunycode(s string) string {
-	asPunyCode, err := idnaM.ToASCII(s)
+	asPunyCode, err := idnaToPuny.ToASCII(s)
 	if err != nil {
 		log.Println(strings.SplitAfterN(err.Error(), "idna: invalid label", 2)[0])
 		return ""

@@ -259,8 +259,8 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 
 	if e.ConvertURLToPunyCode {
 		netloc = formatAsPunycode(netloc)
-	} else if _, err := idna.ToASCII(netloc); err != nil {
-		// host is invalid if host cannot be converted to ASCII
+	} else if _, err := idna.ToUnicode(netloc); err != nil {
+		// host is invalid if host cannot be converted to Unicode
 		//
 		// skip if host already converted to punycode
 		log.Println(strings.SplitAfterN(err.Error(), "idna: invalid label", 2)[0])
