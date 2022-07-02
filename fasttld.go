@@ -275,10 +275,9 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		end            bool
 		previousSepIdx int
 	)
-	sepIdx := len(netloc)
-	suffixStartIdx := len(netloc)
-	suffixEndIdx := len(netloc)
+	sepIdx, suffixStartIdx, suffixEndIdx := len(netloc), len(netloc), len(netloc)
 
+	// Check for TLD Suffix
 	for !end {
 		var label string
 		previousSepIdx = sepIdx
@@ -380,7 +379,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		}
 		urlParts.Domain = netloc[domainStartIdx:previousSepIdx]
 	}
-	if domainStartSepIdx != -1 && !e.IgnoreSubDomains { // If SubDomain is to be included
+	if !e.IgnoreSubDomains && domainStartSepIdx != -1 { // If SubDomain is to be included
 		urlParts.SubDomain = netloc[0:domainStartSepIdx]
 	}
 	return &urlParts
