@@ -14,7 +14,8 @@ var idnaToPuny *idna.Profile = idna.New(idna.MapForLookup(), idna.Transitional(t
 // makeSortedRuneSlice converts a string to a
 // slice of runes sorted by integer value in ascending order
 func makeSortedRuneSlice(s string) runeSlice {
-	slice := runeSlice(s)
+	runeCount := utf8.RuneCountInString(s)
+	slice := runeSlice(s)[0:runeCount:runeCount]
 	sort.Sort(slice)
 	return slice
 }
