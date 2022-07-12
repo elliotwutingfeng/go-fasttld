@@ -69,7 +69,7 @@ func isIPv4(s string) bool {
 		}
 		if i > 0 {
 			r, size := utf8.DecodeRuneInString(s)
-			if !labelSeparatorsRuneSet.Exists(uint32(r)) {
+			if !labelSeparatorsRuneSet.Exists(r) {
 				return false
 			}
 			s = s[size:]
@@ -112,7 +112,7 @@ func isIPv6(s string) bool {
 		}
 
 		// If followed by any separator in labelSeparators, might be in trailing IPv4.
-		if c < len(s) && labelSeparatorsRuneSet.Exists(uint32([]rune(s[c:])[0])) {
+		if c < len(s) && labelSeparatorsRuneSet.Exists([]rune(s[c:])[0]) {
 			if ellipsis < 0 && i != lenDiff {
 				// Not the right place.
 				return false

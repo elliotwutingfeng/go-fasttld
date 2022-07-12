@@ -5,17 +5,17 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/karlseguin/intset"
+	"github.com/elliotwutingfeng/intset"
 	"golang.org/x/net/idna"
 )
 
 var idnaToPuny *idna.Profile = idna.New(idna.MapForLookup(), idna.Transitional(true), idna.BidiRule(), idna.CheckHyphens(true))
 
 // makeRuneSet converts a string to a intset
-func makeRuneSet(s string) (iset *intset.Sized32) {
-	iset = intset.NewSized32(uint32(utf8.RuneCountInString(s)) * 100)
+func makeRuneSet(s string) (iset *intset.Rune) {
+	iset = intset.NewRune(10_000_000)
 	for _, r := range s {
-		iset.Set(uint32(r))
+		iset.Set(r)
 	}
 	return
 }
@@ -28,18 +28,18 @@ var alphaNumericSet asciiSet = makeASCIISet(alphabets + numbers)
 // Obtained from IETF RFC 3490
 const labelSeparators string = "\u002e\u3002\uff0e\uff61"
 
-var labelSeparatorsRuneSet *intset.Sized32 = makeRuneSet(labelSeparators)
+var labelSeparatorsRuneSet *intset.Rune = makeRuneSet(labelSeparators)
 
 const controlChars string = "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\t\n\v\f\r\u000e\u000f" +
 	"\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f"
 
 const whitespace string = controlChars + " \u0085\u0086\u00a0\u1680\u200b\u200c\u200d\uFEFF"
 
-var whitespaceRuneSet *intset.Sized32 = makeRuneSet(whitespace)
+var whitespaceRuneSet *intset.Rune = makeRuneSet(whitespace)
 
 const invalidHostNameChars string = whitespace + "*\"<>|!,~@$^&'(){}_\u2025\uff1a"
 
-var invalidHostNameCharsRuneSet *intset.Sized32 = makeRuneSet(invalidHostNameChars)
+var invalidHostNameCharsRuneSet *intset.Rune = makeRuneSet(invalidHostNameChars)
 
 const endOfHostWithPortDelimiters string = `/\?#`
 
@@ -168,7 +168,7 @@ func hasInvalidChars(s string) bool {
 			isLabelSeparator = false
 			continue
 		}
-		if idx == 0 && (c == '-' || labelSeparatorsRuneSet.Exists(uint32(c))) {
+		if idx == 0 && (c == '-' || labelSeparatorsRuneSet.Exists(c)) {
 			// starts with a label separator or dash
 			return true
 		}
@@ -176,7 +176,7 @@ func hasInvalidChars(s string) bool {
 			// ends with a dash
 			return true
 		}
-		if labelSeparatorsRuneSet.Exists(uint32(c)) {
+		if labelSeparatorsRuneSet.Exists(c) {
 			if isLabelSeparator {
 				return true
 			}
@@ -184,7 +184,7 @@ func hasInvalidChars(s string) bool {
 		} else {
 			isLabelSeparator = false
 		}
-		if invalidHostNameCharsRuneSet.Exists(uint32(c)) {
+		if invalidHostNameCharsRuneSet.Exists(c) {
 			return true
 		}
 	}
@@ -196,11 +196,11 @@ func hasInvalidChars(s string) bool {
 // present in s.
 //
 // Similar to strings.LastIndexAny but skips input validation and uses RuneSet.
-func lastIndexAny(s string, chars *intset.Sized32) int {
+func lastIndexAny(s string, chars *intset.Rune) int {
 	for i := len(s); i > 0; {
 		r, size := utf8.DecodeLastRuneInString(s[0:i])
 		i -= size
-		if chars.Exists(uint32(r)) {
+		if chars.Exists(r) {
 			return i
 		}
 	}
@@ -256,7 +256,7 @@ const (
 )
 
 // fastTrim works like strings.Trim but uses RuneSet
-func fastTrim(s string, charsToTrim *intset.Sized32, mode trimMode) string {
+func fastTrim(s string, charsToTrim *intset.Rune, mode trimMode) string {
 	var (
 		startIdx int
 		endIdx   int
@@ -267,7 +267,7 @@ func fastTrim(s string, charsToTrim *intset.Sized32, mode trimMode) string {
 		var broken bool
 		for idx, c := range s {
 			startIdx = idx
-			if !charsToTrim.Exists(uint32(c)) {
+			if !charsToTrim.Exists(c) {
 				broken = true
 				break
 			}
@@ -285,7 +285,7 @@ func fastTrim(s string, charsToTrim *intset.Sized32, mode trimMode) string {
 			endIdx = i
 			r, size := utf8.DecodeLastRuneInString(s[0:i])
 			i -= size
-			if !charsToTrim.Exists(uint32(r)) {
+			if !charsToTrim.Exists(r) {
 				broken = true
 				break
 			}
