@@ -136,7 +136,7 @@ func (f *FastTLD) Extract(e URLParams) (*ExtractResult, error) {
 	urlParts := ExtractResult{}
 
 	// Extract URL scheme
-	netloc := fastTrim(e.URL, whitespaceRuneSlice, trimBoth)
+	netloc := fastTrim(e.URL, whitespaceRuneSet, trimBoth)
 	if schemeEndIndex := getSchemeEndIndex(netloc); schemeEndIndex != -1 {
 		urlParts.Scheme = netloc[0:schemeEndIndex]
 		netloc = netloc[schemeEndIndex:]
@@ -282,7 +282,7 @@ func (f *FastTLD) Extract(e URLParams) (*ExtractResult, error) {
 	for !end {
 		var label string
 		previousSepIdx = sepIdx
-		sepIdx = lastIndexAny(netloc[0:sepIdx], labelSeparatorsRuneSlice)
+		sepIdx = lastIndexAny(netloc[0:sepIdx], labelSeparatorsRuneSet)
 		if sepIdx != -1 {
 			label = netloc[sepIdx+sepSize(netloc[sepIdx]) : previousSepIdx]
 			if len(label) == 0 {
@@ -359,7 +359,7 @@ func (f *FastTLD) Extract(e URLParams) (*ExtractResult, error) {
 	if hasSuffix {
 		if sepIdx < len(netloc) { // If there is a Domain
 			urlParts.Suffix = netloc[sepIdx+sepSize(netloc[sepIdx]) : suffixEndIdx]
-			domainStartSepIdx = lastIndexAny(netloc[0:sepIdx], labelSeparatorsRuneSlice)
+			domainStartSepIdx = lastIndexAny(netloc[0:sepIdx], labelSeparatorsRuneSet)
 			if domainStartSepIdx != -1 { // If there is a SubDomain
 				domainStartIdx := domainStartSepIdx + sepSize(netloc[domainStartSepIdx])
 				urlParts.Domain = netloc[domainStartIdx:sepIdx]
@@ -373,7 +373,7 @@ func (f *FastTLD) Extract(e URLParams) (*ExtractResult, error) {
 			urlParts.Suffix = netloc[0:suffixEndIdx]
 		}
 	} else {
-		domainStartSepIdx = lastIndexAny(netloc[0:previousSepIdx], labelSeparatorsRuneSlice)
+		domainStartSepIdx = lastIndexAny(netloc[0:previousSepIdx], labelSeparatorsRuneSet)
 		var domainStartIdx int
 		if domainStartSepIdx != -1 { // If there is a SubDomain
 			domainStartIdx = domainStartSepIdx + sepSize(netloc[domainStartSepIdx])
