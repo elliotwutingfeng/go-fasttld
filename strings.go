@@ -11,7 +11,7 @@ import (
 
 var idnaToPuny *idna.Profile = idna.New(idna.MapForLookup(), idna.Transitional(true), idna.BidiRule(), idna.CheckHyphens(true))
 
-// makeRuneSet converts a string to a intset
+// makeRuneSet converts a string to a set of unique runes
 func makeRuneSet(s string) (iset *intset.Rune) {
 	iset = intset.NewRune(10_000_000)
 	for _, r := range s {
@@ -164,7 +164,7 @@ func hasInvalidChars(s string) bool {
 	lastByteIdx := len(s) - 1
 	for idx, c := range s {
 		if alphaNumericSet.contains(byte(c)) {
-			// check for alphanumeric characters early to avoid expensive runeBinarySearch
+			// check for alphanumeric characters early to avoid expensive intset search
 			isLabelSeparator = false
 			continue
 		}
