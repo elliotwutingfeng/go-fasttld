@@ -13,7 +13,7 @@ var idnaToPuny *idna.Profile = idna.New(idna.MapForLookup(), idna.Transitional(t
 
 // makeRuneSet converts a string to a set of unique runes
 func makeRuneSet(s string) (iset *intset.Rune) {
-	iset = intset.NewRune(10_000_000)
+	iset = intset.NewRune(1_000_000)
 	for _, r := range s {
 		iset.Set(r)
 	}
