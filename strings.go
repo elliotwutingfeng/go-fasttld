@@ -2,28 +2,23 @@ package fasttld
 
 import (
 	"log"
-	"sort"
 	"strings"
 	"unicode/utf8"
 
+	"github.com/elliotwutingfeng/intset"
 	"golang.org/x/net/idna"
 )
 
 var idnaToPuny *idna.Profile = idna.New(idna.MapForLookup(), idna.Transitional(true), idna.BidiRule(), idna.CheckHyphens(true))
 
-// makeSortedRuneSlice converts a string to a
-// slice of runes sorted by integer value in ascending order
-func makeSortedRuneSlice(s string) runeSlice {
-	slice := runeSlice(s)
-	sort.Sort(slice)
-	return slice
+// makeRuneSet converts a string to a intset
+func makeRuneSet(s string) (iset *intset.Rune) {
+	iset = intset.NewRune(10_000_000)
+	for _, r := range s {
+		iset.Set(r)
+	}
+	return
 }
-
-type runeSlice []rune
-
-func (p runeSlice) Len() int           { return len(p) }
-func (p runeSlice) Less(i, j int) bool { return p[i] < p[j] }
-func (p runeSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
 const alphabets string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 const numbers string = "0123456789"
@@ -33,18 +28,18 @@ var alphaNumericSet asciiSet = makeASCIISet(alphabets + numbers)
 // Obtained from IETF RFC 3490
 const labelSeparators string = "\u002e\u3002\uff0e\uff61"
 
-var labelSeparatorsRuneSlice runeSlice = makeSortedRuneSlice(labelSeparators)
+var labelSeparatorsRuneSet *intset.Rune = makeRuneSet(labelSeparators)
 
 const controlChars string = "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\t\n\v\f\r\u000e\u000f" +
 	"\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f"
 
 const whitespace string = controlChars + " \u0085\u0086\u00a0\u1680\u200b\u200c\u200d\uFEFF"
 
-var whitespaceRuneSlice runeSlice = makeSortedRuneSlice(whitespace)
+var whitespaceRuneSet *intset.Rune = makeRuneSet(whitespace)
 
 const invalidHostNameChars string = whitespace + "*\"<>|!,~@$^&'(){}_\u2025\uff1a"
 
-var invalidHostNameCharsRuneSlice runeSlice = makeSortedRuneSlice(invalidHostNameChars)
+var invalidHostNameCharsRuneSet *intset.Rune = makeRuneSet(invalidHostNameChars)
 
 const endOfHostWithPortDelimiters string = `/\?#`
 
@@ -173,7 +168,7 @@ func hasInvalidChars(s string) bool {
 			isLabelSeparator = false
 			continue
 		}
-		if idx == 0 && (c == '-' || runeBinarySearch(c, labelSeparatorsRuneSlice)) {
+		if idx == 0 && (c == '-' || labelSeparatorsRuneSet.Exists(c)) {
 			// starts with a label separator or dash
 			return true
 		}
@@ -181,7 +176,7 @@ func hasInvalidChars(s string) bool {
 			// ends with a dash
 			return true
 		}
-		if runeBinarySearch(c, labelSeparatorsRuneSlice) {
+		if labelSeparatorsRuneSet.Exists(c) {
 			if isLabelSeparator {
 				return true
 			}
@@ -189,44 +184,23 @@ func hasInvalidChars(s string) bool {
 		} else {
 			isLabelSeparator = false
 		}
-		if runeBinarySearch(c, invalidHostNameCharsRuneSlice) {
+		if invalidHostNameCharsRuneSet.Exists(c) {
 			return true
 		}
 	}
 	return false
 }
 
-// runeBinarySearch returns true if target exists in sortedRunes
-// otherwise it returns false.
-//
-// sortedRunes must be already sorted by integer value in ascending order.
-func runeBinarySearch(target rune, sortedRunes runeSlice) bool {
-	var low int
-	high := len(sortedRunes) - 1
-
-	for low <= high {
-		median := (low + high) / 2
-
-		if sortedRunes[median] < target {
-			low = median + 1
-		} else {
-			high = median - 1
-		}
-	}
-
-	return low != len(sortedRunes) && sortedRunes[low] == target
-}
-
 // lastIndexAny returns the index of the last instance of any Unicode code
 // point from chars in s, or -1 if no Unicode code point from chars is
 // present in s.
 //
-// Similar to strings.LastIndexAny but skips input validation and uses runeSlice.
-func lastIndexAny(s string, chars runeSlice) int {
+// Similar to strings.LastIndexAny but skips input validation and uses RuneSet.
+func lastIndexAny(s string, chars *intset.Rune) int {
 	for i := len(s); i > 0; {
 		r, size := utf8.DecodeLastRuneInString(s[0:i])
 		i -= size
-		if runeBinarySearch(r, chars) {
+		if chars.Exists(r) {
 			return i
 		}
 	}
@@ -281,8 +255,8 @@ const (
 	trimRight
 )
 
-// fastTrim works like strings.Trim but uses binary search
-func fastTrim(s string, charsToTrim runeSlice, mode trimMode) string {
+// fastTrim works like strings.Trim but uses RuneSet
+func fastTrim(s string, charsToTrim *intset.Rune, mode trimMode) string {
 	var (
 		startIdx int
 		endIdx   int
@@ -293,7 +267,7 @@ func fastTrim(s string, charsToTrim runeSlice, mode trimMode) string {
 		var broken bool
 		for idx, c := range s {
 			startIdx = idx
-			if !runeBinarySearch(c, charsToTrim) {
+			if !charsToTrim.Exists(c) {
 				broken = true
 				break
 			}
@@ -311,7 +285,7 @@ func fastTrim(s string, charsToTrim runeSlice, mode trimMode) string {
 			endIdx = i
 			r, size := utf8.DecodeLastRuneInString(s[0:i])
 			i -= size
-			if !runeBinarySearch(r, charsToTrim) {
+			if !charsToTrim.Exists(r) {
 				broken = true
 				break
 			}

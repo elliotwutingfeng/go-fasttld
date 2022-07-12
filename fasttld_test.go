@@ -690,7 +690,7 @@ func TestExtract(t *testing.T) {
 			} else {
 				extractor = extractorWithoutPrivateSuffix
 			}
-			res := extractor.Extract(test.urlParams)
+			res, _ := extractor.Extract(test.urlParams)
 
 			if output := reflect.DeepEqual(res,
 				test.expected); !output {

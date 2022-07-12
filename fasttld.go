@@ -7,6 +7,7 @@
 package fasttld
 
 import (
+	"errors"
 	"log"
 	"os"
 	"path/filepath"
@@ -131,11 +132,11 @@ func trieConstruct(includePrivateSuffix bool, cacheFilePath string) (*trie, erro
 }
 
 // Extract components from a given `url`.
-func (f *FastTLD) Extract(e URLParams) *ExtractResult {
+func (f *FastTLD) Extract(e URLParams) (*ExtractResult, error) {
 	urlParts := ExtractResult{}
 
 	// Extract URL scheme
-	netloc := fastTrim(e.URL, whitespaceRuneSlice, trimBoth)
+	netloc := fastTrim(e.URL, whitespaceRuneSet, trimBoth)
 	if schemeEndIndex := getSchemeEndIndex(netloc); schemeEndIndex != -1 {
 		urlParts.Scheme = netloc[0:schemeEndIndex]
 		netloc = netloc[schemeEndIndex:]
@@ -156,8 +157,8 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		if r == '[' {
 			// Check for opening square bracket
 			if i > 0 {
-				// Reject if opening square bracket is not first character of netloc
-				return &urlParts
+				// Reject if opening square bracket is not first character of hostname
+				return &urlParts, errors.New("opening square bracket is not first character of hostname")
 			}
 			openingSquareBracketIdx = i
 		}
@@ -169,7 +170,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		if openingSquareBracketIdx == -1 {
 			if closingSquareBracketIdx != -1 {
 				// Reject if closing square bracket present but no opening square bracket
-				return &urlParts
+				return &urlParts, errors.New("closing square bracket present but no opening square bracket")
 			}
 			if endOfHostDelimitersSet.contains(r) {
 				// If no square brackets
@@ -190,7 +191,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		}
 		if i == len(netloc)-1 && closingSquareBracketIdx < openingSquareBracketIdx {
 			// Reject if end of netloc reached but incomplete square bracket pair
-			return &urlParts
+			return &urlParts, errors.New("incomplete square bracket pair")
 		}
 	}
 
@@ -203,14 +204,14 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	// Check for IPv6 address
 	if closingSquareBracketIdx > openingSquareBracketIdx {
 		if !isIPv6(netloc[1:closingSquareBracketIdx]) {
-			// Have square brackets but invalid IPv6 => Domain is invalid
-			return &urlParts
+			// Have square brackets but invalid IPv6 address => Domain is invalid
+			return &urlParts, errors.New("invalid IPv6 address")
 		}
 		if hostEndIdx != -1 {
 			afterHost := netloc[hostEndIdx:]
 			if indexAnyASCII(afterHost, endOfHostDelimitersSet) != 0 {
 				// Reject IPv6 if there are invalid trailing characters after IPv6 address
-				return &urlParts
+				return &urlParts, errors.New("invalid trailing characters after IPv6 address")
 			}
 		}
 		// Closing square bracket in correct place and IPv6 is valid
@@ -254,7 +255,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 
 	if closingSquareBracketIdx > 0 {
 		// Is IPv6 address
-		return &urlParts
+		return &urlParts, nil
 	}
 
 	if e.ConvertURLToPunyCode {
@@ -264,7 +265,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 		//
 		// skip if host already converted to punycode
 		log.Println(strings.SplitAfterN(err.Error(), "idna: invalid label", 2)[0])
-		return &urlParts
+		return &urlParts, err
 	}
 
 	// Define the root node
@@ -281,7 +282,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	for !end {
 		var label string
 		previousSepIdx = sepIdx
-		sepIdx = lastIndexAny(netloc[0:sepIdx], labelSeparatorsRuneSlice)
+		sepIdx = lastIndexAny(netloc[0:sepIdx], labelSeparatorsRuneSet)
 		if sepIdx != -1 {
 			label = netloc[sepIdx+sepSize(netloc[sepIdx]) : previousSepIdx]
 			if len(label) == 0 {
@@ -292,7 +293,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 				}
 				// any occurrences of consecutive label separators on left-hand side of
 				// partial or full suffix are illegal.
-				return &urlParts
+				return &urlParts, errors.New("invalid consecutive label separators on left-hand side of partial or full suffix")
 			}
 		} else {
 			label = netloc[0:previousSepIdx]
@@ -333,7 +334,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	if isIPv4(netloc) {
 		urlParts.Domain = netloc[0:previousSepIdx]
 		urlParts.RegisteredDomain = urlParts.Domain
-		return &urlParts
+		return &urlParts, nil
 	}
 
 	if sepIdx == -1 {
@@ -346,11 +347,11 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	// appears before Suffix
 	if hasSuffix {
 		if hasInvalidChars(netloc[0:suffixStartIdx]) {
-			return &urlParts
+			return &urlParts, errors.New("invalid characters in hostname")
 		}
 	} else {
 		if hasInvalidChars(netloc[0:previousSepIdx]) {
-			return &urlParts
+			return &urlParts, errors.New("invalid characters in hostname")
 		}
 	}
 
@@ -358,7 +359,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	if hasSuffix {
 		if sepIdx < len(netloc) { // If there is a Domain
 			urlParts.Suffix = netloc[sepIdx+sepSize(netloc[sepIdx]) : suffixEndIdx]
-			domainStartSepIdx = lastIndexAny(netloc[0:sepIdx], labelSeparatorsRuneSlice)
+			domainStartSepIdx = lastIndexAny(netloc[0:sepIdx], labelSeparatorsRuneSet)
 			if domainStartSepIdx != -1 { // If there is a SubDomain
 				domainStartIdx := domainStartSepIdx + sepSize(netloc[domainStartSepIdx])
 				urlParts.Domain = netloc[domainStartIdx:sepIdx]
@@ -372,7 +373,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 			urlParts.Suffix = netloc[0:suffixEndIdx]
 		}
 	} else {
-		domainStartSepIdx = lastIndexAny(netloc[0:previousSepIdx], labelSeparatorsRuneSlice)
+		domainStartSepIdx = lastIndexAny(netloc[0:previousSepIdx], labelSeparatorsRuneSet)
 		var domainStartIdx int
 		if domainStartSepIdx != -1 { // If there is a SubDomain
 			domainStartIdx = domainStartSepIdx + sepSize(netloc[domainStartSepIdx])
@@ -382,7 +383,7 @@ func (f *FastTLD) Extract(e URLParams) *ExtractResult {
 	if !e.IgnoreSubDomains && domainStartSepIdx != -1 { // If SubDomain is to be included
 		urlParts.SubDomain = netloc[0:domainStartSepIdx]
 	}
-	return &urlParts
+	return &urlParts, nil
 }
 
 // New creates a new *FastTLD.

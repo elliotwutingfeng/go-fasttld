@@ -75,7 +75,7 @@ extractor, _ := fasttld.New(fasttld.SuffixListParams{})
 
 //Extract URL subcomponents
 url := "https://some-user@a.long.subdomain.ox.ac.uk:5000/a/b/c/d/e/f/g/h/i?id=42"
-res := extractor.Extract(fasttld.URLParams{URL: url})
+res, _ := extractor.Extract(fasttld.URLParams{URL: url})
 
 // Display results
 fmt.Println(res.Scheme)           // https://
@@ -185,7 +185,7 @@ By default, **go-fasttld** _excludes_ these private domains (i.e. `IncludePrivat
 extractor, _ := fasttld.New(fasttld.SuffixListParams{})
 
 url := "https://google.blogspot.com"
-res := extractor.Extract(fasttld.URLParams{URL: url})
+res, _ := extractor.Extract(fasttld.URLParams{URL: url})
 
 // res.Scheme = https://
 // res.UserInfo = <no output>
@@ -203,7 +203,7 @@ You can _include_ private domains by setting `IncludePrivateSuffix = true`
 extractor, _ := fasttld.New(fasttld.SuffixListParams{IncludePrivateSuffix: true})
 
 url := "https://google.blogspot.com"
-res := extractor.Extract(fasttld.URLParams{URL: url})
+res, _ := extractor.Extract(fasttld.URLParams{URL: url})
 
 // res.Scheme = https://
 // res.UserInfo = <no output>
@@ -225,7 +225,7 @@ You can ignore subdomains by setting `IgnoreSubDomains = true`. By default, subd
 extractor, _ := fasttld.New(fasttld.SuffixListParams{})
 
 url := "https://maps.google.com"
-res := extractor.Extract(fasttld.URLParams{URL: url, IgnoreSubDomains: true})
+res, _ := extractor.Extract(fasttld.URLParams{URL: url, IgnoreSubDomains: true})
 
 // res.Scheme = https://
 // res.UserInfo = <no output>
@@ -245,7 +245,7 @@ Convert internationalised URLs to [punycode](https://en.wikipedia.org/wiki/Punyc
 extractor, _ := fasttld.New(fasttld.SuffixListParams{})
 
 url := "https://hello.世界.com"
-res := extractor.Extract(fasttld.URLParams{URL: url, ConvertURLToPunyCode: true})
+res, _ := extractor.Extract(fasttld.URLParams{URL: url, ConvertURLToPunyCode: true})
 
 // res.Scheme = https://
 // res.UserInfo = <no output>
@@ -304,11 +304,11 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 | Benchmark Name       | Iterations | ns/op       | B/op      | allocs/op   | Fastest            |
 |----------------------|------------|-------------|-----------|-------------|--------------------|
-| GoFastTld            | 4361532    | 267.5 ns/op | 128 B/op  | 1 allocs/op | :heavy_check_mark: |
-| JPilloraGoTld        | 2389506    | 494.6 ns/op | 224 B/op  | 2 allocs/op |                    |
-| JoeGuoTldExtract     | 2427310    | 492.9 ns/op | 160 B/op  | 5 allocs/op |                    |
-| Mjd2021USATldExtract | 1414700    | 843.4 ns/op | 208 B/op  | 7 allocs/op |                    |
-| M507Tlde             | 2349729    | 517.0 ns/op | 160 B/op  | 5 allocs/op |                    |
+| GoFastTld            | 5123706    | 235.6 ns/op | 128 B/op  | 1 allocs/op | :heavy_check_mark: |
+| JPilloraGoTld        | 2776862    | 444.8 ns/op | 224 B/op  | 2 allocs/op |                    |
+| JoeGuoTldExtract     | 2810379    | 434.0 ns/op | 160 B/op  | 5 allocs/op |                    |
+| Mjd2021USATldExtract | 1589370    | 764.7 ns/op | 208 B/op  | 7 allocs/op |                    |
+| M507Tlde             | 2691553    | 454.3 ns/op | 160 B/op  | 5 allocs/op |                    |
 
 ---
 
@@ -318,11 +318,11 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 | Benchmark Name       | Iterations | ns/op       | B/op      | allocs/op   | Fastest            |
 |----------------------|------------|-------------|-----------|-------------|--------------------|
-| GoFastTld            | 5235824    | 235.4 ns/op | 128 B/op  | 1 allocs/op | :heavy_check_mark: |
-| JPilloraGoTld        | 1673688    | 703.8 ns/op | 224 B/op  | 2 allocs/op |                    |
-| JoeGuoTldExtract     | 2129185    | 551.3 ns/op | 272 B/op  | 5 allocs/op |                    |
-| Mjd2021USATldExtract | 1475606    | 809.4 ns/op | 288 B/op  | 6 allocs/op |                    |
-| M507Tlde             | 2085166    | 567.5 ns/op | 272 B/op  | 5 allocs/op |                    |
+| GoFastTld            | 6270633    | 206.4 ns/op | 128 B/op  | 1 allocs/op | :heavy_check_mark: |
+| JPilloraGoTld        | 1935224    | 630.5 ns/op | 224 B/op  | 2 allocs/op |                    |
+| JoeGuoTldExtract     | 2501281    | 490.2 ns/op | 272 B/op  | 5 allocs/op |                    |
+| Mjd2021USATldExtract | 1735752    | 716.5 ns/op | 288 B/op  | 6 allocs/op |                    |
+| M507Tlde             | 2395339    | 511.1 ns/op | 272 B/op  | 5 allocs/op |                    |
 
 ---
 
@@ -332,11 +332,11 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 | Benchmark Name       | Iterations | ns/op       | B/op      | allocs/op   | Fastest            |
 |----------------------|------------|-------------|-----------|-------------|--------------------|
-| GoFastTld            | 4443504    | 267.4 ns/op | 128 B/op  | 1 allocs/op | :heavy_check_mark: |
-| JPilloraGoTld        | 392281     | 2784 ns/op  | 928 B/op  | 4 allocs/op |                    |
-| JoeGuoTldExtract     | 752799     | 1348 ns/op  | 1120 B/op | 6 allocs/op |                    |
-| Mjd2021USATldExtract | 884846     | 1375 ns/op  | 1120 B/op | 6 allocs/op |                    |
-| M507Tlde             | 793660     | 1407 ns/op  | 1120 B/op | 6 allocs/op |                    |
+| GoFastTld            | 5404794    | 241.1 ns/op | 128 B/op  | 1 allocs/op | :heavy_check_mark: |
+| JPilloraGoTld        | 458792     | 2613 ns/op  | 928 B/op  | 4 allocs/op |                    |
+| JoeGuoTldExtract     | 1000000    | 1380 ns/op  | 1120 B/op | 6 allocs/op |                    |
+| Mjd2021USATldExtract | 987486     | 1262 ns/op  | 1120 B/op | 6 allocs/op |                    |
+| M507Tlde             | 1000000    | 1304 ns/op  | 1120 B/op | 6 allocs/op |                    |
 
 ---
 

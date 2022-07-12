@@ -61,7 +61,7 @@ func xtoi(s string) (n int, i int, ok bool) {
 //
 // trailing label separators are accepted
 func isIPv4(s string) bool {
-	s = fastTrim(s, labelSeparatorsRuneSlice, trimRight)
+	s = fastTrim(s, labelSeparatorsRuneSet, trimRight)
 	for i := 0; i < IPv4len; i++ {
 		if len(s) == 0 {
 			// Missing octets.
@@ -69,7 +69,7 @@ func isIPv4(s string) bool {
 		}
 		if i > 0 {
 			r, size := utf8.DecodeRuneInString(s)
-			if !runeBinarySearch(r, labelSeparatorsRuneSlice) {
+			if !labelSeparatorsRuneSet.Exists(r) {
 				return false
 			}
 			s = s[size:]
@@ -112,7 +112,7 @@ func isIPv6(s string) bool {
 		}
 
 		// If followed by any separator in labelSeparators, might be in trailing IPv4.
-		if c < len(s) && runeBinarySearch([]rune(s[c:])[0], labelSeparatorsRuneSlice) {
+		if c < len(s) && labelSeparatorsRuneSet.Exists([]rune(s[c:])[0]) {
 			if ellipsis < 0 && i != lenDiff {
 				// Not the right place.
 				return false
