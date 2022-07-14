@@ -5,7 +5,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/elliotwutingfeng/intset"
+	"github.com/karlseguin/intset"
 	"golang.org/x/net/idna"
 )
 
