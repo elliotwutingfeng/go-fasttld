@@ -195,7 +195,7 @@ func hasInvalidChars(s string) bool {
 // point from chars in s, or -1 if no Unicode code point from chars is
 // present in s.
 //
-// Similar to strings.LastIndexAny but skips input validation and uses RuneSet.
+// Similar to strings.LastIndexAny but skips input validation and uses *intset.Rune.
 func lastIndexAny(s string, chars *intset.Rune) int {
 	for i := len(s); i > 0; {
 		r, size := utf8.DecodeLastRuneInString(s[0:i])
@@ -255,7 +255,7 @@ const (
 	trimRight
 )
 
-// fastTrim works like strings.Trim but uses RuneSet
+// fastTrim works like strings.Trim but uses *intset.Rune
 func fastTrim(s string, charsToTrim *intset.Rune, mode trimMode) string {
 	var (
 		startIdx int
@@ -274,6 +274,7 @@ func fastTrim(s string, charsToTrim *intset.Rune, mode trimMode) string {
 			trimCharsExist = true
 		}
 		if trimCharsExist && !broken {
+			// Return empty string if every character in s exists in charsToTrim
 			return ""
 		}
 	}
@@ -292,6 +293,7 @@ func fastTrim(s string, charsToTrim *intset.Rune, mode trimMode) string {
 			trimCharsExist = true
 		}
 		if trimCharsExist && !broken {
+			// Return empty string if every character in s exists in charsToTrim
 			return ""
 		}
 	}

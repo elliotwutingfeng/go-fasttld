@@ -1,8 +1,6 @@
 package fasttld
 
-import (
-	"unicode/utf8"
-)
+import "unicode/utf8"
 
 // IP address lengths (bytes).
 const (

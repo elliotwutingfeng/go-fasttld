@@ -1,8 +1,10 @@
 package fasttld
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"reflect"
 	"testing"
 
@@ -16,18 +18,18 @@ type getPublicSuffixListTest struct {
 }
 
 var getPublicSuffixListTests = []getPublicSuffixListTest{
-	{cacheFilePath: "test/public_suffix_list.dat",
+	{cacheFilePath: fmt.Sprintf("test%spublic_suffix_list.dat", string(os.PathSeparator)),
 		expectedLists: pslTestLists,
 		hasError:      false,
 	},
-	{cacheFilePath: "test/mini_public_suffix_list.dat",
+	{cacheFilePath: fmt.Sprintf("test%smini_public_suffix_list.dat", string(os.PathSeparator)),
 		expectedLists: [3][]string{{"ac", "com.ac", "edu.ac", "gov.ac", "net.ac",
 			"mil.ac", "org.ac", "*.ck", "!www.ck"}, {"blogspot.com"},
 			{"ac", "com.ac", "edu.ac", "gov.ac", "net.ac", "mil.ac",
 				"org.ac", "*.ck", "!www.ck", "blogspot.com"}},
 		hasError: false,
 	},
-	{cacheFilePath: "test/public_suffix_list.dat.noexist",
+	{cacheFilePath: fmt.Sprintf("test%spublic_suffix_list.dat.noexist", string(os.PathSeparator)),
 		expectedLists: [3][]string{{}, {}, {}},
 		hasError:      true,
 	},
@@ -83,7 +85,7 @@ func TestDownloadFile(t *testing.T) {
 }
 
 func TestUpdateCustomSuffixList(t *testing.T) {
-	extractor, err := New(SuffixListParams{CacheFilePath: "test/mini_public_suffix_list.dat"})
+	extractor, err := New(SuffixListParams{CacheFilePath: fmt.Sprintf("test%smini_public_suffix_list.dat", string(os.PathSeparator))})
 	if err != nil {
 		t.Errorf("%q", err)
 	}

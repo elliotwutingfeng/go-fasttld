@@ -1,6 +1,7 @@
 package fasttld
 
 import (
+	"fmt"
 	"os"
 	"reflect"
 	"strings"
@@ -78,13 +79,13 @@ func TestNestedDict(t *testing.T) {
 }
 
 func TestTrieConstructInvalidPath(t *testing.T) {
-	if _, err := trieConstruct(false, "test/this_file_does_not_exist.dat"); err == nil {
+	if _, err := trieConstruct(false, fmt.Sprintf("test%sthis_file_does_not_exist.dat", string(os.PathSeparator))); err == nil {
 		t.Errorf("error returned by trieConstruct should not be nil")
 	}
 }
 
 func TestTrie(t *testing.T) {
-	trie, err := trieConstruct(false, "test/mini_public_suffix_list.dat")
+	trie, err := trieConstruct(false, fmt.Sprintf("test%smini_public_suffix_list.dat", string(os.PathSeparator)))
 	if err != nil {
 		t.Errorf("trieConstruct failed | %q", err)
 	}
@@ -134,8 +135,8 @@ type newTest struct {
 }
 
 var newTests = []newTest{
-	{cacheFilePath: "test/public_suffix_list.dat", includePrivateSuffix: false, expected: 1656},
-	{cacheFilePath: "test/public_suffix_list.dat", includePrivateSuffix: true, expected: 1674},
+	{cacheFilePath: fmt.Sprintf("test%spublic_suffix_list.dat", string(os.PathSeparator)), includePrivateSuffix: false, expected: 1656},
+	{cacheFilePath: fmt.Sprintf("test%spublic_suffix_list.dat", string(os.PathSeparator)), includePrivateSuffix: true, expected: 1674},
 }
 
 func TestNew(t *testing.T) {
