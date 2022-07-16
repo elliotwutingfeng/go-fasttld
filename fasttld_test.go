@@ -19,6 +19,8 @@ var errs = [...]error{
 	errors.New("invalid consecutive label separators on left-hand side of partial or full suffix"),
 	errors.New("invalid characters in hostname before suffix"),
 	errors.New("invalid characters in hostname"),
+	errors.New("empty domain"),
+	errors.New("invalid port"),
 }
 
 func getTestPSLFilePath() string {
@@ -226,8 +228,8 @@ var schemeTests = []extractTest{
 }
 var noSchemeTests = []extractTest{
 	{urlParams: URLParams{URL: "localhost"}, expected: &ExtractResult{Domain: "localhost"}, description: "localhost"},
-	{urlParams: URLParams{URL: "org"}, expected: &ExtractResult{Suffix: "org"}, description: "Single TLD | Suffix Only"},
-	{urlParams: URLParams{URL: "co.th"}, expected: &ExtractResult{Suffix: "co.th"}, description: "Double TLD | Suffix Only"},
+	{urlParams: URLParams{URL: "org"}, expected: &ExtractResult{Suffix: "org"}, err: errs[9], description: "Single TLD | Suffix Only"},
+	{urlParams: URLParams{URL: "co.th"}, expected: &ExtractResult{Suffix: "co.th"}, err: errs[9], description: "Double TLD | Suffix Only"},
 	{urlParams: URLParams{URL: "users@example.com"}, expected: &ExtractResult{UserInfo: "users", Domain: "example", Suffix: "com", RegisteredDomain: "example.com"}, description: "UserInfo + Domain | No Scheme"},
 	{urlParams: URLParams{URL: "mailto:users@example.com"}, expected: &ExtractResult{UserInfo: "mailto:users", Domain: "example", Suffix: "com", RegisteredDomain: "example.com"}, description: "Mailto | No Scheme"},
 	{urlParams: URLParams{URL: "example.com:999"}, expected: &ExtractResult{Domain: "example", Suffix: "com", RegisteredDomain: "example.com", Port: "999"}, description: "Domain + Port | No Scheme"},
@@ -297,7 +299,7 @@ var ipv6Tests = []extractTest{
 	{urlParams: URLParams{URL: "http://[aBcD:ef01:2345:6789:aBcD:ef01::]:5000"},
 		expected: &ExtractResult{Scheme: "http://", Domain: "aBcD:ef01:2345:6789:aBcD:ef01::",
 			RegisteredDomain: "aBcD:ef01:2345:6789:aBcD:ef01::", Port: "5000"},
-		description: "Basic IPv6 Address with Scheme and Port and bad IP | even number of empty hextets"},
+		description: "Basic IPv6 Address with Scheme and Port bad IP with even number of trailing empty hextets"},
 }
 var ignoreSubDomainsTests = []extractTest{
 	{urlParams: URLParams{URL: "maps.google.com.sg",
@@ -319,7 +321,7 @@ var privateSuffixTests = []extractTest{
 		urlParams: URLParams{URL: "global.prod.fastly.net"},
 		expected: &ExtractResult{
 			Suffix: "global.prod.fastly.net",
-		}, description: "Include Private Suffix | Suffix only"},
+		}, err: errs[9], description: "Include Private Suffix | Suffix only"},
 }
 var periodsAndWhiteSpacesTests = []extractTest{
 	{urlParams: URLParams{URL: "http://127.0.0.1.."},
@@ -349,7 +351,7 @@ var periodsAndWhiteSpacesTests = []extractTest{
 		}, description: "Internationalised label separators",
 	},
 	{urlParams: URLParams{URL: "a\uff61fk"},
-		expected: &ExtractResult{Suffix: "a\uff61fk"}, description: "Internationalised label separators | Suffix only",
+		expected: &ExtractResult{Suffix: "a\uff61fk"}, err: errs[9], description: "Internationalised label separators | Suffix only",
 	},
 	{urlParams: URLParams{URL: " https://brb\u002ei\u3002am\uff0egoing\uff61to\uff0ebe\u3002a\uff61fk/a/b/c. \uff61 "},
 		expected: &ExtractResult{
@@ -372,14 +374,10 @@ var periodsAndWhiteSpacesTests = []extractTest{
 var invalidTests = []extractTest{
 	{urlParams: URLParams{URL: "localhost!"}, expected: &ExtractResult{}, err: errs[8], description: "localhost + invalid character !"},
 	{urlParams: URLParams{URL: "localhost-"}, expected: &ExtractResult{}, err: errs[8], description: "localhost + invalid character -"},
-	{urlParams: URLParams{}, expected: &ExtractResult{}, description: "empty string"},
-	{urlParams: URLParams{URL: "https://"}, expected: &ExtractResult{Scheme: "https://"}, description: "Scheme only"},
-	{urlParams: URLParams{URL: "1b://example.com"}, expected: &ExtractResult{Domain: "1b"}, description: "Scheme beginning with non-alphabet"},
-	{urlParams: URLParams{URL: "maps.google.com.sg:8589934592/this/path/will/not/be/parsed"},
-		expected: &ExtractResult{
-			SubDomain: "maps", Domain: "google", Suffix: "com.sg",
-			RegisteredDomain: "google.com.sg",
-		}, description: "Invalid Port number"},
+	{urlParams: URLParams{}, expected: &ExtractResult{}, err: errs[9], description: "empty string"},
+	{urlParams: URLParams{URL: "https://"}, expected: &ExtractResult{Scheme: "https://"}, err: errs[9], description: "Scheme only"},
+	{urlParams: URLParams{URL: "1b://example.com"}, expected: &ExtractResult{}, err: errs[10], description: "Scheme beginning with non-alphabet (parser unsuccessfully tries to interpret runes after colon as port"},
+	{urlParams: URLParams{URL: "maps.google.com.sg:8589934592/this/path/will/not/be/parsed"}, expected: &ExtractResult{}, err: errs[10], description: "Invalid Port number"},
 	{urlParams: URLParams{URL: "http://.\u3002127.0.0.1"},
 		expected: &ExtractResult{Scheme: "http://"}, err: errs[8], description: "Consecutive label separators before IPv4 address",
 	},
@@ -413,7 +411,7 @@ var invalidTests = []extractTest{
 	{urlParams: URLParams{URL: "https://brb\u002ei\u3002.am.\uff0egoing\uff61to\uff0ebe\u3002a\uff61fk"}, expected: &ExtractResult{Scheme: "https://"}, err: errs[8], description: "Consecutive label separators within SubDomain"},
 	{urlParams: URLParams{URL: "https://\uff0eexample.com"}, expected: &ExtractResult{Scheme: "https://"}, err: errs[8], description: "Hostname starting with label separator"},
 	{urlParams: URLParams{URL: "//server.example.com/path"}, expected: &ExtractResult{Scheme: "//", SubDomain: "server", Domain: "example", Suffix: "com", RegisteredDomain: "example.com", Path: "/path"}, description: "Double-slash only Scheme with subdomain"},
-	{urlParams: URLParams{URL: "http://temasek"}, expected: &ExtractResult{Scheme: "http://", Suffix: "temasek"}, description: "Basic URL with TLD only"},
+	{urlParams: URLParams{URL: "http://temasek"}, expected: &ExtractResult{Scheme: "http://", Suffix: "temasek"}, err: errs[9], description: "Basic URL with TLD only"},
 	{urlParams: URLParams{URL: "http://temasek.this-tld-cannot-be-real"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "temasek", Domain: "this-tld-cannot-be-real"}, description: "Basic URL with bad TLD"},
 	{urlParams: URLParams{URL: "http://temasek.temasek.this-tld-cannot-be-real"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "temasek.temasek", Domain: "this-tld-cannot-be-real"}, description: "Basic URL with subdomain and bad TLD"},
 	{urlParams: URLParams{URL: "http://127.0.0.256"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "127.0.0", Domain: "256"}, description: "Basic IPv4 Address URL with bad IP"},
@@ -657,8 +655,8 @@ var lookoutTests = []extractTest{ // some tests from lookout.net
 	{urlParams: URLParams{URL: "http://urltest.lookout.net/foo\\tbar"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "urltest", Domain: "lookout", Suffix: "net", Path: "/foo\\tbar", RegisteredDomain: "lookout.net"}, description: "Backslash in Path"},
 	{urlParams: URLParams{URL: "http://urltest.lookout.net/foo\t\ufffd%91"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "urltest", Domain: "lookout", Suffix: "net", Path: "/foo\t\ufffd%91", RegisteredDomain: "lookout.net"}, description: "Tab in Path"},
 	{urlParams: URLParams{URL: "http://urltest.lookout.net:80/"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "urltest", Domain: "lookout", Suffix: "net", Port: "80", RegisteredDomain: "lookout.net", Path: "/"}, description: "Port"},
-	{urlParams: URLParams{URL: "http://urltest.lookout.net::80::443/"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net"}, description: "Bad Port"},
-	{urlParams: URLParams{URL: "http://urltest.lookout.net::==80::==443::/"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net"}, description: "Bad Port"},
+	{urlParams: URLParams{URL: "http://urltest.lookout.net::80::443/"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[10], description: "Bad Port"},
+	{urlParams: URLParams{URL: "http://urltest.lookout.net::==80::==443::/"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[10], description: "Bad Port"},
 	{urlParams: URLParams{URL: "http://urltest.lookout.net\\\\foo\\\\bar"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", Path: "\\\\foo\\\\bar"}, description: "Multiple backslashes in Path"},
 	{urlParams: URLParams{URL: "http://urltest.lookout.net\u2a7480/"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "urltest.lookout", Domain: "net\u2a7480", Path: "/"}, description: "Unicode in Domain"},
 	{urlParams: URLParams{URL: "http://urltest.lookout.net\uff0ffoo/"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "urltest.lookout", Domain: "net\uff0ffoo", Path: "/"}, description: "Unicode in Domain"},

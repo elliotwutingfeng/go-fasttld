@@ -229,11 +229,8 @@ func (f *FastTLD) Extract(e URLParams) (*ExtractResult, error) {
 	// Extract Port and "Path" if any
 	if len(afterHost) != 0 {
 		pathStartIndex := indexAnyASCII(afterHost, endOfHostWithPortDelimitersSet)
-		var (
-			maybePort   string
-			invalidPort bool
-		)
 		if afterHost[0] == ':' {
+			var maybePort string
 			if pathStartIndex == -1 {
 				maybePort = afterHost[1:]
 			} else {
@@ -242,10 +239,10 @@ func (f *FastTLD) Extract(e URLParams) (*ExtractResult, error) {
 			if port, err := strconv.Atoi(maybePort); err == nil && 0 <= port && port <= largestPortNumber {
 				urlParts.Port = maybePort
 			} else {
-				invalidPort = true
+				return &urlParts, errors.New("invalid port")
 			}
 		}
-		if !invalidPort && pathStartIndex != -1 && pathStartIndex != len(afterHost) {
+		if pathStartIndex != -1 && pathStartIndex != len(afterHost) {
 			// If there is any path/query/fragment after the URL authority component...
 			// See https://stackoverflow.com/questions/47543432/what-do-we-call-the-combined-path-query-and-fragment-in-a-uri
 			// For simplicity, we shall call this the "Path".
@@ -382,6 +379,10 @@ func (f *FastTLD) Extract(e URLParams) (*ExtractResult, error) {
 	}
 	if !e.IgnoreSubDomains && domainStartSepIdx != -1 { // If SubDomain is to be included
 		urlParts.SubDomain = netloc[0:domainStartSepIdx]
+	}
+
+	if len(urlParts.Domain) == 0 {
+		return &urlParts, errors.New("empty domain")
 	}
 	return &urlParts, nil
 }
