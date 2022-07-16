@@ -271,13 +271,13 @@ res = extractor.Extract(fasttld.URLParams{URL: url, ConvertURLToPunyCode: false}
 ## Testing
 
 ```sh
-go test -v -coverprofile=test_coverage.out && go tool cover -html=test_coverage.out -o test_coverage.html
+make tests
 ```
 
 ## Benchmarks
 
 ```sh
-go test -bench=. -benchmem -cpu 1
+make bench
 ```
 
 ### Modules used
