@@ -1,4 +1,3 @@
-.mypy_cache
 *.prof
 
 # Binaries for programs and plugins
@@ -18,4 +17,4 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
-sandbox/
+dist/

@@ -1,0 +1,38 @@
+package fasttld
+
+import (
+	"log"
+
+	"github.com/elliotwutingfeng/go-fasttld"
+	"github.com/fatih/color"
+	"github.com/spf13/cobra"
+)
+
+var includePrivateSuffix, ignoreSubDomains, toPunyCode bool
+
+var extractCmd = &cobra.Command{
+	Use:     "extract",
+	Aliases: []string{"ext"},
+	Short:   "Extracts subcomponents from a URL",
+	Args:    cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		extractor, err := fasttld.New(fasttld.SuffixListParams{IncludePrivateSuffix: includePrivateSuffix})
+		if err != nil {
+			log.Fatal(err)
+		}
+		if res, err := extractor.Extract(
+			fasttld.URLParams{URL: args[0], IgnoreSubDomains: ignoreSubDomains, ConvertURLToPunyCode: toPunyCode}); err != nil {
+			color.New(color.FgHiRed, color.Bold).Print("Error: ")
+			color.New(color.FgHiWhite).Println(err)
+		} else {
+			fasttld.PrintRes(args[0], res)
+		}
+	},
+}
+
+func init() {
+	extractCmd.Flags().BoolVarP(&includePrivateSuffix, "private-suffix", "p", false, "Include private suffix")
+	extractCmd.Flags().BoolVarP(&ignoreSubDomains, "ignore-subdomains", "i", false, "Ignore subdomains")
+	extractCmd.Flags().BoolVarP(&toPunyCode, "to-punycode", "t", false, "Convert to punycode")
+	rootCmd.AddCommand(extractCmd)
+}

@@ -1,24 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/elliotwutingfeng/go-fasttld"
+	"github.com/fatih/color"
 )
-
-func printRes(url string, res *fasttld.ExtractResult) {
-	fmt.Println("              url:", url)
-	fmt.Println("           scheme:", res.Scheme)
-	fmt.Println("         userinfo:", res.UserInfo)
-	fmt.Println("        subdomain:", res.SubDomain)
-	fmt.Println("           domain:", res.Domain)
-	fmt.Println("           suffix:", res.Suffix)
-	fmt.Println("registered domain:", res.RegisteredDomain)
-	fmt.Println("             port:", res.Port)
-	fmt.Println("             path:", res.Path)
-	fmt.Println("")
-}
 
 func main() {
 	url := "https://some-user@a.long.subdomain.ox.ac.uk:5000/a/b/c/d/e/f/g/h/i?id=42"
@@ -28,8 +15,11 @@ func main() {
 		log.Fatal(err)
 	}
 	res, _ := extractor.Extract(fasttld.URLParams{URL: url})
-	fmt.Println("Domain")
-	printRes(url, res)
+
+	var fontStyle = []color.Attribute{color.FgHiWhite, color.Bold}
+
+	color.New(fontStyle...).Println("Domain")
+	fasttld.PrintRes(url, res)
 	// res.Scheme = https://
 	// res.UserInfo = some-user
 	// res.SubDomain = a.long.subdomain
@@ -47,8 +37,8 @@ func main() {
 	url = "https://127.0.0.1:5000"
 
 	res, _ = extractor.Extract(fasttld.URLParams{URL: url})
-	fmt.Println("IPv4 Address")
-	printRes(url, res)
+	color.New(fontStyle...).Println("IPv4 Address")
+	fasttld.PrintRes(url, res)
 	// res.Scheme = https://
 	// res.UserInfo = <no output>
 	// res.SubDomain = <no output>
@@ -62,8 +52,8 @@ func main() {
 	url = "https://[aBcD:ef01:2345:6789:aBcD:ef01:2345:6789]:5000"
 
 	res, _ = extractor.Extract(fasttld.URLParams{URL: url})
-	fmt.Println("IPv6 Address")
-	printRes(url, res)
+	color.New(fontStyle...).Println("IPv6 Address")
+	fasttld.PrintRes(url, res)
 	// res.Scheme = https://
 	// res.UserInfo = <no output>
 	// res.SubDomain = <no output>
@@ -77,8 +67,8 @@ func main() {
 	url = "https://brb\u002ei\u3002am\uff0egoing\uff61to\uff0ebe\u3002a\uff61fk"
 
 	res, _ = extractor.Extract(fasttld.URLParams{URL: url})
-	fmt.Println("Internationalised label separators")
-	printRes(url, res)
+	color.New(fontStyle...).Println("Internationalised label separators")
+	fasttld.PrintRes(url, res)
 	// res.Scheme = https://
 	// res.UserInfo = <no output>
 	// res.SubDomain = brb\u002ei\u3002am\uff0egoing\uff61to
@@ -98,8 +88,8 @@ func main() {
 
 	extractor, _ = fasttld.New(fasttld.SuffixListParams{})
 	res, _ = extractor.Extract(fasttld.URLParams{URL: url})
-	fmt.Println("Exclude Private Domains")
-	printRes(url, res)
+	color.New(fontStyle...).Println("Exclude Private Domains")
+	fasttld.PrintRes(url, res)
 	// res.Scheme = https://
 	// res.UserInfo = <no output>
 	// res.SubDomain = google
@@ -111,8 +101,8 @@ func main() {
 
 	extractor, _ = fasttld.New(fasttld.SuffixListParams{IncludePrivateSuffix: true})
 	res, _ = extractor.Extract(fasttld.URLParams{URL: url})
-	fmt.Println("Include Private Domains")
-	printRes(url, res)
+	color.New(fontStyle...).Println("Include Private Domains")
+	fasttld.PrintRes(url, res)
 	// res.Scheme = https://
 	// res.UserInfo = <no output>
 	// res.SubDomain = <no output>
@@ -127,8 +117,8 @@ func main() {
 
 	extractor, _ = fasttld.New(fasttld.SuffixListParams{})
 	res, _ = extractor.Extract(fasttld.URLParams{URL: url, IgnoreSubDomains: true})
-	fmt.Println("Ignore Subdomains")
-	printRes(url, res)
+	color.New(fontStyle...).Println("Ignore Subdomains")
+	fasttld.PrintRes(url, res)
 	// res.Scheme = https://
 	// res.UserInfo = <no output>
 	// res.SubDomain = <no output>
@@ -142,8 +132,8 @@ func main() {
 	url = "https://hello.世界.com"
 
 	res, _ = extractor.Extract(fasttld.URLParams{URL: url, ConvertURLToPunyCode: true})
-	fmt.Println("Punycode")
-	printRes(url, res)
+	color.New(fontStyle...).Println("Punycode")
+	fasttld.PrintRes(url, res)
 	// res.Scheme = https://
 	// res.UserInfo = <no output>
 	// res.SubDomain = hello
@@ -154,8 +144,8 @@ func main() {
 	// res.Path = <no output>
 
 	res, _ = extractor.Extract(fasttld.URLParams{URL: url, ConvertURLToPunyCode: false})
-	fmt.Println("No Punycode")
-	printRes(url, res)
+	color.New(fontStyle...).Println("No Punycode")
+	fasttld.PrintRes(url, res)
 	// res.Scheme = https://
 	// res.UserInfo = <no output>
 	// res.SubDomain = hello

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	tlde "github.com/M507/tlde/src"
+	"github.com/fatih/color"
 	joeguotldextract "github.com/joeguo/tldextract"
 	tld "github.com/jpillora/go-tld"
 	mjd2021usatldextract "github.com/mjd2021usa/tldextract"
@@ -124,8 +125,9 @@ func BenchmarkComparison(b *testing.B) {
 
 			} */
 		}
-		fmt.Println()
-		fmt.Println("Benchmarks completed for URL :", benchmarkURL)
-		fmt.Println("=======")
+		color.New().Println()
+		color.New(color.FgHiGreen, color.Bold).Print("Benchmarks completed for URL : ")
+		color.New(color.FgHiBlue).Println(benchmarkURL)
+		color.New(color.FgHiWhite).Println("=======")
 	}
 }
