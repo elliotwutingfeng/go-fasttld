@@ -13,8 +13,15 @@ var includePrivateSuffix, ignoreSubDomains, toPunyCode bool
 var extractCmd = &cobra.Command{
 	Use:     "extract",
 	Aliases: []string{"ext"},
-	Short:   "Extracts subcomponents from a URL",
-	Args:    cobra.ExactArgs(1),
+	Short:   "Extracts subcomponents from a URL.",
+	Long: `Extracts subcomponents from a URL.
+
+For Example
+---
+fasttld extract abc.example.com:5000/a/path
+---
+	`,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		extractor, err := fasttld.New(fasttld.SuffixListParams{IncludePrivateSuffix: includePrivateSuffix})
 		if err != nil {
