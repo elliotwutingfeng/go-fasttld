@@ -74,18 +74,18 @@ Full demo available in the _examples_ folder
 extractor, _ := fasttld.New(fasttld.SuffixListParams{})
 
 //Extract URL subcomponents
-url := "https://some-user@a.long.subdomain.ox.ac.uk:5000/a/b/c/d/e/f/g/h/i?id=42"
+url := "https://user@a.subdomain.example.ac.uk:5000/a/b?id=42"
 res, _ := extractor.Extract(fasttld.URLParams{URL: url})
 
 // Display results
 fmt.Println(res.Scheme)           // https://
-fmt.Println(res.UserInfo)         // some-user
-fmt.Println(res.SubDomain)        // a.long.subdomain
-fmt.Println(res.Domain)           // ox
+fmt.Println(res.UserInfo)         // user
+fmt.Println(res.SubDomain)        // a.subdomain
+fmt.Println(res.Domain)           // example
 fmt.Println(res.Suffix)           // ac.uk
-fmt.Println(res.RegisteredDomain) // ox.ac.uk
+fmt.Println(res.RegisteredDomain) // example.ac.uk
 fmt.Println(res.Port)             // 5000
-fmt.Println(res.Path)             // /a/b/c/d/e/f/g/h/i?id=42
+fmt.Println(res.Path)             // /a/b?id=42
 ```
 
 ### IPv4 Address

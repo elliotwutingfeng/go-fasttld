@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	url := "https://some-user@a.long.subdomain.ox.ac.uk:5000/a/b/c/d/e/f/g/h/i?id=42"
+	url := "https://user@a.subdomain.example.ac.uk:5000/a/b?id=42"
 
 	extractor, err := fasttld.New(fasttld.SuffixListParams{})
 	if err != nil {
@@ -21,13 +21,13 @@ func main() {
 	color.New(fontStyle...).Println("Domain")
 	fasttld.PrintRes(url, res)
 	// res.Scheme = https://
-	// res.UserInfo = some-user
-	// res.SubDomain = a.long.subdomain
-	// res.Domain = ox
+	// res.UserInfo = user
+	// res.SubDomain = a.subdomain
+	// res.Domain = example
 	// res.Suffix = ac.uk
-	// res.RegisteredDomain = ox.ac.uk
+	// res.RegisteredDomain = example.ac.uk
 	// res.Port = 5000
-	// res.Path = /a/b/c/d/e/f/g/h/i?id=42
+	// res.Path = /a/b?id=42
 
 	// Specify custom public suffix list file
 	// cacheFilePath := "/absolute/path/to/file.dat"
