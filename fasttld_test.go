@@ -1,12 +1,25 @@
 package fasttld
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"reflect"
 	"strings"
 	"testing"
 )
+
+var errs = [...]error{
+	errors.New("opening square bracket is not first character of hostname"),
+	errors.New("closing square bracket present but no opening square bracket"),
+	errors.New("invalid square bracket pair"),
+	errors.New("incomplete square bracket pair"),
+	errors.New("invalid IPv6 address"),
+	errors.New("invalid trailing characters after IPv6 address"),
+	errors.New("invalid consecutive label separators on left-hand side of partial or full suffix"),
+	errors.New("invalid characters in hostname before suffix"),
+	errors.New("invalid characters in hostname"),
+}
 
 func getTestPSLFilePath() string {
 	var sb strings.Builder
@@ -159,6 +172,7 @@ type extractTest struct {
 	includePrivateSuffix bool
 	urlParams            URLParams
 	expected             *ExtractResult
+	err                  error
 	description          string
 }
 
@@ -356,8 +370,8 @@ var periodsAndWhiteSpacesTests = []extractTest{
 		}, description: "Whitespace in UserInfo"},
 }
 var invalidTests = []extractTest{
-	{urlParams: URLParams{URL: "localhost!"}, expected: &ExtractResult{}, description: "localhost + invalid character !"},
-	{urlParams: URLParams{URL: "localhost-"}, expected: &ExtractResult{}, description: "localhost + invalid character -"},
+	{urlParams: URLParams{URL: "localhost!"}, expected: &ExtractResult{}, err: errs[8], description: "localhost + invalid character !"},
+	{urlParams: URLParams{URL: "localhost-"}, expected: &ExtractResult{}, err: errs[8], description: "localhost + invalid character -"},
 	{urlParams: URLParams{}, expected: &ExtractResult{}, description: "empty string"},
 	{urlParams: URLParams{URL: "https://"}, expected: &ExtractResult{Scheme: "https://"}, description: "Scheme only"},
 	{urlParams: URLParams{URL: "1b://example.com"}, expected: &ExtractResult{Domain: "1b"}, description: "Scheme beginning with non-alphabet"},
@@ -367,37 +381,37 @@ var invalidTests = []extractTest{
 			RegisteredDomain: "google.com.sg",
 		}, description: "Invalid Port number"},
 	{urlParams: URLParams{URL: "http://.\u3002127.0.0.1"},
-		expected: &ExtractResult{Scheme: "http://"}, description: "Consecutive label separators before IPv4 address",
+		expected: &ExtractResult{Scheme: "http://"}, err: errs[8], description: "Consecutive label separators before IPv4 address",
 	},
 	{urlParams: URLParams{URL: "http://.\u3002[aBcD:ef01:2345:6789:aBcD:ef01:2345:6789]"},
-		expected: &ExtractResult{Scheme: "http://"}, description: "Consecutive label separators before IPv6 address",
+		expected: &ExtractResult{Scheme: "http://"}, err: errs[0], description: "Consecutive label separators before IPv6 address",
 	},
 	{urlParams: URLParams{URL: "http://[aBcD:ef01:2345:6789:aBcD:ef01:2345:6789].."},
-		expected: &ExtractResult{Scheme: "http://"}, description: "Consecutive label separators after IPv6 address",
+		expected: &ExtractResult{Scheme: "http://"}, err: errs[5], description: "Consecutive label separators after IPv6 address",
 	},
 	{urlParams: URLParams{URL: "http://example.com :50"},
-		expected: &ExtractResult{Scheme: "http://", Port: "50"}, description: "Spaces between domain and Port/Path",
+		expected: &ExtractResult{Scheme: "http://", Port: "50"}, err: errs[8], description: "Spaces between domain and Port/Path",
 	},
 	{urlParams: URLParams{URL: "http://  127.0.0.1"},
-		expected: &ExtractResult{Scheme: "http://"}, description: "Spaces before IPv4 address",
+		expected: &ExtractResult{Scheme: "http://"}, err: errs[8], description: "Spaces before IPv4 address",
 	},
 	{urlParams: URLParams{URL: "http://127.0.0.1  :50"},
-		expected: &ExtractResult{Scheme: "http://", Port: "50"}, description: "Spaces between IPv4 address and Port/Path",
+		expected: &ExtractResult{Scheme: "http://", Port: "50"}, err: errs[8], description: "Spaces between IPv4 address and Port/Path",
 	},
 	{urlParams: URLParams{URL: "http://  [aBcD:ef01:2345:6789:aBcD:ef01:2345:6789]"},
-		expected: &ExtractResult{Scheme: "http://"}, description: "Spaces before IPv6 address",
+		expected: &ExtractResult{Scheme: "http://"}, err: errs[0], description: "Spaces before IPv6 address",
 	},
 	{urlParams: URLParams{URL: "http://[aBcD:ef01:2345:6789:aBcD:ef01:2345:6789]  :50"},
-		expected: &ExtractResult{Scheme: "http://"}, description: "Spaces between IPv6 address and Port/Path",
+		expected: &ExtractResult{Scheme: "http://"}, err: errs[5], description: "Spaces between IPv6 address and Port/Path",
 	},
 	{urlParams: URLParams{URL: "https://brb\u002ei\u3002am\uff0egoing\uff61to\uff0ebe\u3002a\uff61\u3002fk"},
-		expected: &ExtractResult{Scheme: "https://"}, description: "Consecutive label separators within Suffix",
+		expected: &ExtractResult{Scheme: "https://"}, err: errs[6], description: "Consecutive label separators within Suffix",
 	},
-	{urlParams: URLParams{URL: ".\u3002a\uff61fk"}, expected: &ExtractResult{}, description: "TLD only, multiple leading label separators"},
-	{urlParams: URLParams{URL: "https://brb\u002ei\u3002am\uff0egoing\uff61to\uff0ebe.\u3002a\uff61fk"}, expected: &ExtractResult{Scheme: "https://"}, description: "Consecutive label separators between Domain and Suffix"},
-	{urlParams: URLParams{URL: "https://brb\u002ei\u3002am\uff0egoing\uff61to.\uff0ebe\u3002a\uff61fk"}, expected: &ExtractResult{Scheme: "https://"}, description: "Consecutive label separators between SubDomain and Domain"},
-	{urlParams: URLParams{URL: "https://brb\u002ei\u3002.am.\uff0egoing\uff61to\uff0ebe\u3002a\uff61fk"}, expected: &ExtractResult{Scheme: "https://"}, description: "Consecutive label separators within SubDomain"},
-	{urlParams: URLParams{URL: "https://\uff0eexample.com"}, expected: &ExtractResult{Scheme: "https://"}, description: "Hostname starting with label separator"},
+	{urlParams: URLParams{URL: ".\u3002a\uff61fk"}, expected: &ExtractResult{}, err: errs[8], description: "TLD only, multiple leading label separators"},
+	{urlParams: URLParams{URL: "https://brb\u002ei\u3002am\uff0egoing\uff61to\uff0ebe.\u3002a\uff61fk"}, expected: &ExtractResult{Scheme: "https://"}, err: errs[8], description: "Consecutive label separators between Domain and Suffix"},
+	{urlParams: URLParams{URL: "https://brb\u002ei\u3002am\uff0egoing\uff61to.\uff0ebe\u3002a\uff61fk"}, expected: &ExtractResult{Scheme: "https://"}, err: errs[8], description: "Consecutive label separators between SubDomain and Domain"},
+	{urlParams: URLParams{URL: "https://brb\u002ei\u3002.am.\uff0egoing\uff61to\uff0ebe\u3002a\uff61fk"}, expected: &ExtractResult{Scheme: "https://"}, err: errs[8], description: "Consecutive label separators within SubDomain"},
+	{urlParams: URLParams{URL: "https://\uff0eexample.com"}, expected: &ExtractResult{Scheme: "https://"}, err: errs[8], description: "Hostname starting with label separator"},
 	{urlParams: URLParams{URL: "//server.example.com/path"}, expected: &ExtractResult{Scheme: "//", SubDomain: "server", Domain: "example", Suffix: "com", RegisteredDomain: "example.com", Path: "/path"}, description: "Double-slash only Scheme with subdomain"},
 	{urlParams: URLParams{URL: "http://temasek"}, expected: &ExtractResult{Scheme: "http://", Suffix: "temasek"}, description: "Basic URL with TLD only"},
 	{urlParams: URLParams{URL: "http://temasek.this-tld-cannot-be-real"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "temasek", Domain: "this-tld-cannot-be-real"}, description: "Basic URL with bad TLD"},
@@ -410,68 +424,68 @@ var invalidTests = []extractTest{
 		expected:    &ExtractResult{Scheme: "http://", SubDomain: "192.168.01", Domain: "1", Port: "5000"},
 		description: "Basic IPv4 Address with Scheme and Port and bad IP | octet with leading zero"},
 	{urlParams: URLParams{URL: "http://a:b@xn--tub-1m9d15sfkkhsifsbqygyujjrw60.com"},
-		expected: &ExtractResult{Scheme: "http://", UserInfo: "a:b"}, description: "Invalid punycode Domain"},
+		expected: &ExtractResult{Scheme: "http://", UserInfo: "a:b"}, err: errors.New("idna: invalid label \"tub-1m9d15sfkkhsifsbqygyujjrw60\""), description: "Invalid punycode Domain"},
 	{urlParams: URLParams{URL: "http://[aBcD:ef01:2345:6789:aBcD:ef01:2345:6789:5000"},
-		expected:    &ExtractResult{Scheme: "http://"},
+		expected: &ExtractResult{Scheme: "http://"}, err: errs[3],
 		description: "Basic IPv6 Address with Scheme and Port with no closing bracket"},
 	{urlParams: URLParams{URL: "http://[aBcD:ef01:2345:6789:aBcD:::]:5000"},
-		expected:    &ExtractResult{Scheme: "http://"},
+		expected: &ExtractResult{Scheme: "http://"}, err: errs[4],
 		description: "Basic IPv6 Address with Scheme and Port and bad IP | odd number of empty hextets"},
 	{urlParams: URLParams{URL: "http://[aBcD:ef01:2345:6789:aBcD:ef01:2345:fffffffffffffffff]:5000"},
-		expected:    &ExtractResult{Scheme: "http://"},
+		expected: &ExtractResult{Scheme: "http://"}, err: errs[4],
 		description: "Basic IPv6 Address with Scheme and Port and bad IP | hextet too big"},
 	{urlParams: URLParams{URL: "http://[aBcD:ef01:2345:6789:aBcD:ef01:127\uff0e256\u30020\uff611]:5000"},
-		expected:    &ExtractResult{Scheme: "http://"},
+		expected: &ExtractResult{Scheme: "http://"}, err: errs[4],
 		description: "Basic IPv6 Address + trailing IPv4 address with Scheme and Port and bad IPv4 | Internationalised label separators"},
 	{urlParams: URLParams{URL: "http://["},
-		expected:    &ExtractResult{Scheme: "http://"},
+		expected: &ExtractResult{Scheme: "http://"}, err: errs[3],
 		description: "Single opening square bracket"},
 	{urlParams: URLParams{URL: "http://a["},
-		expected:    &ExtractResult{Scheme: "http://"},
+		expected: &ExtractResult{Scheme: "http://"}, err: errs[0],
 		description: "Single opening square bracket after alphabet"},
 	{urlParams: URLParams{URL: "http://]"},
-		expected:    &ExtractResult{Scheme: "http://"},
+		expected: &ExtractResult{Scheme: "http://"}, err: errs[1],
 		description: "Single closing square bracket"},
 	{urlParams: URLParams{URL: "http://a]"},
-		expected:    &ExtractResult{Scheme: "http://"},
+		expected: &ExtractResult{Scheme: "http://"}, err: errs[1],
 		description: "Single closing square bracket after alphabet"},
 	{urlParams: URLParams{URL: "http://]["},
-		expected:    &ExtractResult{Scheme: "http://"},
+		expected: &ExtractResult{Scheme: "http://"}, err: errs[1],
 		description: "closing square bracket before opening square bracket"},
 	{urlParams: URLParams{URL: "http://a]["},
-		expected:    &ExtractResult{Scheme: "http://"},
+		expected: &ExtractResult{Scheme: "http://"}, err: errs[1],
 		description: "closing square bracket before opening square bracket after alphabet"},
 	{urlParams: URLParams{URL: "http://[]"},
-		expected:    &ExtractResult{Scheme: "http://"},
+		expected: &ExtractResult{Scheme: "http://"}, err: errs[4],
 		description: "Empty pair of square brackets"},
 	{urlParams: URLParams{URL: "http://a[]"},
-		expected:    &ExtractResult{Scheme: "http://"},
+		expected: &ExtractResult{Scheme: "http://"}, err: errs[0],
 		description: "Empty pair of square brackets after alphabet"},
 	{urlParams: URLParams{URL: "http://a[127.0.0.1]"},
-		expected:    &ExtractResult{Scheme: "http://"},
+		expected: &ExtractResult{Scheme: "http://"}, err: errs[0],
 		description: "IPv4 in square brackets after alphabet"},
 	{urlParams: URLParams{URL: "http://a[aBcD:ef01:2345:6789:aBcD:ef01:127\uff0e255\u30020\uff611]"},
-		expected:    &ExtractResult{Scheme: "http://"},
+		expected: &ExtractResult{Scheme: "http://"}, err: errs[0],
 		description: "IPv6 in square brackets after alphabet"},
-	{urlParams: URLParams{URL: "http://[127.0.0.1]"}, expected: &ExtractResult{Scheme: "http://"}, description: "IPv4 in square brackets"},
+	{urlParams: URLParams{URL: "http://[127.0.0.1]"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[4], description: "IPv4 in square brackets"},
 
 	// Test cases from net/ip-test.go
-	{urlParams: URLParams{URL: "http://[-0.0.0.0]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
-	{urlParams: URLParams{URL: "http://[0.-1.0.0]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
-	{urlParams: URLParams{URL: "http://[0.0.-2.0]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
-	{urlParams: URLParams{URL: "http://[0.0.0.-3]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
-	{urlParams: URLParams{URL: "http://[127.0.0.256]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
-	{urlParams: URLParams{URL: "http://[abc]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
-	{urlParams: URLParams{URL: "http://[123:]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
-	{urlParams: URLParams{URL: "http://[fe80::1%lo0]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
-	{urlParams: URLParams{URL: "http://[fe80::1%911]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
-	{urlParams: URLParams{URL: "http://[a1:a2:a3:a4::b1:b2:b3:b4]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
-	{urlParams: URLParams{URL: "http://[127.001.002.003]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
-	{urlParams: URLParams{URL: "http://[::ffff:127.001.002.003]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
-	{urlParams: URLParams{URL: "http://[123.000.000.000]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
-	{urlParams: URLParams{URL: "http://[1.2..4]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
-	{urlParams: URLParams{URL: "http://[0123.0.0.1]"}, expected: &ExtractResult{Scheme: "http://"}, description: "net/ip-test.go"},
-	{urlParams: URLParams{URL: "git+ssh://www.!example.com/"}, expected: &ExtractResult{Scheme: "git+ssh://", Path: "/"}, description: "Full git+ssh URL with bad Domain"},
+	{urlParams: URLParams{URL: "http://[-0.0.0.0]"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[4], description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[0.-1.0.0]"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[4], description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[0.0.-2.0]"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[4], description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[0.0.0.-3]"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[4], description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[127.0.0.256]"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[4], description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[abc]"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[4], description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[123:]"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[4], description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[fe80::1%lo0]"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[4], description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[fe80::1%911]"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[4], description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[a1:a2:a3:a4::b1:b2:b3:b4]"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[4], description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[127.001.002.003]"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[4], description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[::ffff:127.001.002.003]"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[4], description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[123.000.000.000]"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[4], description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[1.2..4]"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[4], description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[0123.0.0.1]"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[4], description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "git+ssh://www.!example.com/"}, expected: &ExtractResult{Scheme: "git+ssh://", Path: "/"}, err: errs[8], description: "Full git+ssh URL with bad Domain"},
 }
 var internationalTLDTests = []extractTest{
 	{urlParams: URLParams{URL: "https://𝖊𝖝𝖆𝖒𝖕𝖑𝖊.𝖈𝖔𝖒.𝖘𝖌", ConvertURLToPunyCode: true}, expected: &ExtractResult{Scheme: "https://", Domain: "example", Suffix: "com.sg", RegisteredDomain: "example.com.sg"}},
@@ -515,13 +529,13 @@ var wildcardTests = []extractTest{
 	},
 }
 var lookoutTests = []extractTest{ // some tests from lookout.net
-	{urlParams: URLParams{URL: "http://GOO\u200b\u2060\ufeffgoo.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, description: "Invalid chars"},
-	{urlParams: URLParams{URL: "http://\u0646\u0627\u0645\u0647\u200c\u0627\u06cc.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, description: "Invalid chars"},
-	{urlParams: URLParams{URL: "http://\u0000\u0dc1\u0dca\u200d\u0dbb\u0dd3.com.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, description: "Invalid chars"},
-	{urlParams: URLParams{URL: "http://\u0dc1\u0dca\u200d\u0dbb\u0dd3.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, description: "Invalid chars"},
-	{urlParams: URLParams{URL: "http://look\ufeffout.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, description: "Invalid chars"},
-	{urlParams: URLParams{URL: "http://www\u00A0.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, description: "Invalid chars"},
-	{urlParams: URLParams{URL: "http://\u1680.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, description: "Invalid chars"},
+	{urlParams: URLParams{URL: "http://GOO\u200b\u2060\ufeffgoo.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[8], description: "Invalid chars"},
+	{urlParams: URLParams{URL: "http://\u0646\u0627\u0645\u0647\u200c\u0627\u06cc.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[8], description: "Invalid chars"},
+	{urlParams: URLParams{URL: "http://\u0000\u0dc1\u0dca\u200d\u0dbb\u0dd3.com.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[8], description: "Invalid chars"},
+	{urlParams: URLParams{URL: "http://\u0dc1\u0dca\u200d\u0dbb\u0dd3.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[8], description: "Invalid chars"},
+	{urlParams: URLParams{URL: "http://look\ufeffout.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[8], description: "Invalid chars"},
+	{urlParams: URLParams{URL: "http://www\u00A0.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[8], description: "Invalid chars"},
+	{urlParams: URLParams{URL: "http://\u1680.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[8], description: "Invalid chars"},
 	{urlParams: URLParams{URL: "%68%74%74%70%3a%2f%2f%77%77%77%2e%65%78%61%6d%70%6c%65%2e%63%6f%6d%2f.urltest.lookout.net"}, expected: &ExtractResult{
 		SubDomain: "%68%74%74%70%3a%2f%2f%77%77%77%2e%65%78%61%6d%70%6c%65%2e%63%6f%6d%2f.urltest", Domain: "lookout",
 		Suffix: "net", RegisteredDomain: "lookout.net"}, description: "Percentage encoded SubDomain"},
@@ -542,20 +556,20 @@ var lookoutTests = []extractTest{ // some tests from lookout.net
 	{urlParams: URLParams{URL: "http://%ef%bc%85%ef%bc%90%ef%bc%90.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "%ef%bc%85%ef%bc%90%ef%bc%90.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net"}, description: "Percentage encoded SubDomain"},
 	{urlParams: URLParams{URL: "http://%ef%bc%85%ef%bc%94%ef%bc%91.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "%ef%bc%85%ef%bc%94%ef%bc%91.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net"}, description: "Percentage encoded SubDomain"},
 	{urlParams: URLParams{URL: "http://%zz%66%a.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "%zz%66%a.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net"}, description: "Percentage encoded SubDomain"},
-	{urlParams: URLParams{URL: "http://-foo.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, description: "Start with dash"},
+	{urlParams: URLParams{URL: "http://-foo.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[8], description: "Start with dash"},
 	{urlParams: URLParams{URL: "http:////////user:@urltest.lookout.net?foo"}, expected: &ExtractResult{Scheme: "http:////////", UserInfo: "user:", SubDomain: "urltest", Domain: "lookout", Suffix: "net", Path: "?foo", RegisteredDomain: "lookout.net"}, description: "Multiple slashes in Scheme"},
-	{urlParams: URLParams{URL: "http://192.168.0.1 hello.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, description: "Space in SubDomain"},
+	{urlParams: URLParams{URL: "http://192.168.0.1 hello.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[8], description: "Space in SubDomain"},
 	{urlParams: URLParams{URL: "http://192.168.0.257.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "192.168.0.257.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net"}, description: "IPv4 Address in SubDomain"},
 	{urlParams: URLParams{URL: "http://B\u00fccher.de.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "B\u00fccher.de.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net"}, description: "Unicode in SubDomain"},
-	{urlParams: URLParams{URL: "http://GOO \u3000goo.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, description: "Space in SubDomain"},
-	{urlParams: URLParams{URL: "http://Goo%20 goo%7C|.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, description: "Space in SubDomain"},
-	{urlParams: URLParams{URL: "http://[google.com.].urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, description: "Square Brackets in SubDomain"},
-	{urlParams: URLParams{URL: "http://[urltest.lookout.net]/"}, expected: &ExtractResult{Scheme: "http://"}, description: "Square brackets but not IPv6"},
-	{urlParams: URLParams{URL: "http://\u001f.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, description: "Control Character in SubDomain"},
+	{urlParams: URLParams{URL: "http://GOO \u3000goo.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[8], description: "Space in SubDomain"},
+	{urlParams: URLParams{URL: "http://Goo%20 goo%7C|.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[8], description: "Space in SubDomain"},
+	{urlParams: URLParams{URL: "http://[google.com.].urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[4], description: "Square Brackets in SubDomain"},
+	{urlParams: URLParams{URL: "http://[urltest.lookout.net]/"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[4], description: "Square brackets but not IPv6"},
+	{urlParams: URLParams{URL: "http://\u001f.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[8], description: "Control Character in SubDomain"},
 	{urlParams: URLParams{URL: "http://\u0378.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "\u0378.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net"}, description: "Unicode U+0378"},
 	{urlParams: URLParams{URL: "http://\u03b2\u03cc\u03bb\u03bf\u03c2.com.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "\u03b2\u03cc\u03bb\u03bf\u03c2.com.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net"}, description: "Unicode in SubDomain"},
 	{urlParams: URLParams{URL: "http://\u03b2\u03cc\u03bb\u03bf\u03c2.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "\u03b2\u03cc\u03bb\u03bf\u03c2.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net"}, description: "Unicode in SubDomain"},
-	{urlParams: URLParams{URL: "http://\u0442(.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, description: "Parenthesis in SubDomain"},
+	{urlParams: URLParams{URL: "http://\u0442(.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[8], description: "Parenthesis in SubDomain"},
 	{urlParams: URLParams{URL: "http://\u04c0.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "\u04c0.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net"}, description: "Unicode in SubDomain"},
 	{urlParams: URLParams{URL: "http://\u06dd.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "\u06dd.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net"}, description: "Unicode in SubDomain"},
 	{urlParams: URLParams{URL: "http://\u09dc.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "\u09dc.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net"}, description: "Unicode in SubDomain"},
@@ -651,10 +665,10 @@ var lookoutTests = []extractTest{ // some tests from lookout.net
 	{urlParams: URLParams{URL: "http://www.foo\u3002bar.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "www.foo\u3002bar.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net"}, description: "Unicode in SubDomain"},
 	{urlParams: URLParams{URL: "http://www.loo\u0138out.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "www.loo\u0138out.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net"}, description: "Unicode in SubDomain"},
 	{urlParams: URLParams{URL: "http://www.lookout.\u0441\u043e\u043c.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "www.lookout.\u0441\u043e\u043c.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net"}, description: "Unicode in SubDomain"},
-	{urlParams: URLParams{URL: "http://www.lookout.net\uff1a80.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, description: "Reject full-width colon"},
+	{urlParams: URLParams{URL: "http://www.lookout.net\uff1a80.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[8], description: "Reject full-width colon"},
 	{urlParams: URLParams{URL: "http://www.lookout\u2027net.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://", SubDomain: "www.lookout\u2027net.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net"}, description: "Unicode in SubDomain"},
-	{urlParams: URLParams{URL: "http://www\u2025urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, description: "Invalid Character"},
-	{urlParams: URLParams{URL: "http://xn--0.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, description: "Invalid Punycode"},
+	{urlParams: URLParams{URL: "http://www\u2025urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, err: errs[8], description: "Invalid Character"},
+	{urlParams: URLParams{URL: "http://xn--0.urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http://"}, err: errors.New("idna: invalid label \"0\""), description: "Invalid Punycode"},
 	{urlParams: URLParams{URL: "http:\\\\\\\\urltest.lookout.net\\\\foo"}, expected: &ExtractResult{Scheme: "http:\\\\\\\\", SubDomain: "urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", Path: "\\\\foo"}, description: "Multiple forward slashes in Scheme"},
 	{urlParams: URLParams{URL: "http:///\\/\\/\\/\\/urltest.lookout.net"}, expected: &ExtractResult{Scheme: "http:///\\/\\/\\/\\/", SubDomain: "urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net"}, description: "Multiple mixed slashes in Scheme"},
 }
@@ -691,12 +705,21 @@ func TestExtract(t *testing.T) {
 			} else {
 				extractor = extractorWithoutPrivateSuffix
 			}
-			res, _ := extractor.Extract(test.urlParams)
+			res, err := extractor.Extract(test.urlParams)
 
 			if output := reflect.DeepEqual(res,
 				test.expected); !output {
-				t.Errorf("Output %q not equal to expected %q | %q",
+				t.Errorf("Output %q not equal to expected output %q | %q",
 					res, test.expected, test.description)
+			}
+
+			if !(err == nil && test.err == nil) &&
+				((err == nil && test.err != nil) ||
+					(err != nil && test.err == nil) ||
+					!reflect.DeepEqual(err.Error(),
+						test.err.Error())) {
+				t.Errorf("Error %q not equal to expected error %q | %q",
+					err, test.err, test.description)
 			}
 		}
 	}
