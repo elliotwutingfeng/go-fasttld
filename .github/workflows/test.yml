@@ -12,7 +12,11 @@ jobs:
       uses: actions/setup-go@v3
       with:
         go-version-file: './go.mod'
-    - run: go test ./...
-    - run: go test -race -covermode atomic -coverprofile coverage.out
+    - name: Test
+      run: go test ./...
+    - name: Test with race detection
+      run: go test -race -covermode atomic -coverprofile coverage.out
+    - name: Build CLI app
+      run: make build_cli
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
