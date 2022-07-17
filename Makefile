@@ -18,3 +18,6 @@ mem_report:
 
 build_cli:
 	go build -o ./dist/fasttld -ldflags="-X 'github.com/elliotwutingfeng/go-fasttld/cmd/fasttld.version=v0.3.0'" ./cmd/main.go
+
+demo:
+	go run ./examples/demo.go
