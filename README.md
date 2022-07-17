@@ -183,6 +183,8 @@ res, _ := extractor.Extract(fasttld.URLParams{URL: url, IgnoreSubDomains: true})
 By default, internationalised URLs are not converted to punycode before extraction.
 
 ```go
+extractor, _ := fasttld.New(fasttld.SuffixListParams{})
+url := "https://hello.世界.com"
 res, _ := extractor.Extract(fasttld.URLParams{URL: url})
 ```
 
