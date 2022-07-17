@@ -10,6 +10,7 @@ import (
 func main() {
 	var fontStyle = []color.Attribute{color.FgHiWhite, color.Bold}
 
+	// Hostname
 	url := "https://user@a.subdomain.example.ac.uk:5000/a/b?id=42"
 
 	extractor, err := fasttld.New(fasttld.SuffixListParams{})
@@ -17,7 +18,7 @@ func main() {
 		log.Fatal(err)
 	}
 	res, _ := extractor.Extract(fasttld.URLParams{URL: url})
-	color.New(fontStyle...).Println("Domain")
+	color.New(fontStyle...).Println("Hostname")
 	fasttld.PrintRes(url, res)
 
 	// Specify custom public suffix list file
@@ -87,8 +88,9 @@ func main() {
 
 	color.New(fontStyle...).Println("Parsing errors")
 	color.New().Println("The following line should be an error message")
-	if _, err := extractor.Extract(fasttld.URLParams{URL: url}); err != nil {
+	if res, err = extractor.Extract(fasttld.URLParams{URL: url}); err != nil {
 		color.New(color.FgHiRed, color.Bold).Print("Error: ")
 		color.New(color.FgHiWhite).Println(err)
 	}
+	fasttld.PrintRes(url, res) // Partially extracted subcomponents can still be retrieved
 }

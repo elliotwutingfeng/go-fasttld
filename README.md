@@ -41,14 +41,14 @@ Afterwards, try extracting subcomponents from a URL.
 
 ## Try the example code
 
-All of the following examples can be found at `examples/demo.go`. To run the demo, use the following command:
+All of the following examples can be found at `examples/demo.go`. To play the demo, run the following command:
 
 ```sh
 # `git clone` and `cd` to the go-fasttld repository folder first
 make demo
 ```
 
-### Domain
+### Hostname
 
 ```go
 // Initialise fasttld extractor
@@ -206,16 +206,17 @@ res, _ := extractor.Extract(fasttld.URLParams{URL: url, ConvertURLToPunyCode: tr
 
 ### Parsing errors
 
-`Extract()` returns an error if the parser detects the URL as invalid.
+If the URL is invalid, the second variable returned by `Extract()`, **error**, will be non-nil. Partially extracted subcomponents can still be retrieved from the first variable returned, ***ExtractResult**.
 
 ```go
 extractor, _ := fasttld.New(fasttld.SuffixListParams{})
 url := "https://example!.com" // invalid characters in hostname
 color.New().Println("The following line should be an error message")
-if _, err := extractor.Extract(fasttld.URLParams{URL: url}); err != nil {
+if res, err := extractor.Extract(fasttld.URLParams{URL: url}); err != nil {
     color.New(color.FgHiRed, color.Bold).Print("Error: ")
     color.New(color.FgHiWhite).Println(err)
 }
+fasttld.PrintRes(url, res) // Partially extracted subcomponents can still be retrieved
 ```
 
 ## Testing
