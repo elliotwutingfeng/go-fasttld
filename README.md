@@ -204,6 +204,20 @@ res, _ := extractor.Extract(fasttld.URLParams{URL: url, ConvertURLToPunyCode: tr
 |----------|----------|-----------|-------------|--------|------------------|------|------|
 | https:// |          | hello     | xn--rhqv96g | com    | xn--rhqv96g.com  |      |      |
 
+### Parsing errors
+
+`Extract()` returns an error if the parser detects the URL as invalid.
+
+```go
+extractor, _ := fasttld.New(fasttld.SuffixListParams{})
+url := "https://example!.com" // invalid characters in hostname
+color.New().Println("The following line should be an error message")
+if _, err := extractor.Extract(fasttld.URLParams{URL: url}); err != nil {
+    color.New(color.FgHiRed, color.Bold).Print("Error: ")
+    color.New(color.FgHiWhite).Println(err)
+}
+```
+
 ## Testing
 
 ```sh
@@ -282,7 +296,7 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 ### Why not split on "." and take the last element instead?
 
-Splitting on "." and taking the last element only works for simple TLDs like `.com`, but not more complex ones like `oseto.nagasaki.jp`.
+Splitting on "." and taking the last element only works for simple TLDs like `com`, but not more complex ones like `oseto.nagasaki.jp`.
 
 ### TLD tries
 

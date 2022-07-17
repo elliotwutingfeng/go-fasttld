@@ -81,4 +81,14 @@ func main() {
 	res, _ = extractor.Extract(fasttld.URLParams{URL: url, ConvertURLToPunyCode: false})
 	color.New(fontStyle...).Println("No Punycode")
 	fasttld.PrintRes(url, res)
+
+	// Parsing errors
+	url = "https://example!.com" // No spaces allowed in hostname
+
+	color.New(fontStyle...).Println("Parsing errors")
+	color.New().Println("The following line should be an error message")
+	if _, err := extractor.Extract(fasttld.URLParams{URL: url}); err != nil {
+		color.New(color.FgHiRed, color.Bold).Print("Error: ")
+		color.New(color.FgHiWhite).Println(err)
+	}
 }
