@@ -28,14 +28,14 @@ go get github.com/elliotwutingfeng/go-fasttld
 First, build the CLI application.
 
 ```sh
-# `cd` to the go-fasttld repository folder first
+# `git clone` and `cd` to the go-fasttld repository folder first
 make build_cli
 ```
 
 Afterwards, try extracting subcomponents from a URL.
 
 ```sh
-# `cd` to the go-fasttld repository folder first
+# `git clone` and `cd` to the go-fasttld repository folder first
 ./dist/fasttld extract https://user@a.subdomain.example.ac.uk:5000/a/b\?id\=42
 ```
 
@@ -44,7 +44,7 @@ Afterwards, try extracting subcomponents from a URL.
 All of the following examples can be found at `examples/demo.go`. To run the demo, use the following command:
 
 ```sh
-# `cd` to the go-fasttld repository folder first
+# `git clone` and `cd` to the go-fasttld repository folder first
 make demo
 ```
 
@@ -221,14 +221,14 @@ if _, err := extractor.Extract(fasttld.URLParams{URL: url}); err != nil {
 ## Testing
 
 ```sh
-# `cd` to the go-fasttld repository folder first
+# `git clone` and `cd` to the go-fasttld repository folder first
 make tests
 ```
 
 ## Benchmarks
 
 ```sh
-# `cd` to the go-fasttld repository folder first
+# `git clone` and `cd` to the go-fasttld repository folder first
 make bench
 ```
 
