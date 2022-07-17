@@ -1,11 +1,11 @@
 tests:
-	go test -v -coverprofile=coverage.out && go tool cover -html=coverage.out -o coverage.html
+	go test -v -coverprofile coverage.out && go tool cover -html coverage.out -o coverage.html
 
 format:
 	go fmt . ./cmd/... ./cmd/fasttld/... ./examples/...
 
 bench:
-	go test -bench=. -benchmem -cpu 1
+	go test -bench . -benchmem -cpu 1
 
 report_bench:
 	go test -cpuprofile cpu.prof -memprofile mem.prof -bench . -cpu 1
@@ -17,7 +17,7 @@ mem_report:
 	go tool pprof mem.prof
 
 build_cli:
-	go build -o ./dist/fasttld -ldflags="-X 'github.com/elliotwutingfeng/go-fasttld/cmd/fasttld.version=v0.3.0'" ./cmd/main.go
+	go build -o ./dist/fasttld -ldflags "-X 'github.com/elliotwutingfeng/go-fasttld/cmd/fasttld.version=v0.3.0'" ./cmd/main.go
 
 demo:
 	go run ./examples/demo.go
