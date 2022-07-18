@@ -15,5 +15,10 @@ func TestPrintRes(t *testing.T) {
 	res.RegisteredDomain = "example.ac.uk"
 	res.Port = "5000"
 	res.Path = "/a/b?id=42"
+	res.HostType = HostName
+	PrintRes("https://user@a.subdomain.example.ac.uk:5000/a/b?id=42", &res)
+	res.HostType = IPv4
+	PrintRes("https://user@a.subdomain.example.ac.uk:5000/a/b?id=42", &res)
+	res.HostType = IPv6
 	PrintRes("https://user@a.subdomain.example.ac.uk:5000/a/b?id=42", &res)
 }

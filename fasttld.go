@@ -29,9 +29,25 @@ type FastTLD struct {
 	cacheFilePath string
 }
 
+// HostType indicates whether parsed URL
+// contains a HostName, IPv4 address, IPv6 address
+// or none of them
+type HostType int
+
+// None, HostName, IPv4 and IPv6 indicate whether parsed URL
+// contains a HostName, IPv4 address, IPv6 address
+// or none of them
+const (
+	None HostType = iota
+	HostName
+	IPv4
+	IPv6
+)
+
 // ExtractResult contains components extracted from URL.
 type ExtractResult struct {
-	Scheme, UserInfo, SubDomain, Domain, Suffix, Port, Path, RegisteredDomain string
+	Scheme, UserInfo, SubDomain, Domain, Suffix, RegisteredDomain, Port, Path string
+	HostType                                                                  HostType
 }
 
 // SuffixListParams contains parameters for specifying path to Public Suffix List file and
@@ -215,6 +231,7 @@ func (f *FastTLD) Extract(e URLParams) (*ExtractResult, error) {
 			}
 		}
 		// Closing square bracket in correct place and IPv6 is valid
+		urlParts.HostType = IPv6
 		urlParts.Domain = netloc[1:closingSquareBracketIdx]
 		urlParts.RegisteredDomain = netloc[1:closingSquareBracketIdx]
 	}
@@ -329,6 +346,7 @@ func (f *FastTLD) Extract(e URLParams) (*ExtractResult, error) {
 
 	// Check for IPv4 address
 	if isIPv4(netloc) {
+		urlParts.HostType = IPv4
 		urlParts.Domain = netloc[0:previousSepIdx]
 		urlParts.RegisteredDomain = urlParts.Domain
 		return &urlParts, nil
@@ -384,6 +402,7 @@ func (f *FastTLD) Extract(e URLParams) (*ExtractResult, error) {
 	if len(urlParts.Domain) == 0 {
 		return &urlParts, errors.New("empty domain")
 	}
+	urlParts.HostType = HostName
 	return &urlParts, nil
 }
 

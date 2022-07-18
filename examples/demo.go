@@ -84,7 +84,7 @@ func main() {
 	fasttld.PrintRes(url, res)
 
 	// Parsing errors
-	url = "https://example!.com" // No spaces allowed in hostname
+	url = "https://example!.com" // invalid characters in hostname
 
 	color.New(fontStyle...).Println("Parsing errors")
 	color.New().Println("The following line should be an error message")
