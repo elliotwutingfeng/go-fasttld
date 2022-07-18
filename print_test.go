@@ -17,8 +17,9 @@ func TestPrintRes(t *testing.T) {
 	res.Path = "/a/b?id=42"
 	res.HostType = HostName
 	PrintRes("https://user@a.subdomain.example.ac.uk:5000/a/b?id=42", &res)
+	res = ExtractResult{}
 	res.HostType = IPv4
-	PrintRes("https://user@a.subdomain.example.ac.uk:5000/a/b?id=42", &res)
+	PrintRes("1.1.1.1", &res)
 	res.HostType = IPv6
-	PrintRes("https://user@a.subdomain.example.ac.uk:5000/a/b?id=42", &res)
+	PrintRes("[aBcD:ef01:2345:6789:aBcD:ef01:2345:6789]", &res)
 }

@@ -25,8 +25,8 @@ const pslMaxAgeHours float64 = 72
 // URLs using TldTrie generated from the
 // Public Suffix List file at cacheFilePath.
 type FastTLD struct {
-	TldTrie       *trie
 	cacheFilePath string
+	TldTrie       *trie
 }
 
 // HostType indicates whether parsed URL
@@ -71,9 +71,9 @@ type URLParams struct {
 // trie is a node of the compressed trie
 // used to store Public Suffix List TLDs.
 type trie struct {
+	matches     map[string]*trie
 	end         bool
 	hasChildren bool
-	matches     map[string]*trie
 }
 
 // nestedDict stores a slice of keys in the trie, by traversing the trie using the keys as a "path",
@@ -429,5 +429,5 @@ func New(n SuffixListParams) (*FastTLD, error) {
 	// Construct *trie using list located at n.CacheFilePath
 	tldTrie, err := trieConstruct(n.IncludePrivateSuffix, n.CacheFilePath)
 
-	return &FastTLD{tldTrie, n.CacheFilePath}, err
+	return &FastTLD{cacheFilePath: n.CacheFilePath, TldTrie: tldTrie}, err
 }
