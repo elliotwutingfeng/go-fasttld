@@ -57,6 +57,7 @@ var invalidUserInfoCharsSet asciiSet = makeASCIISet(invalidUserInfoChars)
 // For extracting URL scheme.
 var schemeFirstCharSet asciiSet = makeASCIISet(alphabets)
 var schemeRemainingCharSet asciiSet = makeASCIISet(alphabets + numbers + "+-.")
+var slashes asciiSet = makeASCIISet("/\\")
 
 // getSchemeEndIndex checks if string s begins with a URL Scheme and
 // returns its last index. Returns -1 if no Scheme exists.
@@ -71,7 +72,7 @@ func getSchemeEndIndex(s string) int {
 			if schemeFirstCharSet.contains(s[i]) {
 				continue
 			}
-			if s[i] == '/' || s[i] == '\\' {
+			if slashes.contains(s[i]) {
 				slashCount++
 				continue
 			}
@@ -90,14 +91,14 @@ func getSchemeEndIndex(s string) int {
 					continue
 				}
 			}
-			if s[i] == '/' || s[i] == '\\' {
+			if slashes.contains(s[i]) {
 				slashCount++
 				continue
 			}
 			return -1
 		}
 		// expecting only slashes
-		if s[i] == '/' || s[i] == '\\' {
+		if slashes.contains(s[i]) {
 			slashCount++
 			continue
 		}
