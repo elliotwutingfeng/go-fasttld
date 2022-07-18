@@ -23,6 +23,7 @@ func makeRuneSet(s string) (iset *intset.Rune) {
 const alphabets string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 const numbers string = "0123456789"
 
+var numericSet asciiSet = makeASCIISet(numbers)
 var alphaNumericSet asciiSet = makeASCIISet(alphabets + numbers)
 
 // Obtained from IETF RFC 3490

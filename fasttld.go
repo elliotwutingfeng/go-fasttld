@@ -345,7 +345,8 @@ func (f *FastTLD) Extract(e URLParams) (*ExtractResult, error) {
 	}
 
 	// Check for IPv4 address
-	if isIPv4(netloc) {
+	// Ensure first rune is numeric before expensive isIPv4()
+	if len(netloc) != 0 && numericSet.contains(netloc[0]) && isIPv4(netloc) {
 		urlParts.HostType = IPv4
 		urlParts.Domain = netloc[0:previousSepIdx]
 		urlParts.RegisteredDomain = urlParts.Domain
