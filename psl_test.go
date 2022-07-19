@@ -56,10 +56,12 @@ func TestDownloadFile(t *testing.T) {
 	expectedResponse := []byte(`{"isItSunday": true}`)
 	goodServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write(expectedResponse)
+		r.Header.Get("") // removes unused parameter warning
 	}))
 	defer goodServer.Close()
 	badServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(404)
+		r.Header.Get("") // removes unused parameter warning
 	}))
 	defer badServer.Close()
 
@@ -108,10 +110,12 @@ var updateTests = []updateTest{
 func TestUpdate(t *testing.T) {
 	goodServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte{})
+		r.Header.Get("") // removes unused parameter warning
 	}))
 	defer goodServer.Close()
 	badServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(404)
+		r.Header.Get("") // removes unused parameter warning
 	}))
 	defer badServer.Close()
 

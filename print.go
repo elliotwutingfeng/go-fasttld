@@ -73,5 +73,21 @@ func PrintRes(url string, res *ExtractResult) {
 	}
 	color.New(rightAttrs...).Println(res.Path)
 
-	color.New().Println("")
+	if res.HostType != 0 {
+		color.New(color.FgHiBlue, color.Bold).Print("        host type: ")
+	} else {
+		color.New(leftAttrsBlank...).Print("        host type: ")
+	}
+	switch res.HostType {
+	case HostName:
+		color.New(rightAttrs...).Println("hostname")
+	case IPv4:
+		color.New(rightAttrs...).Println("ipv4 address")
+	case IPv6:
+		color.New(rightAttrs...).Println("ipv6 address")
+	default:
+		color.New(rightAttrs...).Println()
+	}
+
+	color.New().Println()
 }

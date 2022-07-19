@@ -25,13 +25,29 @@ const pslMaxAgeHours float64 = 72
 // URLs using TldTrie generated from the
 // Public Suffix List file at cacheFilePath.
 type FastTLD struct {
-	TldTrie       *trie
 	cacheFilePath string
+	TldTrie       *trie
 }
+
+// HostType indicates whether parsed URL
+// contains a HostName, IPv4 address, IPv6 address
+// or none of them
+type HostType int
+
+// None, HostName, IPv4 and IPv6 indicate whether parsed URL
+// contains a HostName, IPv4 address, IPv6 address
+// or none of them
+const (
+	None HostType = iota
+	HostName
+	IPv4
+	IPv6
+)
 
 // ExtractResult contains components extracted from URL.
 type ExtractResult struct {
-	Scheme, UserInfo, SubDomain, Domain, Suffix, Port, Path, RegisteredDomain string
+	Scheme, UserInfo, SubDomain, Domain, Suffix, RegisteredDomain, Port, Path string
+	HostType                                                                  HostType
 }
 
 // SuffixListParams contains parameters for specifying path to Public Suffix List file and
@@ -55,9 +71,9 @@ type URLParams struct {
 // trie is a node of the compressed trie
 // used to store Public Suffix List TLDs.
 type trie struct {
+	matches     map[string]*trie
 	end         bool
 	hasChildren bool
-	matches     map[string]*trie
 }
 
 // nestedDict stores a slice of keys in the trie, by traversing the trie using the keys as a "path",
@@ -76,7 +92,7 @@ func nestedDict(dic *trie, keys []string) {
 		dicBk = dic
 		// If dic.matches[key] does not exist
 		if _, ok := dic.matches[key]; !ok {
-			// Set dic.matches[key] to &Trie
+			// Set dic.matches[key] to &trie
 			dic.matches[key] = &trie{hasChildren: true, matches: make(map[string]*trie)}
 		}
 		dic = dic.matches[key] // point dic to it
@@ -215,6 +231,7 @@ func (f *FastTLD) Extract(e URLParams) (*ExtractResult, error) {
 			}
 		}
 		// Closing square bracket in correct place and IPv6 is valid
+		urlParts.HostType = IPv6
 		urlParts.Domain = netloc[1:closingSquareBracketIdx]
 		urlParts.RegisteredDomain = netloc[1:closingSquareBracketIdx]
 	}
@@ -328,7 +345,9 @@ func (f *FastTLD) Extract(e URLParams) (*ExtractResult, error) {
 	}
 
 	// Check for IPv4 address
-	if isIPv4(netloc) {
+	// Ensure first rune is numeric before expensive isIPv4()
+	if len(netloc) != 0 && numericSet.contains(netloc[0]) && isIPv4(netloc) {
+		urlParts.HostType = IPv4
 		urlParts.Domain = netloc[0:previousSepIdx]
 		urlParts.RegisteredDomain = urlParts.Domain
 		return &urlParts, nil
@@ -384,6 +403,7 @@ func (f *FastTLD) Extract(e URLParams) (*ExtractResult, error) {
 	if len(urlParts.Domain) == 0 {
 		return &urlParts, errors.New("empty domain")
 	}
+	urlParts.HostType = HostName
 	return &urlParts, nil
 }
 
@@ -410,5 +430,5 @@ func New(n SuffixListParams) (*FastTLD, error) {
 	// Construct *trie using list located at n.CacheFilePath
 	tldTrie, err := trieConstruct(n.IncludePrivateSuffix, n.CacheFilePath)
 
-	return &FastTLD{tldTrie, n.CacheFilePath}, err
+	return &FastTLD{cacheFilePath: n.CacheFilePath, TldTrie: tldTrie}, err
 }

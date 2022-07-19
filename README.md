@@ -62,9 +62,9 @@ res, _ := extractor.Extract(fasttld.URLParams{URL: url})
 fasttld.PrintRes(url, res) // Pretty-prints res.Scheme, res.UserInfo, res.SubDomain etc.
 ```
 
-| Scheme   | UserInfo | SubDomain   | Domain  | Suffix | RegisteredDomain | Port | Path       |
-|----------|----------|-------------|---------|--------|------------------|------|------------|
-| https:// | user     | a.subdomain | example | ac.uk  | example.ac.uk    | 5000 | /a/b?id=42 |
+| Scheme   | UserInfo | SubDomain   | Domain  | Suffix | RegisteredDomain | Port | Path       | HostType     |
+|----------|----------|-------------|---------|--------|------------------|------|------------|--------------|
+| https:// | user     | a.subdomain | example | ac.uk  | example.ac.uk    | 5000 | /a/b?id=42 | hostname     |
 
 ### IPv4 Address
 
@@ -74,9 +74,9 @@ url := "https://127.0.0.1:5000"
 res, _ := extractor.Extract(fasttld.URLParams{URL: url})
 ```
 
-| Scheme   | UserInfo | SubDomain | Domain    | Suffix | RegisteredDomain | Port | Path |
-|----------|----------|-----------|-----------|--------|------------------|------|------|
-| https:// |          |           | 127.0.0.1 |        | 127.0.0.1        | 5000 |      |
+| Scheme   | UserInfo | SubDomain | Domain    | Suffix | RegisteredDomain | Port | Path | HostType     |
+|----------|----------|-----------|-----------|--------|------------------|------|------|--------------|
+| https:// |          |           | 127.0.0.1 |        | 127.0.0.1        | 5000 |      | ipv4 address |
 
 ### IPv6 Address
 
@@ -86,9 +86,9 @@ url := "https://[aBcD:ef01:2345:6789:aBcD:ef01:2345:6789]:5000"
 res, _ := extractor.Extract(fasttld.URLParams{URL: url})
 ```
 
-| Scheme   | UserInfo | SubDomain | Domain                                  | Suffix | RegisteredDomain                        | Port | Path |
-|----------|----------|-----------|-----------------------------------------|--------|-----------------------------------------|------|------|
-| https:// |          |           | aBcD:ef01:2345:6789:aBcD:ef01:2345:6789 |        | aBcD:ef01:2345:6789:aBcD:ef01:2345:6789 | 5000 |      |
+| Scheme   | UserInfo | SubDomain | Domain                                  | Suffix | RegisteredDomain                        | Port | Path | HostType     |
+|----------|----------|-----------|-----------------------------------------|--------|-----------------------------------------|------|------|--------------|
+| https:// |          |           | aBcD:ef01:2345:6789:aBcD:ef01:2345:6789 |        | aBcD:ef01:2345:6789:aBcD:ef01:2345:6789 | 5000 |      | ipv6 address |
 
 ### Internationalised label separators
 
@@ -104,9 +104,9 @@ url := "https://brb\u002ei\u3002am\uff0egoing\uff61to\uff0ebe\u3002a\uff61fk"
 res, _ := extractor.Extract(fasttld.URLParams{URL: url})
 ```
 
-| Scheme   | UserInfo | SubDomain                             | Domain | Suffix    | RegisteredDomain  | Port | Path |
-|----------|----------|---------------------------------------|--------|-----------|-------------------|------|------|
-| https:// |          | brb\u002ei\u3002am\uff0egoing\uff61to | be     | a\uff61fk | be\u3002a\uff61fk |      |      |
+| Scheme   | UserInfo | SubDomain                             | Domain | Suffix    | RegisteredDomain  | Port | Path | HostType     |
+|----------|----------|---------------------------------------|--------|-----------|-------------------|------|------|--------------|
+| https:// |          | brb\u002ei\u3002am\uff0egoing\uff61to | be     | a\uff61fk | be\u3002a\uff61fk |      |      | hostname     |
 
 ## Public Suffix List options
 
@@ -146,9 +146,9 @@ url := "https://google.blogspot.com"
 res, _ := extractor.Extract(fasttld.URLParams{URL: url})
 ```
 
-| Scheme   | UserInfo | SubDomain | Domain   | Suffix | RegisteredDomain | Port | Path |
-|----------|----------|-----------|----------|--------|------------------|------|------|
-| https:// |          | google    | blogspot | com    | blogspot.com     |      |      |
+| Scheme   | UserInfo | SubDomain | Domain   | Suffix | RegisteredDomain | Port | Path | HostType     |
+|----------|----------|-----------|----------|--------|------------------|------|------|--------------|
+| https:// |          | google    | blogspot | com    | blogspot.com     |      |      | hostname     |
 
 You can _include_ private domains by setting `IncludePrivateSuffix = true`
 
@@ -158,9 +158,9 @@ url := "https://google.blogspot.com"
 res, _ := extractor.Extract(fasttld.URLParams{URL: url})
 ```
 
-| Scheme   | UserInfo | SubDomain | Domain | Suffix       | RegisteredDomain    | Port | Path |
-|----------|----------|-----------|--------|--------------|---------------------|------|------|
-| https:// |          |           | google | blogspot.com | google.blogspot.com |      |      |
+| Scheme   | UserInfo | SubDomain | Domain | Suffix       | RegisteredDomain    | Port | Path | HostType     |
+|----------|----------|-----------|--------|--------------|---------------------|------|------|--------------|
+| https:// |          |           | google | blogspot.com | google.blogspot.com |      |      | hostname     |
 
 ## Extraction options
 
@@ -174,9 +174,9 @@ url := "https://maps.google.com"
 res, _ := extractor.Extract(fasttld.URLParams{URL: url, IgnoreSubDomains: true})
 ```
 
-| Scheme   | UserInfo | SubDomain | Domain | Suffix | RegisteredDomain | Port | Path |
-|----------|----------|-----------|--------|--------|------------------|------|------|
-| https:// |          |           | google | com    | google.com       |      |      |
+| Scheme   | UserInfo | SubDomain | Domain | Suffix | RegisteredDomain | Port | Path | HostType     |
+|----------|----------|-----------|--------|--------|------------------|------|------|--------------|
+| https:// |          |           | google | com    | google.com       |      |      | hostname     |
 
 ### Punycode
 
@@ -188,9 +188,9 @@ url := "https://hello.世界.com"
 res, _ := extractor.Extract(fasttld.URLParams{URL: url})
 ```
 
-| Scheme   | UserInfo | SubDomain | Domain | Suffix | RegisteredDomain | Port | Path |
-|----------|----------|-----------|--------|--------|------------------|------|------|
-| https:// |          | hello     | 世界   | com    | 世界.com         |      |      |
+| Scheme   | UserInfo | SubDomain | Domain | Suffix | RegisteredDomain | Port | Path | HostType     |
+|----------|----------|-----------|--------|--------|------------------|------|------|--------------|
+| https:// |          | hello     | 世界   | com    | 世界.com         |      |      | hostname     |
 
 You can convert internationalised URLs to [punycode](https://en.wikipedia.org/wiki/Punycode) before extraction by setting `ConvertURLToPunyCode = true`.
 
@@ -200,11 +200,11 @@ url := "https://hello.世界.com"
 res, _ := extractor.Extract(fasttld.URLParams{URL: url, ConvertURLToPunyCode: true})
 ```
 
-| Scheme   | UserInfo | SubDomain | Domain      | Suffix | RegisteredDomain | Port | Path |
-|----------|----------|-----------|-------------|--------|------------------|------|------|
-| https:// |          | hello     | xn--rhqv96g | com    | xn--rhqv96g.com  |      |      |
+| Scheme   | UserInfo | SubDomain | Domain      | Suffix | RegisteredDomain | Port | Path | HostType     |
+|----------|----------|-----------|-------------|--------|------------------|------|------|--------------|
+| https:// |          | hello     | xn--rhqv96g | com    | xn--rhqv96g.com  |      |      | hostname     |
 
-### Parsing errors
+## Parsing errors
 
 If the URL is invalid, the second variable returned by `Extract()`, **error**, will be non-nil. Partially extracted subcomponents can still be retrieved from the first variable returned, ***ExtractResult**.
 
@@ -218,6 +218,10 @@ if res, err := extractor.Extract(fasttld.URLParams{URL: url}); err != nil {
 }
 fasttld.PrintRes(url, res) // Partially extracted subcomponents can still be retrieved
 ```
+
+| Scheme   | UserInfo | SubDomain | Domain | Suffix | RegisteredDomain | Port | Path | HostType |
+|----------|----------|-----------|--------|--------|------------------|------|------|----------|
+| https:// |          |           |        |        |                  |      |      |          |
 
 ## Testing
 
@@ -257,11 +261,11 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 | Benchmark Name       | Iterations | ns/op       | B/op      | allocs/op   | Fastest            |
 |----------------------|------------|-------------|-----------|-------------|--------------------|
-| GoFastTld            | 5051386    | 228.7 ns/op | 128 B/op  | 1 allocs/op | :heavy_check_mark: |
-| JPilloraGoTld        | 2445387    | 483.6 ns/op | 224 B/op  | 2 allocs/op |                    |
-| JoeGuoTldExtract     | 1446608    | 826.6 ns/op | 208 B/op  | 7 allocs/op |                    |
-| Mjd2021USATldExtract | 1540400    | 776.3 ns/op | 208 B/op  | 7 allocs/op |                    |
-| M507Tlde             | 2527750    | 471.2 ns/op | 160 B/op  | 5 allocs/op |                    |
+| GoFastTld            | 5335618    | 216.5 ns/op | 144 B/op  | 1 allocs/op | :heavy_check_mark: |
+| JPilloraGoTld        | 2408444    | 477.9 ns/op | 224 B/op  | 2 allocs/op |                    |
+| JoeGuoTldExtract     | 2506902    | 474.2 ns/op | 160 B/op  | 5 allocs/op |                    |
+| Mjd2021USATldExtract | 1519467    | 794.0 ns/op | 208 B/op  | 7 allocs/op |                    |
+| M507Tlde             | 2536875    | 494.0 ns/op | 160 B/op  | 5 allocs/op |                    |
 
 ---
 
@@ -271,11 +275,11 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 | Benchmark Name       | Iterations | ns/op       | B/op      | allocs/op   | Fastest            |
 |----------------------|------------|-------------|-----------|-------------|--------------------|
-| GoFastTld            | 5970223    | 194.4 ns/op | 128 B/op  | 1 allocs/op | :heavy_check_mark: |
-| JPilloraGoTld        | 1716626    | 687.2 ns/op | 224 B/op  | 2 allocs/op |                    |
-| JoeGuoTldExtract     | 1507495    | 789.1 ns/op | 288 B/op  | 6 allocs/op |                    |
-| Mjd2021USATldExtract | 1632949    | 729.1 ns/op | 288 B/op  | 6 allocs/op |                    |
-| M507Tlde             | 2290509    | 518.7 ns/op | 272 B/op  | 5 allocs/op |                    |
+| GoFastTld            | 5740478    | 196.9 ns/op | 144 B/op  | 1 allocs/op | :heavy_check_mark: |
+| JPilloraGoTld        | 1735533    | 683.9 ns/op | 224 B/op  | 2 allocs/op |                    |
+| JoeGuoTldExtract     | 2343976    | 511.0 ns/op | 272 B/op  | 5 allocs/op |                    |
+| Mjd2021USATldExtract | 1592064    | 741.0 ns/op | 288 B/op  | 6 allocs/op |                    |
+| M507Tlde             | 2295045    | 517.7 ns/op | 272 B/op  | 5 allocs/op |                    |
 
 ---
 
@@ -285,11 +289,11 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 | Benchmark Name       | Iterations | ns/op       | B/op      | allocs/op   | Fastest            |
 |----------------------|------------|-------------|-----------|-------------|--------------------|
-| GoFastTld            | 5124572    | 229.3 ns/op | 128 B/op  | 1 allocs/op | :heavy_check_mark: |
-| JPilloraGoTld        | 462171     | 2668 ns/op  | 928 B/op  | 4 allocs/op |                    |
-| JoeGuoTldExtract     | 1000000    | 1191 ns/op  | 1120 B/op | 6 allocs/op |                    |
-| Mjd2021USATldExtract | 1000000    | 1182 ns/op  | 1120 B/op | 6 allocs/op |                    |
-| M507Tlde             | 1000000    | 1201 ns/op  | 1120 B/op | 6 allocs/op |                    |
+| GoFastTld            | 4744010    | 229.7 ns/op | 144 B/op  | 1 allocs/op | :heavy_check_mark: |
+| JPilloraGoTld        | 448917     | 2826 ns/op  | 928 B/op  | 4 allocs/op |                    |
+| JoeGuoTldExtract     | 909306     | 1283 ns/op  | 1120 B/op | 6 allocs/op |                    |
+| Mjd2021USATldExtract | 1000000    | 1297 ns/op  | 1120 B/op | 6 allocs/op |                    |
+| M507Tlde             | 1000000    | 1257 ns/op  | 1120 B/op | 6 allocs/op |                    |
 
 ---
 
