@@ -92,7 +92,7 @@ func nestedDict(dic *trie, keys []string) {
 		dicBk = dic
 		// If dic.matches[key] does not exist
 		if _, ok := dic.matches[key]; !ok {
-			// Set dic.matches[key] to &Trie
+			// Set dic.matches[key] to &trie
 			dic.matches[key] = &trie{hasChildren: true, matches: make(map[string]*trie)}
 		}
 		dic = dic.matches[key] // point dic to it
