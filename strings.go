@@ -9,7 +9,69 @@ import (
 	"golang.org/x/net/idna"
 )
 
-var idnaToPuny *idna.Profile = idna.New(idna.MapForLookup(), idna.Transitional(true), idna.BidiRule(), idna.CheckHyphens(true))
+// const string -----------------------------------------------------------
+
+const alphabets string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+const numbers string = "0123456789"
+
+// Obtained from IETF RFC 3490
+const labelSeparators string = "\u002e\u3002\uff0e\uff61"
+
+const controlChars string = "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\t\n\v\f\r\u000e\u000f" +
+	"\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f"
+const whitespace string = controlChars + " \u0085\u0086\u00a0\u1680\u200b\u200c\u200d\uFEFF"
+const invalidHostNameChars string = whitespace + "*\"<>|!,~@$^&'(){}_\u2025\uff1a"
+
+const endOfHostWithPortDelimiters string = `/\?#`
+const endOfHostDelimiters string = endOfHostWithPortDelimiters + ":"
+const invalidUserInfoChars string = endOfHostWithPortDelimiters + "[]"
+
+// asciiSet ---------------------------------------------------------------
+
+var numericSet asciiSet = makeASCIISet(numbers)
+var alphaNumericSet asciiSet = makeASCIISet(alphabets + numbers)
+var endOfHostWithPortDelimitersSet asciiSet = makeASCIISet(endOfHostWithPortDelimiters)
+var endOfHostDelimitersSet asciiSet = makeASCIISet(endOfHostDelimiters)
+var invalidUserInfoCharsSet asciiSet = makeASCIISet(invalidUserInfoChars)
+
+// For extracting URL scheme.
+var schemeFirstCharSet asciiSet = makeASCIISet(alphabets)
+var schemeRemainingCharSet asciiSet = makeASCIISet(alphabets + numbers + "+-.")
+var slashes asciiSet = makeASCIISet("/\\")
+
+// asciiSet is a 32-byte value, where each bit represents the presence of a
+// given ASCII character in the set. The 128-bits of the lower 16 bytes,
+// starting with the least-significant bit of the lowest word to the
+// most-significant bit of the highest word, map to the full range of all
+// 128 ASCII characters. The 128-bits of the upper 16 bytes will be zeroed,
+// ensuring that any non-ASCII character will be reported as not in the set.
+// This allocates a total of 32 bytes even though the upper half
+// is unused to avoid bounds checks in asciiSet.contains.
+type asciiSet [8]uint32
+
+// makeASCIISet creates a set of ASCII characters.
+//
+// Similar to strings.makeASCIISet but skips input validation.
+func makeASCIISet(chars string) (as asciiSet) {
+	// all characters in chars are expected to be valid ASCII characters
+	for _, c := range chars {
+		as[c/32] |= 1 << (c % 32)
+	}
+	return as
+}
+
+// contains reports whether c is inside the set.
+//
+// same as strings.contains.
+func (as *asciiSet) contains(c byte) bool {
+	return (as[c/32] & (1 << (c % 32))) != 0
+}
+
+// *intset.Rune -----------------------------------------------------------
+
+var labelSeparatorsRuneSet *intset.Rune = makeRuneSet(labelSeparators)
+var whitespaceRuneSet *intset.Rune = makeRuneSet(whitespace)
+var invalidHostNameCharsRuneSet *intset.Rune = makeRuneSet(invalidHostNameChars)
 
 // makeRuneSet converts a string to a set of unique runes
 func makeRuneSet(s string) (iset *intset.Rune) {
@@ -19,46 +81,6 @@ func makeRuneSet(s string) (iset *intset.Rune) {
 	}
 	return
 }
-
-const alphabets string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-const numbers string = "0123456789"
-
-var numericSet asciiSet = makeASCIISet(numbers)
-var alphaNumericSet asciiSet = makeASCIISet(alphabets + numbers)
-
-// Obtained from IETF RFC 3490
-const labelSeparators string = "\u002e\u3002\uff0e\uff61"
-
-var labelSeparatorsRuneSet *intset.Rune = makeRuneSet(labelSeparators)
-
-const controlChars string = "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\t\n\v\f\r\u000e\u000f" +
-	"\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f"
-
-const whitespace string = controlChars + " \u0085\u0086\u00a0\u1680\u200b\u200c\u200d\uFEFF"
-
-var whitespaceRuneSet *intset.Rune = makeRuneSet(whitespace)
-
-const invalidHostNameChars string = whitespace + "*\"<>|!,~@$^&'(){}_\u2025\uff1a"
-
-var invalidHostNameCharsRuneSet *intset.Rune = makeRuneSet(invalidHostNameChars)
-
-const endOfHostWithPortDelimiters string = `/\?#`
-
-var endOfHostWithPortDelimitersSet asciiSet = makeASCIISet(endOfHostWithPortDelimiters)
-
-const endOfHostDelimiters string = endOfHostWithPortDelimiters + ":"
-
-var endOfHostDelimitersSet asciiSet = makeASCIISet(endOfHostDelimiters)
-
-// Characters that cannot appear in UserInfo
-const invalidUserInfoChars string = endOfHostWithPortDelimiters + "[]"
-
-var invalidUserInfoCharsSet asciiSet = makeASCIISet(invalidUserInfoChars)
-
-// For extracting URL scheme.
-var schemeFirstCharSet asciiSet = makeASCIISet(alphabets)
-var schemeRemainingCharSet asciiSet = makeASCIISet(alphabets + numbers + "+-.")
-var slashes asciiSet = makeASCIISet("/\\")
 
 // getSchemeEndIndex checks if string s begins with a URL Scheme and
 // returns its last index. Returns -1 if no Scheme exists.
@@ -112,34 +134,6 @@ func getSchemeEndIndex(s string) int {
 		return len(s)
 	}
 	return -1
-}
-
-// asciiSet is a 32-byte value, where each bit represents the presence of a
-// given ASCII character in the set. The 128-bits of the lower 16 bytes,
-// starting with the least-significant bit of the lowest word to the
-// most-significant bit of the highest word, map to the full range of all
-// 128 ASCII characters. The 128-bits of the upper 16 bytes will be zeroed,
-// ensuring that any non-ASCII character will be reported as not in the set.
-// This allocates a total of 32 bytes even though the upper half
-// is unused to avoid bounds checks in asciiSet.contains.
-type asciiSet [8]uint32
-
-// makeASCIISet creates a set of ASCII characters.
-//
-// Similar to strings.makeASCIISet but skips input validation.
-func makeASCIISet(chars string) (as asciiSet) {
-	// all characters in chars are expected to be valid ASCII characters
-	for _, c := range chars {
-		as[c/32] |= 1 << (c % 32)
-	}
-	return as
-}
-
-// contains reports whether c is inside the set.
-//
-// same as strings.contains.
-func (as *asciiSet) contains(c byte) bool {
-	return (as[c/32] & (1 << (c % 32))) != 0
 }
 
 // indexAnyASCII returns the index of the first instance of any Unicode code point
@@ -228,6 +222,8 @@ func sepSize(r byte) int {
 	// size of separator is 3
 	return 3
 }
+
+var idnaToPuny *idna.Profile = idna.New(idna.MapForLookup(), idna.Transitional(true), idna.BidiRule(), idna.CheckHyphens(true))
 
 // formatAsPunycode formats s as punycode.
 func formatAsPunycode(s string) string {
