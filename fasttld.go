@@ -90,12 +90,10 @@ func nestedDict(dic *trie, keys []string) {
 
 	for _, key := range keysExceptLast {
 		dicBk = dic
-		// If dic.matches[key] does not exist
 		if _, ok := dic.matches[key]; !ok {
-			// Set dic.matches[key] to &trie
 			dic.matches[key] = &trie{hasChildren: true, matches: make(map[string]*trie)}
 		}
-		dic = dic.matches[key] // point dic to it
+		dic = dic.matches[key]
 		if len(dic.matches) == 0 && !dic.hasChildren {
 			end = true
 			dic = dicBk
@@ -120,12 +118,10 @@ func trieConstruct(includePrivateSuffix bool, cacheFilePath string) (*trie, erro
 	}
 
 	var suffixList []string
-	if !includePrivateSuffix {
-		// public suffixes only
-		suffixList = suffixLists[0]
+	if includePrivateSuffix {
+		suffixList = suffixLists.AllSuffixes
 	} else {
-		// public suffixes AND private suffixes
-		suffixList = suffixLists[2]
+		suffixList = suffixLists.PublicSuffixes
 	}
 
 	for _, suffix := range suffixList {
@@ -267,8 +263,7 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 		}
 	}
 
-	if closingSquareBracketIdx > 0 {
-		// Is IPv6 address
+	if urlParts.HostType == IPv6 {
 		return urlParts, nil
 	}
 
@@ -282,7 +277,7 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 		return urlParts, err
 	}
 
-	// Define the root node
+	// Check for TLD Suffix
 	node := f.TldTrie
 
 	var (
@@ -292,7 +287,6 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 	)
 	sepIdx, suffixStartIdx, suffixEndIdx := len(netloc), len(netloc), len(netloc)
 
-	// Check for TLD Suffix
 	for !end {
 		var label string
 		previousSepIdx = sepIdx
@@ -385,7 +379,7 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 				urlParts.RegisteredDomain = netloc[0:suffixEndIdx]
 			}
 		} else {
-			// If only Suffix exists
+			// Only Suffix exists
 			urlParts.Suffix = netloc[0:suffixEndIdx]
 		}
 	} else {
@@ -407,17 +401,16 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 	return urlParts, nil
 }
 
-// New creates a new *FastTLD.
+// New creates a new *FastTLD using data from a Public Suffix List file.
 func New(n SuffixListParams) (*FastTLD, error) {
 	cacheFilePath, err := filepath.Abs(n.CacheFilePath)
-	invalidCacheFilePath := err != nil
+	cacheFilePathIsInvalid := err != nil
 
-	// If cacheFilePath is unreachable, use default Public Suffix List
-	if stat, err := os.Stat(strings.TrimSpace(cacheFilePath)); invalidCacheFilePath || err != nil || stat.IsDir() || stat.Size() == 0 {
+	// If cacheFilePath is unreachable, use default Public Suffix List file
+	if stat, err := os.Stat(strings.TrimSpace(cacheFilePath)); cacheFilePathIsInvalid || err != nil || stat.IsDir() || stat.Size() == 0 {
 		n.CacheFilePath = getCurrentFilePath() + string(os.PathSeparator) + defaultPSLFileName
-		// Update Public Suffix List if it doesn't exist or is older than pslMaxAgeHours
+		// Update Public Suffix List file if it doesn't exist or is older than pslMaxAgeHours
 		if fileinfo, err := os.Stat(n.CacheFilePath); err != nil || fileLastModifiedHours(fileinfo) > pslMaxAgeHours {
-			// Create local file at n.CacheFilePath
 			if file, err := os.Create(n.CacheFilePath); err == nil {
 				if err := update(file, publicSuffixListSources); err != nil {
 					log.Println(err)
@@ -427,7 +420,7 @@ func New(n SuffixListParams) (*FastTLD, error) {
 		}
 	}
 
-	// Construct *trie using list located at n.CacheFilePath
+	// Construct *trie using Public Suffix List file located at n.CacheFilePath
 	tldTrie, err := trieConstruct(n.IncludePrivateSuffix, n.CacheFilePath)
 
 	return &FastTLD{cacheFilePath: n.CacheFilePath, TldTrie: tldTrie}, err

@@ -14,7 +14,7 @@ import (
 const alphabets string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 const numbers string = "0123456789"
 
-// Obtained from IETF RFC 3490
+// IETF RFC 3490
 const labelSeparators string = "\u002e\u3002\uff0e\uff61"
 
 const controlChars string = "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\t\n\v\f\r\u000e\u000f" +
@@ -34,10 +34,9 @@ var endOfHostWithPortDelimitersSet asciiSet = makeASCIISet(endOfHostWithPortDeli
 var endOfHostDelimitersSet asciiSet = makeASCIISet(endOfHostDelimiters)
 var invalidUserInfoCharsSet asciiSet = makeASCIISet(invalidUserInfoChars)
 
-// For extracting URL scheme.
 var schemeFirstCharSet asciiSet = makeASCIISet(alphabets)
 var schemeRemainingCharSet asciiSet = makeASCIISet(alphabets + numbers + "+-.")
-var slashes asciiSet = makeASCIISet("/\\")
+var slashes asciiSet = makeASCIISet(`/\`)
 
 // asciiSet is a 32-byte value, where each bit represents the presence of a
 // given ASCII character in the set. The 128-bits of the lower 16 bytes,

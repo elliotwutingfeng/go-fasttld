@@ -44,7 +44,7 @@ func TestGetPublicSuffixList(t *testing.T) {
 		if !test.hasError && err != nil {
 			t.Errorf("Expected no error. Got an error.")
 		}
-		if output := reflect.DeepEqual(suffixLists,
+		if output := reflect.DeepEqual([3][]string{suffixLists.PublicSuffixes, suffixLists.PrivateSuffixes, suffixLists.AllSuffixes},
 			test.expectedLists); !output {
 			t.Errorf("Output %q not equal to expected %q",
 				suffixLists, test.expectedLists)

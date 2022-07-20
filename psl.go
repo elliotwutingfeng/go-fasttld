@@ -23,6 +23,12 @@ var publicSuffixListSources = []string{
 	"https://raw.githubusercontent.com/publicsuffix/list/master/public_suffix_list.dat",
 }
 
+type suffixes struct {
+	PublicSuffixes  []string
+	PrivateSuffixes []string
+	AllSuffixes     []string
+}
+
 // getPublicSuffixList retrieves Public Suffixes and Private Suffixes from Public Suffix list located at cacheFilePath.
 //
 // PublicSuffixes: ICANN domains. Example: com, net, org etc.
@@ -30,7 +36,7 @@ var publicSuffixListSources = []string{
 // PrivateSuffixes: PRIVATE domains. Example: blogspot.co.uk, appspot.com etc.
 //
 // AllSuffixes: Both ICANN and PRIVATE domains.
-func getPublicSuffixList(cacheFilePath string) ([3]([]string), error) {
+func getPublicSuffixList(cacheFilePath string) (suffixes, error) {
 	PublicSuffixes := []string{}
 	PrivateSuffixes := []string{}
 	AllSuffixes := []string{}
@@ -38,7 +44,7 @@ func getPublicSuffixList(cacheFilePath string) ([3]([]string), error) {
 	fd, err := os.Open(cacheFilePath)
 	if err != nil {
 		log.Println(err)
-		return [3]([]string){PublicSuffixes, PrivateSuffixes, AllSuffixes}, err
+		return suffixes{PublicSuffixes, PrivateSuffixes, AllSuffixes}, err
 	}
 	defer fd.Close()
 
@@ -77,9 +83,8 @@ func getPublicSuffixList(cacheFilePath string) ([3]([]string), error) {
 			// add non-punycode version if it is different from punycode version
 			AllSuffixes = append(AllSuffixes, line)
 		}
-
 	}
-	return [3]([]string){PublicSuffixes, PrivateSuffixes, AllSuffixes}, nil
+	return suffixes{PublicSuffixes, PrivateSuffixes, AllSuffixes}, nil
 }
 
 // downloadFile downloads file from url as byte slice
@@ -148,7 +153,6 @@ func (t *FastTLD) Update() error {
 	if t.cacheFilePath != getCurrentFilePath()+string(os.PathSeparator)+defaultPSLFileName {
 		return errors.New("function Update() only applies to default Public Suffix List, not custom Public Suffix List")
 	}
-	// Create local file at cacheFilePath
 	file, err := os.Create(t.cacheFilePath)
 	if err != nil {
 		return err
