@@ -206,7 +206,7 @@ res, _ := extractor.Extract(fasttld.URLParams{URL: url, ConvertURLToPunyCode: tr
 
 ## Parsing errors
 
-If the URL is invalid, the second variable returned by `Extract()`, **error**, will be non-nil. Partially extracted subcomponents can still be retrieved from the first variable returned, **ExtractResult**.
+If the URL is invalid, the second value returned by `Extract()`, **error**, will be non-nil. Partially extracted subcomponents can still be retrieved from the first value returned, **ExtractResult**.
 
 ```go
 extractor, _ := fasttld.New(fasttld.SuffixListParams{})
