@@ -5,7 +5,7 @@ import (
 )
 
 // PrintRes pretty-prints URL components from ExtractResult
-func PrintRes(url string, res *ExtractResult) {
+func PrintRes(url string, res ExtractResult) {
 	var leftAttrsFilled = []color.Attribute{color.FgHiYellow, color.Bold}
 	var leftAttrsBlank = []color.Attribute{color.FgHiBlack}
 	var rightAttrs = []color.Attribute{color.FgHiWhite}
