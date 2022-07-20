@@ -27,13 +27,12 @@ fasttld extract abc.example.com:5000/a/path
 		if err != nil {
 			log.Fatal(err)
 		}
-		if res, err := extractor.Extract(
-			fasttld.URLParams{URL: args[0], IgnoreSubDomains: ignoreSubDomains, ConvertURLToPunyCode: toPunyCode}); err != nil {
+		res, err := extractor.Extract(fasttld.URLParams{URL: args[0], IgnoreSubDomains: ignoreSubDomains, ConvertURLToPunyCode: toPunyCode})
+		if err != nil {
 			color.New(color.FgHiRed, color.Bold).Print("Error: ")
 			color.New(color.FgHiWhite).Println(err)
-		} else {
-			fasttld.PrintRes(args[0], res)
 		}
+		fasttld.PrintRes(args[0], res)
 	},
 }
 
