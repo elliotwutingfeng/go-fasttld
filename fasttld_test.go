@@ -232,7 +232,11 @@ var schemeTests = []extractTest{
 var noSchemeTests = []extractTest{
 	{urlParams: URLParams{URL: "localhost"}, expected: ExtractResult{Domain: "localhost", HostType: HostName}, description: "localhost"},
 	{urlParams: URLParams{URL: "org"}, expected: ExtractResult{Suffix: "org"}, err: errs[9], description: "Single TLD | Suffix Only"},
+	{urlParams: URLParams{URL: "org."}, expected: ExtractResult{Suffix: "org"}, err: errs[9], description: "Single TLD | Suffix Only with single trailing dot"}, //  RFC 1034 - allow single trailing dot
+	{urlParams: URLParams{URL: "org.."}, expected: ExtractResult{}, err: errs[8], description: "Single TLD | Suffix Only with 2 trailing dots"},
 	{urlParams: URLParams{URL: "co.th"}, expected: ExtractResult{Suffix: "co.th"}, err: errs[9], description: "Double TLD | Suffix Only"},
+	{urlParams: URLParams{URL: "co.th."}, expected: ExtractResult{Suffix: "co.th"}, err: errs[9], description: "Double TLD | Suffix Only with single trailing dot"}, //  RFC 1034 - allow single trailing dot
+	{urlParams: URLParams{URL: "co.th.."}, expected: ExtractResult{}, err: errs[8], description: "Double TLD | Suffix Only with 2 trailing dots"},
 	{urlParams: URLParams{URL: "users@example.com"}, expected: ExtractResult{UserInfo: "users", Domain: "example", Suffix: "com", RegisteredDomain: "example.com", HostType: HostName}, description: "UserInfo + Domain | No Scheme"},
 	{urlParams: URLParams{URL: "mailto:users@example.com"}, expected: ExtractResult{UserInfo: "mailto:users", Domain: "example", Suffix: "com", RegisteredDomain: "example.com", HostType: HostName}, description: "Mailto | No Scheme"},
 	{urlParams: URLParams{URL: "example.com:999"}, expected: ExtractResult{Domain: "example", Suffix: "com", RegisteredDomain: "example.com", Port: "999", HostType: HostName}, description: "Domain + Port | No Scheme"},

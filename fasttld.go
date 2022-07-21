@@ -348,7 +348,7 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 	}
 
 	if sepIdx == -1 {
-		sepIdx, suffixStartIdx, suffixEndIdx = len(netloc), len(netloc), len(netloc)
+		sepIdx, suffixStartIdx = len(netloc), len(netloc)
 	}
 
 	// Reject if invalidHostNameChars or consecutive label separators
