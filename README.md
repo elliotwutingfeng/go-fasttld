@@ -116,7 +116,7 @@ You can use a custom public suffix list file by setting `CacheFilePath` in `fast
 
 ```go
 cacheFilePath := "/absolute/path/to/file.dat"
-extractor, _ := fasttld.New(fasttld.SuffixListParams{CacheFilePath: cacheFilePath})
+extractor, err := fasttld.New(fasttld.SuffixListParams{CacheFilePath: cacheFilePath})
 ```
 
 ### Updating the default Public Suffix List cache

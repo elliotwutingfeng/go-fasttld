@@ -27,10 +27,6 @@ func BenchmarkComparison(b *testing.B) {
 		{"JPilloraGoTld"},        // github.com/jpillora/go-tld
 		{"JoeGuoTldExtract"},     // github.com/joeguo/tldextract
 		{"Mjd2021USATldExtract"}, // github.com/mjd2021usa/tldextract
-		// {"M507Tlde"},             // github.com/M507/tlde
-		// {"ImVexedFastURL"},       // github.com/ImVexed/fasturl
-		// {"WepposPublicSuffixGo"}, // github.com/weppos/publicsuffix-go
-		// {"ForeEaseGoTld"},        // github.com/forease/gotld
 	}
 
 	GoFastTld, _ := New(SuffixListParams{
@@ -47,28 +43,22 @@ func BenchmarkComparison(b *testing.B) {
 	for _, benchmarkURL := range benchmarkURLs {
 		for _, bm := range benchmarks {
 			if bm.name == "GoFastTld" {
-				// this module
-
 				b.Run(fmt.Sprint(bm.name), func(b *testing.B) {
 					for i := 0; i < b.N; i++ {
 						GoFastTld.Extract(URLParams{URL: benchmarkURL})
 					}
 				})
-
 			} else if bm.name == "JPilloraGoTld" {
-				// this module also provides the PORT and PATH subcomponents
-				// it cannot handle "+://google.com" and IP addresses
-				// it cannot handle urls without scheme component
-				// it cannot handle trailing whitespace
-
+				// Provides the Port and Path subcomponents
+				// Cannot handle "+://google.com" and IP addresses
+				// Cannot handle urls without Scheme subcomponent
+				// Cannot handle trailing whitespace
 				b.Run(fmt.Sprint(bm.name), func(b *testing.B) {
 					for i := 0; i < b.N; i++ {
 						tld.Parse(benchmarkURL)
 					}
 				})
-
 			} else if bm.name == "JoeGuoTldExtract" {
-
 				b.Run(fmt.Sprint(bm.name), func(b *testing.B) {
 					for i := 0; i < b.N; i++ {
 						JoeGuoTldExtract.Extract(benchmarkURL)
@@ -76,51 +66,12 @@ func BenchmarkComparison(b *testing.B) {
 				})
 
 			} else if bm.name == "Mjd2021USATldExtract" {
-
 				b.Run(fmt.Sprint(bm.name), func(b *testing.B) {
 					for i := 0; i < b.N; i++ {
 						Mjd2021USATldExtract.Extract(benchmarkURL)
 					}
 				})
-
-			} /* else if bm.name == "M507Tlde" {
-				// Appears to be the same as github.com/joeguo/tldextract
-
-				b.Run(fmt.Sprint(bm.name), func(b *testing.B) {
-					for i := 0; i < b.N; i++ {
-						M507Tlde.Extract(benchmarkURL)
-					}
-				})
-
-			}  else if bm.name == "ImVexedFastURL" {
-				// Uses the Ragel state-machine
-				// this module cannot extract TLDs
-
-				b.Run(fmt.Sprint(bm.name), func(b *testing.B) {
-					for i := 0; i < b.N; i++ {
-						fasturl.ParseURL(benchmarkURL)
-					}
-				})
-
-			}  else if bm.name == "WepposPublicSuffixGo" {
-				// this module cannot handle full URLs with scheme (i.e. https:// ftp:// etc.)
-
-				b.Run(fmt.Sprint(bm.name), func(b *testing.B) {
-					for i := 0; i < b.N; i++ {
-						publicsuffix.Parse(benchmarkURL)
-					}
-				})
-
-			} else if bm.name == "ForeEaseGoTld" {
-				// this module does not extract subdomain properly and cannot handle ip addresses
-
-				b.Run(fmt.Sprint(bm.name), func(b *testing.B) {
-					for i := 0; i < b.N; i++ {
-						gotld.GetSubdomain(benchmarkURL, 2048)
-					}
-				})
-
-			} */
+			}
 		}
 		color.New().Println()
 		color.New(color.FgHiGreen, color.Bold).Print("Benchmarks completed for URL : ")
@@ -128,3 +79,17 @@ func BenchmarkComparison(b *testing.B) {
 		color.New(color.FgHiWhite).Println("=======")
 	}
 }
+
+/*
+
+Omitted modules
+
+github.com/M507/tlde | Almost exactly the same as github.com/joeguo/tldextract
+
+github.com/ImVexed/fasturl | Fast, but cannot extract TLDs
+
+github.com/weppos/publicsuffix-go | Cannot handle full URLs with scheme (i.e. https:// ftp:// etc.)
+
+github.com/forease/gotld | Does not extract subdomain properly and cannot handle ip addresses
+
+*/

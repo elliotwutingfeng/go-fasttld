@@ -81,6 +81,8 @@ func makeRuneSet(s string) (iset *intset.Rune) {
 	return
 }
 
+// ------------------------------------------------------------------------
+
 // getSchemeEndIndex checks if string s begins with a URL Scheme and
 // returns its last index. Returns -1 if no Scheme exists.
 func getSchemeEndIndex(s string) int {
@@ -254,10 +256,7 @@ const (
 
 // fastTrim works like strings.Trim but uses *intset.Rune
 func fastTrim(s string, charsToTrim *intset.Rune, mode trimMode) string {
-	var (
-		startIdx int
-		endIdx   int
-	)
+	var startIdx, endIdx int
 	if mode != trimRight {
 		// Trim left-hand side
 		var trimCharsExist bool
