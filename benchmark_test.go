@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"testing"
 
-	tlde "github.com/M507/tlde/src"
 	"github.com/fatih/color"
 	joeguotldextract "github.com/joeguo/tldextract"
 	tld "github.com/jpillora/go-tld"
@@ -28,7 +27,7 @@ func BenchmarkComparison(b *testing.B) {
 		{"JPilloraGoTld"},        // github.com/jpillora/go-tld
 		{"JoeGuoTldExtract"},     // github.com/joeguo/tldextract
 		{"Mjd2021USATldExtract"}, // github.com/mjd2021usa/tldextract
-		{"M507Tlde"},             // github.com/M507/tlde
+		// {"M507Tlde"},             // github.com/M507/tlde
 		// {"ImVexedFastURL"},       // github.com/ImVexed/fasturl
 		// {"WepposPublicSuffixGo"}, // github.com/weppos/publicsuffix-go
 		// {"ForeEaseGoTld"},        // github.com/forease/gotld
@@ -44,8 +43,6 @@ func BenchmarkComparison(b *testing.B) {
 	JoeGuoTldExtract, _ := joeguotldextract.New(cache, false)
 
 	Mjd2021USATldExtract, _ := mjd2021usatldextract.New(cache, false)
-
-	M507Tlde, _ := tlde.New(cache, false)
 
 	for _, benchmarkURL := range benchmarkURLs {
 		for _, bm := range benchmarks {
@@ -86,7 +83,7 @@ func BenchmarkComparison(b *testing.B) {
 					}
 				})
 
-			} else if bm.name == "M507Tlde" {
+			} /* else if bm.name == "M507Tlde" {
 				// Appears to be the same as github.com/joeguo/tldextract
 
 				b.Run(fmt.Sprint(bm.name), func(b *testing.B) {
@@ -95,7 +92,7 @@ func BenchmarkComparison(b *testing.B) {
 					}
 				})
 
-			} /* else if bm.name == "ImVexedFastURL" {
+			}  else if bm.name == "ImVexedFastURL" {
 				// Uses the Ragel state-machine
 				// this module cannot extract TLDs
 
