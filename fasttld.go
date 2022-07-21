@@ -22,11 +22,11 @@ const largestPortNumber int = 65535
 const pslMaxAgeHours float64 = 72
 
 // FastTLD provides the Extract() function, to extract
-// URLs using TldTrie generated from the
+// URLs using tldTrie generated from the
 // Public Suffix List file at cacheFilePath.
 type FastTLD struct {
 	cacheFilePath string
-	TldTrie       *trie
+	tldTrie       *trie
 }
 
 // HostType indicates whether parsed URL
@@ -119,9 +119,9 @@ func trieConstruct(includePrivateSuffix bool, cacheFilePath string) (*trie, erro
 
 	var suffixList []string
 	if includePrivateSuffix {
-		suffixList = suffixLists.AllSuffixes
+		suffixList = suffixLists.allSuffixes
 	} else {
-		suffixList = suffixLists.PublicSuffixes
+		suffixList = suffixLists.publicSuffixes
 	}
 
 	for _, suffix := range suffixList {
@@ -278,7 +278,7 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 	}
 
 	// Check for TLD Suffix
-	node := f.TldTrie
+	node := f.tldTrie
 
 	var (
 		hasSuffix      bool
@@ -348,9 +348,7 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 	}
 
 	if sepIdx == -1 {
-		sepIdx = len(netloc)
-		suffixStartIdx = sepIdx
-		suffixEndIdx = sepIdx
+		sepIdx, suffixStartIdx, suffixEndIdx = len(netloc), len(netloc), len(netloc)
 	}
 
 	// Reject if invalidHostNameChars or consecutive label separators
@@ -423,5 +421,5 @@ func New(n SuffixListParams) (*FastTLD, error) {
 	// Construct *trie using Public Suffix List file located at n.CacheFilePath
 	tldTrie, err := trieConstruct(n.IncludePrivateSuffix, n.CacheFilePath)
 
-	return &FastTLD{cacheFilePath: n.CacheFilePath, TldTrie: tldTrie}, err
+	return &FastTLD{cacheFilePath: n.CacheFilePath, tldTrie: tldTrie}, err
 }

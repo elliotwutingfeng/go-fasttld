@@ -164,7 +164,7 @@ func TestNew(t *testing.T) {
 			CacheFilePath:        cacheFilePath,
 			IncludePrivateSuffix: test.includePrivateSuffix,
 		})
-		if numTopLevelKeys := len(extractor.TldTrie.matches); numTopLevelKeys != test.expected {
+		if numTopLevelKeys := len(extractor.tldTrie.matches); numTopLevelKeys != test.expected {
 			t.Errorf("Expected number of top level keys to be %d. Got %d.", test.expected, numTopLevelKeys)
 		}
 	}
