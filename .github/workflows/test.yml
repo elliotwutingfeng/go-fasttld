@@ -7,15 +7,16 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v3
+    - name: Check out repository
+      uses: actions/checkout@v3
     - name: Setup go
       uses: actions/setup-go@v3
       with:
         go-version-file: './go.mod'
-    - name: Test
-      run: go test ./...
-    - name: Test with race detection
-      run: go test -race -covermode atomic -coverprofile coverage.out
+    - name: Tests
+      run: make tests
+    - name: Tests with race detection
+      run: make tests_race
     - name: Build CLI app
       run: make build_cli
     - name: Upload coverage to Codecov
