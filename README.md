@@ -116,7 +116,7 @@ You can use a custom public suffix list file by setting `CacheFilePath` in `fast
 
 ```go
 cacheFilePath := "/absolute/path/to/file.dat"
-extractor, _ := fasttld.New(fasttld.SuffixListParams{CacheFilePath: cacheFilePath})
+extractor, err := fasttld.New(fasttld.SuffixListParams{CacheFilePath: cacheFilePath})
 ```
 
 ### Updating the default Public Suffix List cache
@@ -245,7 +245,6 @@ make bench
 | JPilloraGoTld        | github.com/jpillora/go-tld       |
 | JoeGuoTldExtract     | github.com/joeguo/tldextract     |
 | Mjd2021USATldExtract | github.com/mjd2021usa/tldextract |
-| M507Tlde             | github.com/M507/tlde             |
 
 ### Results
 
@@ -265,7 +264,6 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 | JPilloraGoTld        | 2435317    | 482.9 ns/op | 224 B/op  | 2 allocs/op |                    |
 | JoeGuoTldExtract     | 2488824    | 478.7 ns/op | 160 B/op  | 5 allocs/op |                    |
 | Mjd2021USATldExtract | 1517718    | 791.9 ns/op | 208 B/op  | 7 allocs/op |                    |
-| M507Tlde             | 2507457    | 475.1 ns/op | 160 B/op  | 5 allocs/op |                    |
 
 ---
 
@@ -279,7 +277,6 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 | JPilloraGoTld        | 1705614    | 693.5 ns/op | 224 B/op  | 2 allocs/op |                    |
 | JoeGuoTldExtract     | 2247780    | 533.3 ns/op | 272 B/op  | 5 allocs/op |                    |
 | Mjd2021USATldExtract | 1583520    | 763.7 ns/op | 288 B/op  | 6 allocs/op |                    |
-| M507Tlde             | 2228335    | 541.3 ns/op | 272 B/op  | 5 allocs/op |                    |
 
 ---
 
@@ -293,7 +290,6 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 | JPilloraGoTld        | 444009     | 2747 ns/op  | 928 B/op  | 4 allocs/op |                    |
 | JoeGuoTldExtract     | 1000000    | 1234 ns/op  | 1120 B/op | 6 allocs/op |                    |
 | Mjd2021USATldExtract | 1000000    | 1235 ns/op  | 1120 B/op | 6 allocs/op |                    |
-| M507Tlde             | 1000000    | 1225 ns/op  | 1120 B/op | 6 allocs/op |                    |
 
 ---
 

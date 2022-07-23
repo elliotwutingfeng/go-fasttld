@@ -14,16 +14,15 @@ func main() {
 	url := "https://user@a.subdomain.example.ac.uk:5000/a/b?id=42"
 
 	extractor, err := fasttld.New(fasttld.SuffixListParams{})
+	// or instead, specify a custom public suffix list file via SuffixListParams
+
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	res, _ := extractor.Extract(fasttld.URLParams{URL: url})
 	color.New(fontStyle...).Println("Hostname")
 	fasttld.PrintRes(url, res)
-
-	// Specify custom public suffix list file
-	// cacheFilePath := "/absolute/path/to/file.dat"
-	// extractor, _ = fasttld.New(fasttld.SuffixListParams{CacheFilePath: cacheFilePath})
 
 	// IPv4 Address
 	url = "https://127.0.0.1:5000"

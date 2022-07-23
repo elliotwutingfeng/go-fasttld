@@ -4,9 +4,9 @@ import "unicode/utf8"
 
 // IP address lengths (bytes).
 const (
-	IPv4len = 4
-	IPv6len = 16
-	lenDiff = IPv6len - IPv4len
+	iPv4len int = 4
+	iPv6len int = 16
+	lenDiff     = iPv6len - iPv4len
 )
 
 // Bigger than we need, not too big to worry about overflow
@@ -60,7 +60,7 @@ func xtoi(s string) (n int, i int, ok bool) {
 // trailing label separators are accepted
 func isIPv4(s string) bool {
 	s = fastTrim(s, labelSeparatorsRuneSet, trimRight)
-	for i := 0; i < IPv4len; i++ {
+	for i := 0; i < iPv4len; i++ {
 		if len(s) == 0 {
 			// Missing octets.
 			return false
@@ -102,7 +102,7 @@ func isIPv6(s string) bool {
 
 	// Loop, parsing hex numbers followed by colon.
 	i := 0
-	for i < IPv6len {
+	for i < iPv6len {
 		// Hex number.
 		n, c, ok := xtoi(s)
 		if !ok || n > 0xFFFF {
@@ -123,7 +123,7 @@ func isIPv6(s string) bool {
 				return false
 			}
 			s = ""
-			i += IPv4len
+			i += iPv4len
 			break
 		}
 
@@ -161,7 +161,7 @@ func isIPv6(s string) bool {
 	}
 
 	// If didn't parse enough, expand ellipsis.
-	if i < IPv6len {
+	if i < iPv6len {
 		if ellipsis < 0 {
 			return false
 		}

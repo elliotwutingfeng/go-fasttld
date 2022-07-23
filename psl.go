@@ -24,27 +24,27 @@ var publicSuffixListSources = []string{
 }
 
 type suffixes struct {
-	PublicSuffixes  []string
-	PrivateSuffixes []string
-	AllSuffixes     []string
+	publicSuffixes  []string
+	privateSuffixes []string
+	allSuffixes     []string
 }
 
 // getPublicSuffixList retrieves Public Suffixes and Private Suffixes from Public Suffix list located at cacheFilePath.
 //
-// PublicSuffixes: ICANN domains. Example: com, net, org etc.
+// publicSuffixes: ICANN domains. Example: com, net, org etc.
 //
-// PrivateSuffixes: PRIVATE domains. Example: blogspot.co.uk, appspot.com etc.
+// privateSuffixes: PRIVATE domains. Example: blogspot.co.uk, appspot.com etc.
 //
-// AllSuffixes: Both ICANN and PRIVATE domains.
+// allSuffixes: Both ICANN and PRIVATE domains.
 func getPublicSuffixList(cacheFilePath string) (suffixes, error) {
-	PublicSuffixes := []string{}
-	PrivateSuffixes := []string{}
-	AllSuffixes := []string{}
+	publicSuffixes := []string{}
+	privateSuffixes := []string{}
+	allSuffixes := []string{}
 
 	fd, err := os.Open(cacheFilePath)
 	if err != nil {
 		log.Println(err)
-		return suffixes{PublicSuffixes, PrivateSuffixes, AllSuffixes}, err
+		return suffixes{publicSuffixes, privateSuffixes, allSuffixes}, err
 	}
 	defer fd.Close()
 
@@ -66,25 +66,25 @@ func getPublicSuffixList(cacheFilePath string) (suffixes, error) {
 			continue
 		}
 		if isPrivateSuffix {
-			PrivateSuffixes = append(PrivateSuffixes, suffix)
+			privateSuffixes = append(privateSuffixes, suffix)
 			if suffix != line {
 				// add non-punycode version if it is different from punycode version
-				PrivateSuffixes = append(PrivateSuffixes, line)
+				privateSuffixes = append(privateSuffixes, line)
 			}
 		} else {
-			PublicSuffixes = append(PublicSuffixes, suffix)
+			publicSuffixes = append(publicSuffixes, suffix)
 			if suffix != line {
 				// add non-punycode version if it is different from punycode version
-				PublicSuffixes = append(PublicSuffixes, line)
+				publicSuffixes = append(publicSuffixes, line)
 			}
 		}
-		AllSuffixes = append(AllSuffixes, suffix)
+		allSuffixes = append(allSuffixes, suffix)
 		if suffix != line {
 			// add non-punycode version if it is different from punycode version
-			AllSuffixes = append(AllSuffixes, line)
+			allSuffixes = append(allSuffixes, line)
 		}
 	}
-	return suffixes{PublicSuffixes, PrivateSuffixes, AllSuffixes}, nil
+	return suffixes{publicSuffixes, privateSuffixes, allSuffixes}, nil
 }
 
 // downloadFile downloads file from url as byte slice
