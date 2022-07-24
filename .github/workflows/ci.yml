@@ -1,5 +1,5 @@
+name: CI
 on: [push, pull_request]
-name: Test and coverage
 jobs:
   test-and-coverage:
     strategy:
@@ -13,10 +13,8 @@ jobs:
       uses: actions/setup-go@v3
       with:
         go-version-file: './go.mod'
-    - name: Tests
+    - name: Test
       run: make tests
-    - name: Tests with race detection
-      run: make tests_race
     - name: Build CLI app
       run: make build_cli
     - name: Upload coverage to Codecov

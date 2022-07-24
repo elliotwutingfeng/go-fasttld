@@ -1,8 +1,5 @@
 tests:
-	go test -v -coverprofile coverage.out && go tool cover -html coverage.out -o coverage.html
-
-tests_race:
-	go test -race -covermode atomic -coverprofile coverage.out && go tool cover -html coverage.out -o coverage.html
+	go test -v -race -covermode atomic -coverprofile coverage.out && go tool cover -html coverage.out -o coverage.html
 
 format:
 	go fmt . ./cmd/... ./cmd/fasttld/... ./examples/...
