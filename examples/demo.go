@@ -74,12 +74,12 @@ func main() {
 	// Punycode
 	url = "https://hello.世界.com"
 
-	res, _ = extractor.Extract(fasttld.URLParams{URL: url, ConvertURLToPunyCode: true})
-	color.New(fontStyle...).Println("Punycode")
+	res, _ = extractor.Extract(fasttld.URLParams{URL: url})
+	color.New(fontStyle...).Println("No Punycode")
 	fasttld.PrintRes(url, res)
 
-	res, _ = extractor.Extract(fasttld.URLParams{URL: url, ConvertURLToPunyCode: false})
-	color.New(fontStyle...).Println("No Punycode")
+	res, _ = extractor.Extract(fasttld.URLParams{URL: url, ConvertURLToPunyCode: true})
+	color.New(fontStyle...).Println("Punycode")
 	fasttld.PrintRes(url, res)
 
 	// Parsing errors
