@@ -188,19 +188,15 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 				// If no square brackets
 				// Check for endOfHostDelimitersSet
 				hostEndIdx = i
+				break
 			}
-		}
-
-		if openingSquareBracketIdx != -1 && closingSquareBracketIdx != -1 {
-			if closingSquareBracketIdx > openingSquareBracketIdx && endOfHostWithPortDelimitersSet.contains(r) {
-				// If opening + closing square bracket are present in correct order
-				// check for endOfHostWithPortDelimitersSet
-				hostEndIdx = i
-			}
-		}
-		if hostEndIdx != -1 {
+		} else if closingSquareBracketIdx > openingSquareBracketIdx && endOfHostWithPortDelimitersSet.contains(r) {
+			// If opening + closing square bracket are present in correct order
+			// check for endOfHostWithPortDelimitersSet
+			hostEndIdx = i
 			break
 		}
+
 		if i == len(netloc)-1 && closingSquareBracketIdx < openingSquareBracketIdx {
 			// Reject if end of netloc reached but incomplete square bracket pair
 			return urlParts, errors.New("incomplete square bracket pair")

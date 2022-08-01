@@ -138,12 +138,10 @@ func update(file afero.File,
 			break
 		}
 	}
-	if downloadSuccess {
-		log.Println("Public Suffix List updated.")
-	} else {
+	if !downloadSuccess {
 		return errors.New("failed to fetch any Public Suffix List from all mirrors")
 	}
-
+	log.Println("Public Suffix List updated.")
 	return nil
 }
 

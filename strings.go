@@ -74,7 +74,14 @@ var invalidHostNameCharsRuneSet *intset.Rune = makeRuneSet(invalidHostNameChars)
 
 // makeRuneSet converts a string to a set of unique runes
 func makeRuneSet(s string) (iset *intset.Rune) {
-	iset = intset.NewRune(utf8.MaxRune)
+	var biggestRune rune
+	for idx, r := range s {
+		if idx == 0 || r > biggestRune {
+			biggestRune = r
+		}
+	}
+	// optimal target capacity
+	iset = intset.NewRune(biggestRune)
 	for _, r := range s {
 		iset.Set(r)
 	}

@@ -29,20 +29,15 @@ func BenchmarkComparison(b *testing.B) {
 		{"Mjd2021USATldExtract"}, // github.com/mjd2021usa/tldextract
 	}
 
-	GoFastTld, _ := New(SuffixListParams{
-		CacheFilePath:        getTestPSLFilePath(),
-		IncludePrivateSuffix: false,
-	})
-
 	cache := "/tmp/tld.cache"
-
-	JoeGuoTldExtract, _ := joeguotldextract.New(cache, false)
-
-	Mjd2021USATldExtract, _ := mjd2021usatldextract.New(cache, false)
 
 	for _, benchmarkURL := range benchmarkURLs {
 		for _, bm := range benchmarks {
 			if bm.name == "GoFastTld" {
+				GoFastTld, _ := New(SuffixListParams{
+					CacheFilePath:        getTestPSLFilePath(),
+					IncludePrivateSuffix: false,
+				})
 				b.Run(fmt.Sprint(bm.name), func(b *testing.B) {
 					for i := 0; i < b.N; i++ {
 						GoFastTld.Extract(URLParams{URL: benchmarkURL})
@@ -59,6 +54,7 @@ func BenchmarkComparison(b *testing.B) {
 					}
 				})
 			} else if bm.name == "JoeGuoTldExtract" {
+				JoeGuoTldExtract, _ := joeguotldextract.New(cache, false)
 				b.Run(fmt.Sprint(bm.name), func(b *testing.B) {
 					for i := 0; i < b.N; i++ {
 						JoeGuoTldExtract.Extract(benchmarkURL)
@@ -66,6 +62,7 @@ func BenchmarkComparison(b *testing.B) {
 				})
 
 			} else if bm.name == "Mjd2021USATldExtract" {
+				Mjd2021USATldExtract, _ := mjd2021usatldextract.New(cache, false)
 				b.Run(fmt.Sprint(bm.name), func(b *testing.B) {
 					for i := 0; i < b.N; i++ {
 						Mjd2021USATldExtract.Extract(benchmarkURL)
