@@ -173,7 +173,7 @@ func hasInvalidChars(s string) bool {
 			continue
 		}
 		if idx == 0 && (c == '-' || labelSeparatorsRuneSet.Exists(c)) {
-			// starts with a label separator or dash
+			// starts with a dash or label separator
 			return true
 		}
 		if idx == lastByteIdx && c == '-' {
@@ -182,6 +182,7 @@ func hasInvalidChars(s string) bool {
 		}
 		if labelSeparatorsRuneSet.Exists(c) {
 			if isLabelSeparator {
+				// reject consecutive label separators
 				return true
 			}
 			isLabelSeparator = true
