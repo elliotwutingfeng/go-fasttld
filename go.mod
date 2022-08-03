@@ -1,6 +1,6 @@
 module github.com/elliotwutingfeng/go-fasttld
 
-go 1.18
+go 1.19
 
 require (
 	github.com/fatih/color v1.13.0
@@ -10,7 +10,7 @@ require (
 	github.com/mjd2021usa/tldextract v0.9.2
 	github.com/spf13/afero v1.9.2
 	github.com/spf13/cobra v1.5.0
-	golang.org/x/net v0.0.0-20220728211354-c7608f3a8462
+	golang.org/x/net v0.0.0-20220802222814-0bcc04d9c69b
 )
 
 require (
