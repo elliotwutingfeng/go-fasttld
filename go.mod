@@ -10,7 +10,7 @@ require (
 	github.com/mjd2021usa/tldextract v0.9.2
 	github.com/spf13/afero v1.9.2
 	github.com/spf13/cobra v1.5.0
-	golang.org/x/net v0.0.0-20220802222814-0bcc04d9c69b
+	golang.org/x/net v0.0.0-20220805013720-a33c5aa5df48
 )
 
 require (
