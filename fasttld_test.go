@@ -231,6 +231,7 @@ var schemeTests = []extractTest{
 }
 var noSchemeTests = []extractTest{
 	{urlParams: URLParams{URL: "localhost"}, expected: ExtractResult{Domain: "localhost", HostType: HostName}, description: "localhost"},
+	{urlParams: URLParams{URL: "16777215"}, expected: ExtractResult{Domain: "16777215", HostType: HostName}, description: "Number >= 0xFFFFFF"},
 	{urlParams: URLParams{URL: "org"}, expected: ExtractResult{Suffix: "org"}, err: errs[9], description: "Single TLD | Suffix Only"},
 	{urlParams: URLParams{URL: "org."}, expected: ExtractResult{Suffix: "org"}, err: errs[9], description: "Single TLD | Suffix Only with single trailing dot"}, //  RFC 1034 - allow single trailing dot
 	{urlParams: URLParams{URL: "org.."}, expected: ExtractResult{}, err: errs[8], description: "Single TLD | Suffix Only with 2 trailing dots"},
