@@ -737,7 +737,7 @@ func TestExtract(t *testing.T) {
 					(err != nil && test.err == nil) ||
 					!reflect.DeepEqual(err.Error(),
 						test.err.Error())) {
-				t.Errorf("Error %q not equal to expected error %q | %q",
+				t.Errorf("Error %v not equal to expected error %v | %q",
 					err, test.err, test.description)
 			}
 		}

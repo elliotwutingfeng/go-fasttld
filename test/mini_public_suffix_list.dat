@@ -9,3 +9,5 @@ org.ac
 !www.ck
 // ===BEGIN PRIVATE DOMAINS===
 blogspot.com
+// the following line is invalid punycode
+xn--0.com

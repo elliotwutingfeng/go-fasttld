@@ -89,7 +89,7 @@ func TestDownloadFile(t *testing.T) {
 func TestUpdateCustomSuffixList(t *testing.T) {
 	extractor, err := New(SuffixListParams{CacheFilePath: fmt.Sprintf("test%smini_public_suffix_list.dat", string(os.PathSeparator))})
 	if err != nil {
-		t.Errorf("%q", err)
+		t.Errorf("Failed to create new extractor from custom Public Suffix List. Got error : %v", err)
 	}
 	if err = extractor.Update(); err == nil {
 		t.Errorf("Expected error when trying to Update() custom Public Suffix List.")
