@@ -228,6 +228,11 @@ fasttld.PrintRes(url, res) // Partially extracted subcomponents can still be ret
 ```sh
 # `git clone` and `cd` to the go-fasttld repository folder first
 make tests
+
+# Alternatively, run tests without race detection
+# Useful for systems that do not support the -race flag like windows/386
+# See https://tip.golang.org/src/cmd/dist/test.go
+make tests_without_race
 ```
 
 ## Benchmarks

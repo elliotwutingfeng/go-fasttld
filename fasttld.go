@@ -403,7 +403,7 @@ func New(n SuffixListParams) (*FastTLD, error) {
 	// If cacheFilePath is unreachable, use default Public Suffix List file
 	if stat, err := os.Stat(strings.TrimSpace(cacheFilePath)); cacheFilePathIsInvalid || err != nil || stat.IsDir() || stat.Size() == 0 {
 		n.CacheFilePath = getCurrentFilePath() + string(os.PathSeparator) + defaultPSLFileName
-		// Update Public Suffix List file if it doesn't exist or is older than pslMaxAgeHours
+		// Update Public Suffix List file if it doesn't exist or is older than pslMaxAgeHours. Proceed with existing file if update fails.
 		if fileinfo, err := os.Stat(n.CacheFilePath); err != nil || fileLastModifiedHours(fileinfo) > pslMaxAgeHours {
 			if file, err := os.Create(n.CacheFilePath); err == nil {
 				if err := update(file, publicSuffixListSources); err != nil {
