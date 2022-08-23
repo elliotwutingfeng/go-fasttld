@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/tidwall/hashmap"
 	"golang.org/x/net/idna"
 )
 
@@ -71,7 +72,7 @@ type URLParams struct {
 // trie is a node of the compressed trie
 // used to store Public Suffix List TLDs.
 type trie struct {
-	matches     map[string]*trie
+	matches     hashmap.Map[string, *trie]
 	end         bool
 	hasChildren bool
 }
@@ -90,19 +91,25 @@ func nestedDict(dic *trie, keys []string) {
 
 	for _, key := range keysExceptLast {
 		dicBk = dic
-		if _, ok := dic.matches[key]; !ok {
-			dic.matches[key] = &trie{hasChildren: true, matches: make(map[string]*trie)}
+		if _, ok := dic.matches.Get(key); !ok {
+			var m hashmap.Map[string, *trie]
+			dic.matches.Set(key, &trie{hasChildren: true, matches: m})
 		}
-		dic = dic.matches[key]
-		if len(dic.matches) == 0 && !dic.hasChildren {
+		temp, _ := dic.matches.Get(key)
+		dic = temp
+		if dic.matches.Len() == 0 && !dic.hasChildren {
 			end = true
 			dic = dicBk
-			dic.matches[keys[lenKeys-2]] = &trie{end: true, matches: make(map[string]*trie)}
-			dic.matches[keys[lenKeys-2]].matches[keys[lenKeys-1]] = &trie{matches: make(map[string]*trie)}
+			var m hashmap.Map[string, *trie]
+			dic.matches.Set(keys[lenKeys-2], &trie{end: true, matches: m})
+			var m2 hashmap.Map[string, *trie]
+			temp, _ := dic.matches.Get(keys[lenKeys-2])
+			temp.matches.Set(keys[lenKeys-1], &trie{matches: m2})
 		}
 	}
 	if !end {
-		dic.matches[keys[lenKeys-1]] = &trie{matches: make(map[string]*trie)}
+		var m hashmap.Map[string, *trie]
+		dic.matches.Set(keys[lenKeys-1], &trie{matches: m})
 	}
 }
 
@@ -110,7 +117,8 @@ func nestedDict(dic *trie, keys []string) {
 //
 // For example: "us.gov.pl" will be stored in the order {"pl", "gov", "us"}.
 func trieConstruct(includePrivateSuffix bool, cacheFilePath string) (*trie, error) {
-	tldTrie := &trie{matches: make(map[string]*trie)}
+	var m hashmap.Map[string, *trie]
+	tldTrie := &trie{matches: m}
 	suffixLists, err := getPublicSuffixList(cacheFilePath)
 	if err != nil {
 		log.Println(err)
@@ -130,15 +138,18 @@ func trieConstruct(includePrivateSuffix bool, cacheFilePath string) (*trie, erro
 			reverse(sp)
 			nestedDict(tldTrie, sp)
 		} else {
-			tldTrie.matches[suffix] = &trie{end: true, matches: make(map[string]*trie)}
+			var m hashmap.Map[string, *trie]
+			tldTrie.matches.Set(suffix, &trie{end: true, matches: m})
 		}
 	}
 
-	for key := range tldTrie.matches {
-		if len(tldTrie.matches[key].matches) == 0 && tldTrie.matches[key].end {
-			tldTrie.matches[key] = &trie{matches: make(map[string]*trie)}
+	tldTrie.matches.Scan(func(key string, value *trie) bool {
+		if value.matches.Len() == 0 && value.end {
+			var m hashmap.Map[string, *trie]
+			tldTrie.matches.Set(key, &trie{matches: m})
 		}
-	}
+		return true
+	})
 
 	return tldTrie, nil
 }
@@ -304,17 +315,17 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 			end = true
 		}
 
-		if _, ok := node.matches["*"]; ok {
+		if _, ok := node.matches.Get("*"); ok {
 			// check if label falls under any wildcard exception rule
 			// e.g. !www.ck
-			if _, ok := node.matches["!"+label]; ok {
+			if _, ok := node.matches.Get("!" + label); ok {
 				sepIdx = previousSepIdx
 			}
 			break
 		}
 
 		// check if label is part of a TLD
-		if val, ok := node.matches[label]; ok {
+		if val, ok := node.matches.Get(label); ok {
 			suffixStartIdx = sepIdx
 			if !hasSuffix {
 				// index of end of suffix without trailing label separators
@@ -322,7 +333,7 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 				hasSuffix = true
 			}
 			node = val
-			if len(val.matches) == 0 {
+			if val.matches.Len() == 0 {
 				// label is at a leaf node (no children) ; break out of loop
 				break
 			}

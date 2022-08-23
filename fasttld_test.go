@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/tidwall/hashmap"
 )
 
 var errs = [...]error{
@@ -34,61 +36,69 @@ func getTestPSLFilePath() string {
 }
 
 func TestNestedDict(t *testing.T) {
-	originalDict := &trie{matches: map[string]*trie{}}
+	var m hashmap.Map[string, *trie]
+	originalDict := &trie{matches: m}
 	keysSequence := []([]string){{"a"}, {"a", "d"}, {"a", "b"}, {"a", "b", "c"}, {"c"}, {"c", "b"}, {"d", "f"}}
 	for _, keys := range keysSequence {
 		nestedDict(originalDict, keys)
 	}
 	// check each nested value
 	//Top level c
-	if len(originalDict.matches["c"].matches) != 1 {
+	c, _ := originalDict.matches.Get("c")
+	if c.matches.Len() != 1 {
 		t.Errorf("Top level c must have matches map of length 1")
 	}
-	if _, ok := originalDict.matches["c"].matches["b"]; !ok {
+	if _, ok := c.matches.Get("b"); !ok {
 		t.Errorf("Top level c must have b in matches map")
 	}
-	if !originalDict.matches["c"].end {
+	if !c.end {
 		t.Errorf("Top level c must have end = true")
 	}
 	// Top level a
-	if len(originalDict.matches["a"].matches) != 2 {
+	a, _ := originalDict.matches.Get("a")
+	if a.matches.Len() != 2 {
 		t.Errorf("Top level a must have matches map of length 2")
 	}
 	// a -> d
-	if _, ok := originalDict.matches["a"].matches["d"]; !ok {
+	aToD, ok := a.matches.Get("d")
+	if !ok {
 		t.Errorf("Top level a must have d in matches map")
 	}
-	if len(originalDict.matches["a"].matches["d"].matches) != 0 {
+	if aToD.matches.Len() != 0 {
 		t.Errorf("a -> d must have empty matches map")
 	}
 	// a -> b
-	if _, ok := originalDict.matches["a"].matches["b"]; !ok {
+	aToB, ok := a.matches.Get("b")
+	if !ok {
 		t.Errorf("Top level a must have b in matches map")
 	}
-	if !originalDict.matches["a"].matches["b"].end {
+	if !aToB.end {
 		t.Errorf("a -> b must have end = true")
 	}
-	if len(originalDict.matches["a"].matches["b"].matches) != 1 {
+	if aToB.matches.Len() != 1 {
 		t.Errorf("a -> b must have matches map of length 1")
 	}
 	// a -> b -> c
-	if _, ok := originalDict.matches["a"].matches["b"].matches["c"]; !ok {
+	aToBToC, ok := aToB.matches.Get("c")
+	if !ok {
 		t.Errorf("a -> b must have c in matches map")
 	}
-	if len(originalDict.matches["a"].matches["b"].matches["c"].matches) != 0 {
+	if aToBToC.matches.Len() != 0 {
 		t.Errorf("a -> b -> c must have empty matches map")
 	}
-	if !originalDict.matches["a"].end {
+	if !a.end {
 		t.Errorf("Top level a must have end = true")
 	}
 	// d -> f
-	if originalDict.matches["d"].end {
+	d, _ := originalDict.matches.Get("d")
+	if d.end {
 		t.Errorf("Top level d must have end = false")
 	}
-	if originalDict.matches["d"].matches["f"].end {
+	dToF, _ := d.matches.Get("f")
+	if dToF.end {
 		t.Errorf("d -> f must have end = false")
 	}
-	if len(originalDict.matches["d"].matches["f"].matches) != 0 {
+	if dToF.matches.Len() != 0 {
 		t.Errorf("d -> f must have empty matches map")
 	}
 }
@@ -104,40 +114,46 @@ func TestTrie(t *testing.T) {
 	if err != nil {
 		t.Errorf("trieConstruct failed | %q", err)
 	}
-	if lenTrieMatches := len(trie.matches); lenTrieMatches != 2 {
+	if lenTrieMatches := trie.matches.Len(); lenTrieMatches != 2 {
 		t.Errorf("Expected top level Trie matches map length of 2. Got %d.", lenTrieMatches)
 	}
 	for _, tld := range []string{"ac", "ck"} {
-		if _, ok := trie.matches[tld]; !ok {
+		if _, ok := trie.matches.Get(tld); !ok {
 			t.Errorf("Top level %q must exist", tld)
 		}
 	}
-	if !trie.matches["ac"].end {
+	ac, _ := trie.matches.Get("ac")
+	if !ac.end {
 		t.Errorf("Top level ac must have end = true")
 	}
-	if trie.matches["ck"].end {
+	ck, _ := trie.matches.Get("ck")
+	if ck.end {
 		t.Errorf("Top level ck must have end = false")
 	}
-	if len(trie.matches["ck"].matches) != 2 {
+	if ck.matches.Len() != 2 {
 		t.Errorf("Top level ck must have matches map of length 2")
 	}
-	if _, ok := trie.matches["ck"].matches["*"]; !ok {
+	ckToStar, ok := ck.matches.Get("*")
+	if !ok {
 		t.Errorf("Top level ck must have * in matches map")
 	}
-	if len(trie.matches["ck"].matches["*"].matches) != 0 {
+	if ckToStar.matches.Len() != 0 {
 		t.Errorf("ck -> * must have empty matches map")
 	}
-	if _, ok := trie.matches["ck"].matches["!www"]; !ok {
+	ckToExcWww, ok := ck.matches.Get("!www")
+	if !ok {
 		t.Errorf("Top level ck must have !www in matches map")
 	}
-	if len(trie.matches["ck"].matches["!www"].matches) != 0 {
+	if ckToExcWww.matches.Len() != 0 {
 		t.Errorf("ck -> !www must have empty matches map")
 	}
 	for _, tld := range []string{"com", "edu", "gov", "net", "mil", "org"} {
-		if _, ok := trie.matches["ac"].matches[tld]; !ok {
+		ac, _ := trie.matches.Get("ac")
+		acToTld, ok := ac.matches.Get(tld)
+		if !ok {
 			t.Errorf("Top level ac must have %q in matches map", tld)
 		}
-		if len(trie.matches["ac"].matches[tld].matches) != 0 {
+		if acToTld.matches.Len() != 0 {
 			t.Errorf("ac -> %q must have empty matches map", tld)
 		}
 	}
@@ -164,7 +180,7 @@ func TestNew(t *testing.T) {
 			CacheFilePath:        cacheFilePath,
 			IncludePrivateSuffix: test.includePrivateSuffix,
 		})
-		if numTopLevelKeys := len(extractor.tldTrie.matches); numTopLevelKeys != test.expected {
+		if numTopLevelKeys := extractor.tldTrie.matches.Len(); numTopLevelKeys != test.expected {
 			t.Errorf("Expected number of top level keys to be %d. Got %d.", test.expected, numTopLevelKeys)
 		}
 	}
