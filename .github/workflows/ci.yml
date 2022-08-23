@@ -9,6 +9,8 @@ jobs:
     steps:
     - name: Check out repository
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 0 # to support `git describe`
     - name: Setup go
       uses: actions/setup-go@v3
       with:
