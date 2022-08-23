@@ -20,6 +20,7 @@ jobs:
     - name: Build CLI app
       run: make build_cli
     - name: Ensure that CLI app version tag is newer than latest git tag
+      shell: bash
       run: |
         LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
         CLI_TAG=$(dist/fasttld -v | awk '{print $NF}')
