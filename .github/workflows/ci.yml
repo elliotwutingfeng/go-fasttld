@@ -17,5 +17,15 @@ jobs:
       run: make tests
     - name: Build CLI app
       run: make build_cli
-    - name: Upload coverage to Codecov
+    - name: Ensure that CLI app version tag is newer than latest git tag
+      run: |
+        LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
+        CLI_TAG=$(dist/fasttld -v | awk '{print $NF}')
+        if [[ $LATEST_TAG == $CLI_TAG || $( printf $LATEST_TAG"\n"$CLI_TAG ) != $( printf $LATEST_TAG"\n"$CLI_TAG | sort -V ) ]]
+        then
+          echo "Expected CLI app version number $CLI_TAG to be newer than latest git version number $LATEST_TAG. Check Makefile."
+          exit 1
+        fi
+    - name: Upload coverage to Codecov (ubuntu-latest only)
+      if: matrix.os == 'ubuntu-latest'
       uses: codecov/codecov-action@v3

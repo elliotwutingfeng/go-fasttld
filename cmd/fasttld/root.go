@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var version string = "v0.4.1"
+var version string = ""
 
 var rootCmd = &cobra.Command{
 	Use:     "fasttld",
