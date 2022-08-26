@@ -9,6 +9,7 @@ package fasttld
 import (
 	"errors"
 	"log"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -263,9 +264,15 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 		return urlParts, nil
 	}
 
+	// decode all percentage encoded characters, if any
+	unescapedNetloc, err := url.QueryUnescape(netloc)
+	if err != nil {
+		return urlParts, err
+	}
+
 	if e.ConvertURLToPunyCode {
-		netloc = formatAsPunycode(netloc)
-	} else if _, err := idna.ToUnicode(netloc); err != nil {
+		netloc = formatAsPunycode(unescapedNetloc)
+	} else if _, err := idna.ToUnicode(unescapedNetloc); err != nil {
 		// host is invalid if host cannot be converted to Unicode
 		//
 		// skip if host already converted to punycode
