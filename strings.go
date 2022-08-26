@@ -20,7 +20,7 @@ const labelSeparators string = "\u002e\u3002\uff0e\uff61"
 const controlChars string = "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\t\n\v\f\r\u000e\u000f" +
 	"\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f"
 const whitespace string = controlChars + " \u0085\u0086\u00a0\u1680\u200b\u200c\u200d\uFEFF"
-const invalidHostNameChars string = whitespace + "*\"<>|!,~@$^&'(){}_\u2025\uff1a"
+const invalidHostNameChars string = whitespace + "!\"#$&'()*+,/:;<=>?@[\\]^_`{|}~\u2025\uff1a"
 
 const endOfHostWithPortDelimiters string = `/\?#`
 const endOfHostDelimiters string = endOfHostWithPortDelimiters + ":"

@@ -401,6 +401,7 @@ var periodsAndWhiteSpacesTests = []extractTest{
 }
 var invalidTests = []extractTest{
 	{urlParams: URLParams{URL: "localhost!"}, expected: ExtractResult{}, err: errs[8], description: "localhost + invalid character !"},
+	{urlParams: URLParams{URL: "localhost+"}, expected: ExtractResult{}, err: errs[8], description: "localhost + invalid character +"},
 	{urlParams: URLParams{URL: "localhost-"}, expected: ExtractResult{}, err: errs[8], description: "localhost + invalid character -"},
 	{urlParams: URLParams{}, expected: ExtractResult{}, err: errs[9], description: "empty string"},
 	{urlParams: URLParams{URL: "https://"}, expected: ExtractResult{Scheme: "https://"}, err: errs[9], description: "Scheme only"},
@@ -503,6 +504,8 @@ var invalidTests = []extractTest{
 		expected: ExtractResult{Scheme: "http://"}, err: errs[0],
 		description: "IPv6 in square brackets after alphabet"},
 	{urlParams: URLParams{URL: "http://[127.0.0.1]"}, expected: ExtractResult{Scheme: "http://"}, err: errs[4], description: "IPv4 in square brackets"},
+	{urlParams: URLParams{URL: "http://%78n--0.example.com"}, expected: ExtractResult{Scheme: "http://"}, err: errors.New(`idna: invalid label "0"`), description: "Bad percentage encoding"},
+	{urlParams: URLParams{URL: "http://%78n--0.example.com", ConvertURLToPunyCode: true}, expected: ExtractResult{Scheme: "http://"}, err: errs[9], description: "Bad percentage encoding"},
 
 	// Test cases from net/ip-test.go
 	{urlParams: URLParams{URL: "http://[-0.0.0.0]"}, expected: ExtractResult{Scheme: "http://"}, err: errs[4], description: "net/ip-test.go"},
@@ -583,14 +586,14 @@ var lookoutTests = []extractTest{ // some tests from lookout.net
 		SubDomain: "urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Percentage encoded UserInfo"},
 	{urlParams: URLParams{URL: "http://%30%78%63%30%2e%30%32%35%30.01%2e.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "%30%78%63%30%2e%30%32%35%30.01%2e.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Percentage encoded SubDomain"},
 	{urlParams: URLParams{URL: "http://%30%78%63%30%2e%30%32%35%30.01.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "%30%78%63%30%2e%30%32%35%30.01.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Percentage encoded SubDomain"},
-	{urlParams: URLParams{URL: "http://%3g%78%63%30%2e%30%32%35%30%2E.01.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "%3g%78%63%30%2e%30%32%35%30%2E.01.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Percentage encoded SubDomain"},
+	{urlParams: URLParams{URL: "http://%3g%78%63%30%2e%30%32%35%30%2E.01.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://"}, err: errors.New(`invalid URL escape "%3g"`), description: "Invalid Percentage encoded SubDomain"},
 	{urlParams: URLParams{URL: "http://%77%77%77%2e%65%78%61%6d%70%6c%65%2e%63%6f%6d.urltest.lookout.net%3a%38%30"}, expected: ExtractResult{Scheme: "http://", SubDomain: "%77%77%77%2e%65%78%61%6d%70%6c%65%2e%63%6f%6d.urltest.lookout", Domain: "net%3a%38%30", HostType: HostName}, description: "Percentage encoded SubDomain and Domain"},
 	{urlParams: URLParams{URL: "http://%A1%C1.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "%A1%C1.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Percentage encoded SubDomain"},
 	{urlParams: URLParams{URL: "http://%E4%BD%A0%E5%A5%BD\u4f60\u597d.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "%E4%BD%A0%E5%A5%BD\u4f60\u597d.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Percentage encoded and Unicode SubDomain"},
 	{urlParams: URLParams{URL: "http://%ef%b7%90zyx.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "%ef%b7%90zyx.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Percentage encoded SubDomain"},
 	{urlParams: URLParams{URL: "http://%ef%bc%85%ef%bc%90%ef%bc%90.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "%ef%bc%85%ef%bc%90%ef%bc%90.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Percentage encoded SubDomain"},
 	{urlParams: URLParams{URL: "http://%ef%bc%85%ef%bc%94%ef%bc%91.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "%ef%bc%85%ef%bc%94%ef%bc%91.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Percentage encoded SubDomain"},
-	{urlParams: URLParams{URL: "http://%zz%66%a.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "%zz%66%a.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Percentage encoded SubDomain"},
+	{urlParams: URLParams{URL: "http://%zz%66%a.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://"}, err: errors.New(`invalid URL escape "%zz"`), description: "Bad Percentage encoded SubDomain"},
 	{urlParams: URLParams{URL: "http://-foo.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://"}, err: errs[8], description: "Start with dash"},
 	{urlParams: URLParams{URL: "http:////////user:@urltest.lookout.net?foo"}, expected: ExtractResult{Scheme: "http:////////", UserInfo: "user:", SubDomain: "urltest", Domain: "lookout", Suffix: "net", Path: "?foo", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Multiple slashes in Scheme"},
 	{urlParams: URLParams{URL: "http://192.168.0.1 hello.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://"}, err: errs[8], description: "Space in SubDomain"},
