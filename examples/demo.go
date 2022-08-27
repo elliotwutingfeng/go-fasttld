@@ -11,7 +11,7 @@ func main() {
 	var fontStyle = []color.Attribute{color.FgHiWhite, color.Bold}
 
 	// Hostname
-	url := "https://user@a.subdomain.example.ac.uk:5000/a/b?id=42"
+	url := "https://user@a.subdomain.example.a%63.uk:5000/a/b?id=42"
 
 	extractor, err := fasttld.New(fasttld.SuffixListParams{})
 	// or instead, specify a custom public suffix list file via SuffixListParams

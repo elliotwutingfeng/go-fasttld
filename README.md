@@ -36,7 +36,7 @@ Afterwards, try extracting subcomponents from a URL.
 
 ```sh
 # `git clone` and `cd` to the go-fasttld repository folder first
-./dist/fasttld extract https://user@a.subdomain.example.ac.uk:5000/a/b\?id\=42
+./dist/fasttld extract https://user@a.subdomain.example.a%63.uk:5000/a/b\?id\=42
 ```
 
 ## Try the example code
@@ -55,7 +55,7 @@ make demo
 extractor, _ := fasttld.New(fasttld.SuffixListParams{})
 
 // Extract URL subcomponents
-url := "https://user@a.subdomain.example.ac.uk:5000/a/b?id=42"
+url := "https://user@a.subdomain.example.a%63.uk:5000/a/b?id=42"
 res, _ := extractor.Extract(fasttld.URLParams{URL: url})
 
 // Display results
@@ -64,7 +64,7 @@ fasttld.PrintRes(url, res) // Pretty-prints res.Scheme, res.UserInfo, res.SubDom
 
 | Scheme   | UserInfo | SubDomain   | Domain  | Suffix | RegisteredDomain | Port | Path       | HostType     |
 |----------|----------|-------------|---------|--------|------------------|------|------------|--------------|
-| https:// | user     | a.subdomain | example | ac.uk  | example.ac.uk    | 5000 | /a/b?id=42 | hostname     |
+| https:// | user     | a.subdomain | example | a%63.uk  | example.a%63.uk    | 5000 | /a/b?id=42 | hostname     |
 
 ### IPv4 Address
 

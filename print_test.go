@@ -11,12 +11,12 @@ func TestPrintRes(t *testing.T) {
 	res.UserInfo = "user"
 	res.SubDomain = "a.subdomain"
 	res.Domain = "example"
-	res.Suffix = "ac.uk"
-	res.RegisteredDomain = "example.ac.uk"
+	res.Suffix = "a%63.uk"
+	res.RegisteredDomain = "example.a%63.uk"
 	res.Port = "5000"
 	res.Path = "/a/b?id=42"
 	res.HostType = HostName
-	PrintRes("https://user@a.subdomain.example.ac.uk:5000/a/b?id=42", res)
+	PrintRes("https://user@a.subdomain.example.a%63.uk:5000/a/b?id=42", res)
 	res = ExtractResult{}
 	res.HostType = IPv4
 	PrintRes("1.1.1.1", res)
