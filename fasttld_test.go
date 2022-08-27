@@ -543,6 +543,7 @@ var domainOnlySingleTLDTests = []extractTest{
 	{urlParams: URLParams{URL: "https://example.co/en"}, expected: ExtractResult{Scheme: "https://", Domain: "example", Suffix: "co", RegisteredDomain: "example.co", Path: "/en", HostType: HostName}, description: "Domain only + co"},
 	{urlParams: URLParams{URL: "https://example.sg/en"}, expected: ExtractResult{Scheme: "https://", Domain: "example", Suffix: "sg", RegisteredDomain: "example.sg", Path: "/en", HostType: HostName}, description: "Domain only + sg"},
 	{urlParams: URLParams{URL: "https://example.tv/en"}, expected: ExtractResult{Scheme: "https://", Domain: "example", Suffix: "tv", RegisteredDomain: "example.tv", Path: "/en", HostType: HostName}, description: "Domain only + tv"},
+	{urlParams: URLParams{URL: "https://example.%63om/en"}, expected: ExtractResult{Scheme: "https://", Domain: "example", Suffix: "%63om", RegisteredDomain: "example.%63om", Path: "/en", HostType: HostName}, description: "Domain only + %63om"},
 }
 var pathTests = []extractTest{
 	{urlParams: URLParams{URL: "http://www.example.com/this:that"}, expected: ExtractResult{Scheme: "http://", SubDomain: "www", Domain: "example", Suffix: "com", RegisteredDomain: "example.com", Path: "/this:that", HostType: HostName}, description: "Colon in Path"},

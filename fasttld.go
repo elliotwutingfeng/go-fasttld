@@ -326,12 +326,14 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 			// check if label falls under any wildcard exception rule
 			// e.g. !www.ck
 			if _, ok := node.matches.Get("!" + label); ok {
+				label, _ = url.QueryUnescape(label)
 				sepIdx = previousSepIdx
 			}
 			break
 		}
 
 		// check if label is part of a TLD
+		label, _ = url.QueryUnescape(label)
 		if val, ok := node.matches.Get(label); ok {
 			suffixStartIdx = sepIdx
 			if !hasSuffix {
