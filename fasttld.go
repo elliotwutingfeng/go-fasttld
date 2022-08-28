@@ -414,12 +414,11 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 
 // New creates a new *FastTLD using data from a Public Suffix List file.
 func New(n SuffixListParams) (*FastTLD, error) {
-	cacheFilePath, err := filepath.Abs(n.CacheFilePath)
-	cacheFilePathIsInvalid := err != nil
+	cacheFilePath, pathValidErr := filepath.Abs(n.CacheFilePath)
 
 	// If cacheFilePath is unreachable, use default Public Suffix List file.
 	// If Public Suffix List file cannot be opened, fallback to inline Public Suffix List.
-	if stat, err := os.Stat(strings.TrimSpace(cacheFilePath)); cacheFilePathIsInvalid || err != nil || stat.IsDir() || stat.Size() == 0 {
+	if stat, err := os.Stat(strings.TrimSpace(cacheFilePath)); pathValidErr != nil || err != nil || stat.IsDir() || stat.Size() == 0 {
 		defaultCacheFolderPath, defaultCacheFilePath, err := getDefaultCachePaths()
 		if err != nil || os.MkdirAll(defaultCacheFolderPath, 0777) != nil {
 			// Cannot get module file path or cannot create default cache folder
