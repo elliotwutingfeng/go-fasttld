@@ -261,40 +261,40 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 #### #1
 
-<code>https://news.google.com</code>
+<code>https://iupac.org/iupac-announces-the-2021-top-ten-emerging-technologies-in-chemistry/</code>
 
 | Benchmark Name       | Iterations | ns/op       | B/op      | allocs/op   | Fastest            |
 |----------------------|------------|-------------|-----------|-------------|--------------------|
-| GoFastTld            | 8248861    | 145.9 ns/op | 0 B/op    | 0 allocs/op | :heavy_check_mark: |
-| JPilloraGoTld        | 2541302    | 468.2 ns/op | 224 B/op  | 2 allocs/op |                    |
-| JoeGuoTldExtract     | 2593860    | 467.5 ns/op | 160 B/op  | 5 allocs/op |                    |
-| Mjd2021USATldExtract | 1527279    | 801.4 ns/op | 208 B/op  | 7 allocs/op |                    |
+| GoFastTld            | 8413669    | 133.7 ns/op | 0 B/op    | 0 allocs/op | :heavy_check_mark: |
+| JPilloraGoTld        | 1795345    | 666.6 ns/op | 224 B/op  | 2 allocs/op |                    |
+| JoeGuoTldExtract     | 1536376    | 767.9 ns/op | 288 B/op  | 6 allocs/op |                    |
+| Mjd2021USATldExtract | 1698982    | 709.6 ns/op | 288 B/op  | 6 allocs/op |                    |
 
 ---
 
 #### #2
 
-<code>https://iupac.org/iupac-announces-the-2021-top-ten-emerging-technologies-in-chemistry/</code>
+<code>https://www.google.com/maps/dir/Parliament+Place,+Parliament+House+Of+Singapore,+Singapore/Parliament+St,+London,+UK/@25.2440033,33.6721455,4z/data=!3m1!4b1!4m14!4m13!1m5!1m1!1s0x31da19a0abd4d71d:0xeda26636dc4ea1dc!2m2!1d103.8504863!2d1.2891543!1m5!1m1!1s0x487604c5aaa7da5b:0xf13a2197d7e7dd26!2m2!1d-0.1260826!2d51.5017061!3e4</code>
 
 | Benchmark Name       | Iterations | ns/op       | B/op      | allocs/op   | Fastest            |
 |----------------------|------------|-------------|-----------|-------------|--------------------|
-| GoFastTld            | 8940580    | 121.3 ns/op | 0 B/op    | 0 allocs/op | :heavy_check_mark: |
-| JPilloraGoTld        | 1764090    | 673.8 ns/op | 224 B/op  | 2 allocs/op |                    |
-| JoeGuoTldExtract     | 2289020    | 520.8 ns/op | 272 B/op  | 5 allocs/op |                    |
-| Mjd2021USATldExtract | 1593957    | 750.9 ns/op | 288 B/op  | 6 allocs/op |                    |
+| GoFastTld            | 6514398    | 168.5 ns/op | 0 B/op    | 0 allocs/op | :heavy_check_mark: |
+| JPilloraGoTld        | 400324     | 2595 ns/op  | 928 B/op  | 4 allocs/op |                    |
+| JoeGuoTldExtract     | 1016998    | 1174 ns/op  | 1120 B/op | 6 allocs/op |                    |
+| Mjd2021USATldExtract | 941970     | 1175 ns/op  | 1120 B/op | 6 allocs/op |                    |
 
 ---
 
 #### #3
 
-<code>https://www.google.com/maps/dir/Parliament+Place,+Parliament+House+Of+Singapore,+Singapore/Parliament+St,+London,+UK/@25.2440033,33.6721455,4z/data=!3m1!4b1!4m14!4m13!1m5!1m1!1s0x31da19a0abd4d71d:0xeda26636dc4ea1dc!2m2!1d103.8504863!2d1.2891543!1m5!1m1!1s0x487604c5aaa7da5b:0xf13a2197d7e7dd26!2m2!1d-0.1260826!2d51.5017061!3e4</code>
+<code>https://a.b.c.d.e.f.g.h.i.j.k.l.m.n.oo.pp.qqq.rrrr.ssssss.tttttttt.uuuuuuuuuuu.vvvvvvvvvvvvvvv.wwwwwwwwwwwwwwwwwwwwww.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy.zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz.me</code>
 
 | Benchmark Name       | Iterations | ns/op       | B/op      | allocs/op   | Fastest            |
 |----------------------|------------|-------------|-----------|-------------|--------------------|
-| GoFastTld            | 7929006    | 145.8 ns/op | 0 B/op    | 0 allocs/op | :heavy_check_mark: |
-| JPilloraGoTld        | 460215     | 2619 ns/op  | 928 B/op  | 4 allocs/op |                    |
-| JoeGuoTldExtract     | 1000000    | 1193 ns/op  | 1120 B/op | 6 allocs/op |                    |
-| Mjd2021USATldExtract | 1000000    | 1176 ns/op  | 1120 B/op | 6 allocs/op |                    |
+| GoFastTld            | 695120     | 1726 ns/op  | 0 B/op    | 0 allocs/op |                    |
+| JPilloraGoTld        | 756147     | 1594 ns/op  | 304 B/op  | 3 allocs/op |                    |
+| JoeGuoTldExtract     | 827254     | 1425 ns/op  | 1040 B/op | 5 allocs/op | :heavy_check_mark: |
+| Mjd2021USATldExtract | 284080     | 3575 ns/op  | 1904 B/op | 8 allocs/op |                    |
 
 ---
 
