@@ -97,9 +97,12 @@ func TestNestedDict(t *testing.T) {
 	}
 }
 
-func TestTrieConstructInvalidPath(t *testing.T) {
+func TestTrieConstruct(t *testing.T) {
 	if _, err := trieConstruct(false, fmt.Sprintf("test%sthis_file_does_not_exist.dat", string(os.PathSeparator))); err == nil {
 		t.Errorf("error returned by trieConstruct should not be nil")
+	}
+	if _, err := trieConstruct(false, ""); err != nil {
+		t.Errorf("error returned by trieConstruct should be nil")
 	}
 }
 
