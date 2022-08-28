@@ -1,7 +1,6 @@
 package fasttld
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	"io"
@@ -73,19 +72,14 @@ func processLine(rawLine string, psl suffixes, isPrivateSuffix bool) (suffixes, 
 // allSuffixes: Both ICANN and PRIVATE domains.
 func getPublicSuffixList(cacheFilePath string) (suffixes, error) {
 	var psl suffixes
-
-	fd, err := os.Open(cacheFilePath)
+	b, err := os.ReadFile(cacheFilePath)
 	if err != nil {
 		log.Println(err)
 		return psl, err
 	}
-	defer fd.Close()
-
-	fileScanner := bufio.NewScanner(fd)
-	fileScanner.Split(bufio.ScanLines)
 	var isPrivateSuffix bool
-	for fileScanner.Scan() {
-		psl, isPrivateSuffix = processLine(fileScanner.Text(), psl, isPrivateSuffix)
+	for _, line := range strings.Split(string(b), "\n") {
+		psl, isPrivateSuffix = processLine(line, psl, isPrivateSuffix)
 	}
 	return psl, nil
 }
@@ -206,8 +200,7 @@ func (f *FastTLD) Update() error {
 		return err
 	}
 	defer file.Close()
-	updateErr := update(file, publicSuffixListSources)
-	if updateErr != nil {
+	if updateErr := update(file, publicSuffixListSources); updateErr != nil {
 		return updateErr
 	}
 	tldTrie, err := trieConstruct(f.includePrivateSuffix, defaultCacheFilePath)
