@@ -172,16 +172,48 @@ func getDefaultCachePaths() (string, string, error) {
 	return defaultCacheFolderPath, defaultCacheFilePath, nil
 }
 
-// Update updates the default Public Suffix list file.
-func (t *FastTLD) Update() error {
+func checkCacheFile(cacheFilePath string) (bool, float64) {
+	cacheFilePath, pathValidErr := filepath.Abs(strings.TrimSpace(cacheFilePath))
+	stat, fileinfoErr := os.Stat(cacheFilePath)
+	var lastModifiedHours float64
+	if fileinfoErr == nil {
+		lastModifiedHours = fileLastModifiedHours(stat)
+	}
+
+	var validDelimiters bool
+	if b, err := os.ReadFile(cacheFilePath); err == nil {
+		contents := string(b)
+		validDelimiters = strings.Contains(contents, "// ===BEGIN ICANN DOMAINS===") &&
+			strings.Contains(contents, "// ===END ICANN DOMAINS===") &&
+			strings.Contains(contents, "// ===BEGIN PRIVATE DOMAINS===") &&
+			strings.Contains(contents, "// ===END PRIVATE DOMAINS===")
+	}
+	return pathValidErr == nil && fileinfoErr == nil && !stat.IsDir() && validDelimiters, lastModifiedHours
+}
+
+// Update updates the default Public Suffix list file and updates its suffix trie using the updated file.
+// If cache file path is not the same as the default cache file path, this will be a no-op.
+func (f *FastTLD) Update() error {
 	defaultCacheFolderPath, defaultCacheFilePath, err := getDefaultCachePaths()
 	if err := os.MkdirAll(defaultCacheFolderPath, 0777); err != nil {
 		return err
+	}
+	if f.cacheFilePath != defaultCacheFilePath {
+		return errors.New("No-op. Only default Public Suffix list file can be updated")
 	}
 	file, err := os.Create(defaultCacheFilePath)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
-	return update(file, publicSuffixListSources)
+	updateErr := update(file, publicSuffixListSources)
+	if updateErr != nil {
+		return updateErr
+	}
+	tldTrie, err := trieConstruct(f.includePrivateSuffix, defaultCacheFilePath)
+	if err == nil {
+		f.tldTrie = tldTrie
+		f.cacheFilePath = defaultCacheFilePath
+	}
+	return err
 }
