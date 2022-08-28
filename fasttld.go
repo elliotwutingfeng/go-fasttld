@@ -11,7 +11,6 @@ import (
 	"log"
 	"net/url"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -19,6 +18,7 @@ import (
 	"golang.org/x/net/idna"
 )
 
+const defaultPSLFolder string = "data"
 const defaultPSLFileName string = "public_suffix_list.dat"
 const largestPortNumber int = 65535
 const pslMaxAgeHours float64 = 72
@@ -27,8 +27,9 @@ const pslMaxAgeHours float64 = 72
 // URLs using tldTrie generated from the
 // Public Suffix List file at cacheFilePath.
 type FastTLD struct {
-	cacheFilePath string
-	tldTrie       *trie
+	cacheFilePath        string
+	tldTrie              *trie
+	includePrivateSuffix bool
 }
 
 // HostType indicates whether parsed URL
@@ -120,7 +121,15 @@ func nestedDict(dic *trie, keys []string) {
 func trieConstruct(includePrivateSuffix bool, cacheFilePath string) (*trie, error) {
 	var m hashmap.Map[string, *trie]
 	tldTrie := &trie{matches: m}
-	suffixLists, err := getPublicSuffixList(cacheFilePath)
+
+	var suffixLists suffixes
+	var err error
+	if cacheFilePath != "" {
+		suffixLists, err = getPublicSuffixList(cacheFilePath)
+	} else {
+		suffixLists, err = getInlinePublicSuffixList()
+	}
+
 	if err != nil {
 		log.Println(err)
 		return tldTrie, err
@@ -417,14 +426,20 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 
 // New creates a new *FastTLD using data from a Public Suffix List file.
 func New(n SuffixListParams) (*FastTLD, error) {
-	cacheFilePath, err := filepath.Abs(n.CacheFilePath)
-	cacheFilePathIsInvalid := err != nil
-
-	// If cacheFilePath is unreachable, use default Public Suffix List file
-	if stat, err := os.Stat(strings.TrimSpace(cacheFilePath)); cacheFilePathIsInvalid || err != nil || stat.IsDir() || stat.Size() == 0 {
-		n.CacheFilePath = getCurrentFilePath() + string(os.PathSeparator) + defaultPSLFileName
-		// Update Public Suffix List file if it doesn't exist or is older than pslMaxAgeHours. Proceed with existing file if update fails.
-		if fileinfo, err := os.Stat(n.CacheFilePath); err != nil || fileLastModifiedHours(fileinfo) > pslMaxAgeHours {
+	inlinePSL := func(err error, n SuffixListParams) (*FastTLD, error) {
+		log.Println(err, "Fallback to inline Public Suffix List")
+		tldTrie, err := trieConstruct(n.IncludePrivateSuffix, "")
+		return &FastTLD{cacheFilePath: "", tldTrie: tldTrie, includePrivateSuffix: n.IncludePrivateSuffix}, err
+	}
+	// If cacheFilePath is unreachable, use default Public Suffix List file.
+	if isValid, _ := checkCacheFile(n.CacheFilePath); !isValid {
+		defaultCacheFolderPath, defaultCacheFilePath, err := getDefaultCachePaths()
+		if err != nil || os.MkdirAll(defaultCacheFolderPath, 0777) != nil {
+			// default Public Suffix List file cannot be opened
+			return inlinePSL(err, n)
+		}
+		n.CacheFilePath = defaultCacheFilePath
+		if isValid, lastModifiedHours := checkCacheFile(n.CacheFilePath); !isValid || lastModifiedHours > pslMaxAgeHours {
 			if file, err := os.Create(n.CacheFilePath); err == nil {
 				if err := update(file, publicSuffixListSources); err != nil {
 					log.Println(err)
@@ -432,10 +447,15 @@ func New(n SuffixListParams) (*FastTLD, error) {
 				defer file.Close()
 			}
 		}
+		if isValid, _ := checkCacheFile(n.CacheFilePath); !isValid {
+			return inlinePSL(err, n)
+		}
 	}
 
-	// Construct *trie using Public Suffix List file located at n.CacheFilePath
 	tldTrie, err := trieConstruct(n.IncludePrivateSuffix, n.CacheFilePath)
+	if err != nil {
+		return inlinePSL(err, n)
+	}
 
-	return &FastTLD{cacheFilePath: n.CacheFilePath, tldTrie: tldTrie}, err
+	return &FastTLD{cacheFilePath: n.CacheFilePath, tldTrie: tldTrie, includePrivateSuffix: n.IncludePrivateSuffix}, err
 }

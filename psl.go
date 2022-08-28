@@ -1,7 +1,6 @@
 package fasttld
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	"io"
@@ -29,6 +28,41 @@ type suffixes struct {
 	allSuffixes     []string
 }
 
+func processLine(rawLine string, psl suffixes, isPrivateSuffix bool) (suffixes, bool) {
+	line := strings.TrimSpace(rawLine)
+	if "// ===BEGIN PRIVATE DOMAINS===" == line {
+		isPrivateSuffix = true
+	}
+	if len(line) == 0 || strings.HasPrefix(line, "//") {
+		return psl, isPrivateSuffix
+	}
+	suffix, err := idna.ToASCII(line)
+	if err != nil {
+		// skip line if unable to convert to ascii
+		log.Println(line, '|', err)
+		return psl, isPrivateSuffix
+	}
+	if isPrivateSuffix {
+		psl.privateSuffixes = append(psl.privateSuffixes, suffix)
+		if suffix != line {
+			// add non-punycode version if it is different from punycode version
+			psl.privateSuffixes = append(psl.privateSuffixes, line)
+		}
+	} else {
+		psl.publicSuffixes = append(psl.publicSuffixes, suffix)
+		if suffix != line {
+			// add non-punycode version if it is different from punycode version
+			psl.publicSuffixes = append(psl.publicSuffixes, line)
+		}
+	}
+	psl.allSuffixes = append(psl.allSuffixes, suffix)
+	if suffix != line {
+		// add non-punycode version if it is different from punycode version
+		psl.allSuffixes = append(psl.allSuffixes, line)
+	}
+	return psl, isPrivateSuffix
+}
+
 // getPublicSuffixList retrieves Public Suffixes and Private Suffixes from Public Suffix list located at cacheFilePath.
 //
 // publicSuffixes: ICANN domains. Example: com, net, org etc.
@@ -37,54 +71,33 @@ type suffixes struct {
 //
 // allSuffixes: Both ICANN and PRIVATE domains.
 func getPublicSuffixList(cacheFilePath string) (suffixes, error) {
-	publicSuffixes := []string{}
-	privateSuffixes := []string{}
-	allSuffixes := []string{}
-
-	fd, err := os.Open(cacheFilePath)
+	var psl suffixes
+	b, err := os.ReadFile(cacheFilePath)
 	if err != nil {
 		log.Println(err)
-		return suffixes{publicSuffixes, privateSuffixes, allSuffixes}, err
+		return psl, err
 	}
-	defer fd.Close()
+	var isPrivateSuffix bool
+	for _, line := range strings.Split(string(b), "\n") {
+		psl, isPrivateSuffix = processLine(line, psl, isPrivateSuffix)
+	}
+	return psl, nil
+}
 
-	fileScanner := bufio.NewScanner(fd)
-	fileScanner.Split(bufio.ScanLines)
-	isPrivateSuffix := false
-	for fileScanner.Scan() {
-		line := strings.TrimSpace(fileScanner.Text())
-		if "// ===BEGIN PRIVATE DOMAINS===" == line {
-			isPrivateSuffix = true
-		}
-		if len(line) == 0 || strings.HasPrefix(line, "//") {
-			continue
-		}
-		suffix, err := idna.ToASCII(line)
-		if err != nil {
-			// skip line if unable to convert to ascii
-			log.Println(line, '|', err)
-			continue
-		}
-		if isPrivateSuffix {
-			privateSuffixes = append(privateSuffixes, suffix)
-			if suffix != line {
-				// add non-punycode version if it is different from punycode version
-				privateSuffixes = append(privateSuffixes, line)
-			}
-		} else {
-			publicSuffixes = append(publicSuffixes, suffix)
-			if suffix != line {
-				// add non-punycode version if it is different from punycode version
-				publicSuffixes = append(publicSuffixes, line)
-			}
-		}
-		allSuffixes = append(allSuffixes, suffix)
-		if suffix != line {
-			// add non-punycode version if it is different from punycode version
-			allSuffixes = append(allSuffixes, line)
-		}
+// getInlinePublicSuffixList retrieves Public Suffixes and Private Suffixes from inline Public Suffix list.
+//
+// publicSuffixes: ICANN domains. Example: com, net, org etc.
+//
+// privateSuffixes: PRIVATE domains. Example: blogspot.co.uk, appspot.com etc.
+//
+// allSuffixes: Both ICANN and PRIVATE domains.
+func getInlinePublicSuffixList() (suffixes, error) {
+	var psl suffixes
+	var isPrivateSuffix bool
+	for _, line := range strings.Split(inlinePSL, "\n") {
+		psl, isPrivateSuffix = processLine(line, psl, isPrivateSuffix)
 	}
-	return suffixes{publicSuffixes, privateSuffixes, allSuffixes}, nil
+	return psl, nil
 }
 
 // downloadFile downloads file from url as byte slice
@@ -110,12 +123,9 @@ func downloadFile(url string) ([]byte, error) {
 // Similar to os.path.dirname(os.path.realpath(__file__)) in Python
 //
 // Credits: https://andrewbrookins.com/tech/golang-get-directory-of-the-current-file
-func getCurrentFilePath() string {
+func getCurrentFilePath() (string, bool) {
 	_, file, _, ok := runtime.Caller(0)
-	if !ok {
-		log.Fatal("Cannot get current module file path")
-	}
-	return filepath.Dir(file)
+	return filepath.Dir(file), ok
 }
 
 // Number of hours elapsed since last modified time of fileinfo.
@@ -126,7 +136,7 @@ func fileLastModifiedHours(fileinfo fs.FileInfo) float64 {
 // update updates the local cache of Public Suffix List
 func update(file afero.File,
 	publicSuffixListSources []string) error {
-	downloadSuccess := false
+	var downloadSuccess bool
 	for _, publicSuffixListSource := range publicSuffixListSources {
 		// Write GET request body to local file
 		if bodyBytes, err := downloadFile(publicSuffixListSource); err != nil {
@@ -145,16 +155,58 @@ func update(file afero.File,
 	return nil
 }
 
-// Update updates the local cache of Public Suffix list if t.cacheFilePath is not
-// the same as path to current module file (i.e. no custom file path specified).
-func (t *FastTLD) Update() error {
-	if t.cacheFilePath != getCurrentFilePath()+string(os.PathSeparator)+defaultPSLFileName {
-		return errors.New("function Update() only applies to default Public Suffix List, not custom Public Suffix List")
+func getDefaultCachePaths() (string, string, error) {
+	currentFilePath, ok := getCurrentFilePath()
+	if !ok {
+		return "", "", errors.New("Cannot get path to current module file")
 	}
-	file, err := os.Create(t.cacheFilePath)
+	defaultCacheFolderPath := currentFilePath + string(os.PathSeparator) + defaultPSLFolder
+	defaultCacheFilePath := defaultCacheFolderPath + string(os.PathSeparator) + defaultPSLFileName
+
+	return defaultCacheFolderPath, defaultCacheFilePath, nil
+}
+
+func checkCacheFile(cacheFilePath string) (bool, float64) {
+	cacheFilePath, pathValidErr := filepath.Abs(strings.TrimSpace(cacheFilePath))
+	stat, fileinfoErr := os.Stat(cacheFilePath)
+	var lastModifiedHours float64
+	if fileinfoErr == nil {
+		lastModifiedHours = fileLastModifiedHours(stat)
+	}
+
+	var validDelimiters bool
+	if b, err := os.ReadFile(cacheFilePath); err == nil {
+		contents := string(b)
+		validDelimiters = strings.Contains(contents, "// ===BEGIN ICANN DOMAINS===") &&
+			strings.Contains(contents, "// ===END ICANN DOMAINS===") &&
+			strings.Contains(contents, "// ===BEGIN PRIVATE DOMAINS===") &&
+			strings.Contains(contents, "// ===END PRIVATE DOMAINS===")
+	}
+	return pathValidErr == nil && fileinfoErr == nil && !stat.IsDir() && validDelimiters, lastModifiedHours
+}
+
+// Update updates the default Public Suffix list file and updates its suffix trie using the updated file.
+// If cache file path is not the same as the default cache file path, this will be a no-op.
+func (f *FastTLD) Update() error {
+	defaultCacheFolderPath, defaultCacheFilePath, err := getDefaultCachePaths()
+	if err := os.MkdirAll(defaultCacheFolderPath, 0777); err != nil {
+		return err
+	}
+	if f.cacheFilePath != defaultCacheFilePath {
+		return errors.New("No-op. Only default Public Suffix list file can be updated")
+	}
+	file, err := os.Create(defaultCacheFilePath)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
-	return update(file, publicSuffixListSources)
+	if updateErr := update(file, publicSuffixListSources); updateErr != nil {
+		return updateErr
+	}
+	tldTrie, err := trieConstruct(f.includePrivateSuffix, defaultCacheFilePath)
+	if err == nil {
+		f.tldTrie = tldTrie
+		f.cacheFilePath = defaultCacheFilePath
+	}
+	return err
 }

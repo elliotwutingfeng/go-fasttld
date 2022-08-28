@@ -25,14 +25,18 @@ var errs = [...]error{
 	errors.New("invalid port"),
 }
 
-func getTestPSLFilePath() string {
+func getTestPSLFilePath() (string, bool) {
 	var sb strings.Builder
-	sb.WriteString(getCurrentFilePath())
+	currentFilePath, ok := getCurrentFilePath()
+	if !ok {
+		return "", ok
+	}
+	sb.WriteString(currentFilePath)
 	sb.WriteString(string(os.PathSeparator))
 	sb.WriteString("test")
 	sb.WriteString(string(os.PathSeparator))
 	sb.WriteString(defaultPSLFileName)
-	return sb.String()
+	return sb.String(), ok
 }
 
 func TestNestedDict(t *testing.T) {
@@ -103,9 +107,12 @@ func TestNestedDict(t *testing.T) {
 	}
 }
 
-func TestTrieConstructInvalidPath(t *testing.T) {
+func TestTrieConstruct(t *testing.T) {
 	if _, err := trieConstruct(false, fmt.Sprintf("test%sthis_file_does_not_exist.dat", string(os.PathSeparator))); err == nil {
 		t.Errorf("error returned by trieConstruct should not be nil")
+	}
+	if _, err := trieConstruct(false, ""); err != nil {
+		t.Errorf("error returned by trieConstruct should be nil")
 	}
 }
 
@@ -174,7 +181,11 @@ func TestNew(t *testing.T) {
 	for _, test := range newTests {
 		cacheFilePath := test.cacheFilePath
 		if cacheFilePath == "" {
-			cacheFilePath = getTestPSLFilePath()
+			testPSLFilePath, ok := getTestPSLFilePath()
+			if !ok {
+				t.Errorf("Cannot get path to current module file")
+			}
+			cacheFilePath = testPSLFilePath
 		}
 		extractor, _ := New(SuffixListParams{
 			CacheFilePath:        cacheFilePath,
@@ -713,12 +724,16 @@ var lookoutTests = []extractTest{ // some tests from lookout.net
 }
 
 func TestExtract(t *testing.T) {
+	testPSLFilePath, ok := getTestPSLFilePath()
+	if !ok {
+		t.Errorf("Cannot get path to current module file")
+	}
 	extractorWithPrivateSuffix, _ := New(SuffixListParams{
-		CacheFilePath:        getTestPSLFilePath(),
+		CacheFilePath:        testPSLFilePath,
 		IncludePrivateSuffix: true,
 	})
 	extractorWithoutPrivateSuffix, _ := New(SuffixListParams{
-		CacheFilePath:        getTestPSLFilePath(),
+		CacheFilePath:        testPSLFilePath,
 		IncludePrivateSuffix: false,
 	})
 	for _, testCollection := range []([]extractTest){

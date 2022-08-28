@@ -12,12 +12,12 @@ import (
 
 func BenchmarkComparison(b *testing.B) {
 	var benchmarkURLs = []string{
-		"https://news.google.com",
 		"https://iupac.org/iupac-announces-the-2021-top-ten-emerging-technologies-in-chemistry/",
 		"https://www.google.com/maps/dir/Parliament+Place,+Parliament+House+Of+Singapore,+" +
 			"Singapore/Parliament+St,+London,+UK/@25.2440033,33.6721455,4z/data=!3m1!4b1!4m14!4m13!1m5!1m1!1s0x31d" +
 			"a19a0abd4d71d:0xeda26636dc4ea1dc!2m2!1d103.8504863!2d1.2891543!1m5!1m1!1s0x487604c5aaa7da5b:0xf13a2" +
 			"197d7e7dd26!2m2!1d-0.1260826!2d51.5017061!3e4",
+		"https://a.b.c.d.e.f.g.h.i.j.k.l.m.n.oo.pp.qqq.rrrr.ssssss.tttttttt.uuuuuuuuuuu.vvvvvvvvvvvvvvv.wwwwwwwwwwwwwwwwwwwwww.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy.zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz.me",
 	}
 
 	benchmarks := []struct {
@@ -34,8 +34,9 @@ func BenchmarkComparison(b *testing.B) {
 	for _, benchmarkURL := range benchmarkURLs {
 		for _, bm := range benchmarks {
 			if bm.name == "GoFastTld" {
+				testPSLFilePath, _ := getTestPSLFilePath()
 				GoFastTld, _ := New(SuffixListParams{
-					CacheFilePath:        getTestPSLFilePath(),
+					CacheFilePath:        testPSLFilePath,
 					IncludePrivateSuffix: false,
 				})
 				b.Run(fmt.Sprint(bm.name), func(b *testing.B) {
