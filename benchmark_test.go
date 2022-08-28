@@ -34,8 +34,9 @@ func BenchmarkComparison(b *testing.B) {
 	for _, benchmarkURL := range benchmarkURLs {
 		for _, bm := range benchmarks {
 			if bm.name == "GoFastTld" {
+				testPSLFilePath, _ := getTestPSLFilePath()
 				GoFastTld, _ := New(SuffixListParams{
-					CacheFilePath:        getTestPSLFilePath(),
+					CacheFilePath:        testPSLFilePath,
 					IncludePrivateSuffix: false,
 				})
 				b.Run(fmt.Sprint(bm.name), func(b *testing.B) {

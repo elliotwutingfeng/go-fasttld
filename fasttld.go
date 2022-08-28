@@ -8,6 +8,7 @@ package fasttld
 
 import (
 	"errors"
+	"io/fs"
 	"log"
 	"net/url"
 	"os"
@@ -18,6 +19,7 @@ import (
 	"golang.org/x/net/idna"
 )
 
+const defaultPSLFolder string = "data"
 const defaultPSLFileName string = "public_suffix_list.dat"
 const largestPortNumber int = 65535
 const pslMaxAgeHours float64 = 72
@@ -112,7 +114,13 @@ func nestedDict(dic *trie, keys []string) {
 // For example: "us.gov.pl" will be stored in the order {"pl", "gov", "us"}.
 func trieConstruct(includePrivateSuffix bool, cacheFilePath string) (*trie, error) {
 	tldTrie := &trie{matches: make(map[string]*trie)}
-	suffixLists, err := getPublicSuffixList(cacheFilePath)
+	var suffixLists suffixes
+	var err error
+	if cacheFilePath != "" {
+		suffixLists, err = getPublicSuffixList(cacheFilePath)
+	} else {
+		suffixLists, err = getInlinePublicSuffixList()
+	}
 	if err != nil {
 		log.Println(err)
 		return tldTrie, err
@@ -409,17 +417,39 @@ func New(n SuffixListParams) (*FastTLD, error) {
 	cacheFilePath, err := filepath.Abs(n.CacheFilePath)
 	cacheFilePathIsInvalid := err != nil
 
-	// If cacheFilePath is unreachable, use default Public Suffix List file
+	// If cacheFilePath is unreachable, use default Public Suffix List file.
+	// If Public Suffix List file cannot be opened, fallback to inline Public Suffix List.
 	if stat, err := os.Stat(strings.TrimSpace(cacheFilePath)); cacheFilePathIsInvalid || err != nil || stat.IsDir() || stat.Size() == 0 {
-		n.CacheFilePath = getCurrentFilePath() + string(os.PathSeparator) + defaultPSLFileName
-		// Update Public Suffix List file if it doesn't exist or is older than pslMaxAgeHours. Proceed with existing file if update fails.
-		if fileinfo, err := os.Stat(n.CacheFilePath); err != nil || fileLastModifiedHours(fileinfo) > pslMaxAgeHours {
+		defaultCacheFolderPath, defaultCacheFilePath, err := getDefaultCachePaths()
+		if err != nil || os.MkdirAll(defaultCacheFolderPath, 0777) != nil {
+			// Cannot get module file path or cannot create default cache folder
+			log.Println(err, "Fallback to inline Public Suffix List")
+			n.CacheFilePath = ""
+			tldTrie, err := trieConstruct(n.IncludePrivateSuffix, "")
+			return &FastTLD{tldTrie: tldTrie}, err
+		}
+		n.CacheFilePath = defaultCacheFilePath
+		var defaultCacheFileExists bool
+		var fileinfo fs.FileInfo
+		if fileinfo, err = os.Stat(n.CacheFilePath); err == nil {
+			defaultCacheFileExists = !fileinfo.IsDir() && fileinfo.Size() != 0
+		}
+		if !defaultCacheFileExists || fileLastModifiedHours(fileinfo) > pslMaxAgeHours {
 			if file, err := os.Create(n.CacheFilePath); err == nil {
 				if err := update(file, publicSuffixListSources); err != nil {
 					log.Println(err)
+				} else {
+					defaultCacheFileExists = true
 				}
 				defer file.Close()
 			}
+		}
+		if !defaultCacheFileExists {
+			// As a last resort
+			log.Println(err, "Fallback to inline Public Suffix List")
+			n.CacheFilePath = ""
+			tldTrie, err := trieConstruct(n.IncludePrivateSuffix, "")
+			return &FastTLD{tldTrie: tldTrie}, err
 		}
 	}
 

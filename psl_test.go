@@ -13,7 +13,7 @@ import (
 
 type getPublicSuffixListTest struct {
 	cacheFilePath string
-	expectedLists [3]([]string)
+	expectedLists suffixes
 	hasError      bool
 }
 
@@ -23,14 +23,14 @@ var getPublicSuffixListTests = []getPublicSuffixListTest{
 		hasError:      false,
 	},
 	{cacheFilePath: fmt.Sprintf("test%smini_public_suffix_list.dat", string(os.PathSeparator)),
-		expectedLists: [3][]string{{"ac", "com.ac", "edu.ac", "gov.ac", "net.ac",
-			"mil.ac", "org.ac", "*.ck", "!www.ck"}, {"blogspot.com"},
-			{"ac", "com.ac", "edu.ac", "gov.ac", "net.ac", "mil.ac",
+		expectedLists: suffixes{[]string{"ac", "com.ac", "edu.ac", "gov.ac", "net.ac",
+			"mil.ac", "org.ac", "*.ck", "!www.ck"}, []string{"blogspot.com"},
+			[]string{"ac", "com.ac", "edu.ac", "gov.ac", "net.ac", "mil.ac",
 				"org.ac", "*.ck", "!www.ck", "blogspot.com"}},
 		hasError: false,
 	},
 	{cacheFilePath: fmt.Sprintf("test%spublic_suffix_list.dat.noexist", string(os.PathSeparator)),
-		expectedLists: [3][]string{{}, {}, {}},
+		expectedLists: suffixes{[]string{}, []string{}, []string{}},
 		hasError:      true,
 	},
 }
@@ -44,11 +44,32 @@ func TestGetPublicSuffixList(t *testing.T) {
 		if !test.hasError && err != nil {
 			t.Errorf("Expected no error. Got an error.")
 		}
-		if output := reflect.DeepEqual([3][]string{suffixLists.publicSuffixes, suffixLists.privateSuffixes, suffixLists.allSuffixes},
-			test.expectedLists); !output {
+		if output := reflect.DeepEqual(suffixLists,
+			test.expectedLists); !output && (len(suffixLists.publicSuffixes)+
+			len(suffixLists.privateSuffixes)+
+			len(suffixLists.allSuffixes)+
+			len(test.expectedLists.publicSuffixes)+
+			len(test.expectedLists.privateSuffixes)+
+			len(test.expectedLists.allSuffixes)) != 0 {
 			t.Errorf("Output %q not equal to expected %q",
 				suffixLists, test.expectedLists)
 		}
+	}
+}
+
+func TestGetInlinePublicSuffixList(t *testing.T) {
+	suffixLists, err := getInlinePublicSuffixList()
+	if err != nil {
+		t.Errorf("Expected no error. Got an error.")
+	}
+	if len(suffixLists.publicSuffixes) != 7823 {
+		t.Errorf("len(suffixLists.publicSuffixes) %d not equal to expected 9883", len(suffixLists.publicSuffixes))
+	}
+	if len(suffixLists.privateSuffixes) != 2060 {
+		t.Errorf("len(suffixLists.privateSuffixes) %d not equal to expected 9883", len(suffixLists.privateSuffixes))
+	}
+	if len(suffixLists.allSuffixes) != 9883 {
+		t.Errorf("len(suffixLists.allSuffixes) %d not equal to expected 9883", len(suffixLists.allSuffixes))
 	}
 }
 
@@ -83,16 +104,6 @@ func TestDownloadFile(t *testing.T) {
 	res, _ = downloadFile("!example.com")
 	if len(res) != 0 {
 		t.Errorf("Response should be empty.")
-	}
-}
-
-func TestUpdateCustomSuffixList(t *testing.T) {
-	extractor, err := New(SuffixListParams{CacheFilePath: fmt.Sprintf("test%smini_public_suffix_list.dat", string(os.PathSeparator))})
-	if err != nil {
-		t.Errorf("Failed to create new extractor from custom Public Suffix List. Got error : %v", err)
-	}
-	if err = extractor.Update(); err == nil {
-		t.Errorf("Expected error when trying to Update() custom Public Suffix List.")
 	}
 }
 
@@ -155,4 +166,10 @@ func TestFileLastModifiedHours(t *testing.T) {
 		t.Errorf("Expected hours elapsed since last modification to be 0 immediately after file creation. %f", hours)
 	}
 	defer file.Close()
+}
+
+func TestGetDefaultCachePaths(t *testing.T) {
+	if _, _, err := getDefaultCachePaths(); err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
 }
