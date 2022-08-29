@@ -189,13 +189,13 @@ func checkCacheFile(cacheFilePath string) (bool, float64) {
 // If cache file path is not the same as the default cache file path, this will be a no-op.
 func (f *FastTLD) Update() error {
 	defaultCacheFolderPath, defaultCacheFilePath, err := getDefaultCachePaths()
-	if err := os.MkdirAll(defaultCacheFolderPath, 0777); err != nil {
+	if err := os.MkdirAll(defaultCacheFolderPath, 0644); err != nil {
 		return err
 	}
 	if f.cacheFilePath != defaultCacheFilePath {
 		return errors.New("No-op. Only default Public Suffix list file can be updated")
 	}
-	file, err := os.Create(defaultCacheFilePath)
+	file, err := os.OpenFile(defaultCacheFilePath, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
 	}

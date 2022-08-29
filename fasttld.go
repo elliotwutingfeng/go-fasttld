@@ -434,13 +434,13 @@ func New(n SuffixListParams) (*FastTLD, error) {
 	// If cacheFilePath is unreachable, use default Public Suffix List file.
 	if isValid, _ := checkCacheFile(n.CacheFilePath); !isValid {
 		defaultCacheFolderPath, defaultCacheFilePath, err := getDefaultCachePaths()
-		if err != nil || os.MkdirAll(defaultCacheFolderPath, 0777) != nil {
+		if err != nil || os.MkdirAll(defaultCacheFolderPath, 0644) != nil {
 			// default Public Suffix List file cannot be opened
 			return inlinePSL(err, n)
 		}
 		n.CacheFilePath = defaultCacheFilePath
 		if isValid, lastModifiedHours := checkCacheFile(n.CacheFilePath); !isValid || lastModifiedHours > pslMaxAgeHours {
-			if file, err := os.Create(n.CacheFilePath); err == nil {
+			if file, err := os.OpenFile(n.CacheFilePath, os.O_CREATE|os.O_WRONLY, 0644); err == nil {
 				if err := update(file, publicSuffixListSources); err != nil {
 					log.Println(err)
 				}
