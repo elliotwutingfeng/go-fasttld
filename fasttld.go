@@ -331,7 +331,6 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 		// check if label is part of a TLD
 		label, _ = url.QueryUnescape(label)
 		if val, ok := node.matches[label]; ok {
-			// suffixStartIdx = sepIdx
 			if !hasSuffix {
 				// index of end of suffix without trailing label separators
 				suffixEndIdx = previousSepIdx
