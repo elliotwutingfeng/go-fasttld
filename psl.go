@@ -3,8 +3,6 @@ package fasttld
 import (
 	"errors"
 	"fmt"
-	"io"
-	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -111,7 +109,7 @@ func downloadFile(url string) ([]byte, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
-		bodyBytes, err = io.ReadAll(resp.Body)
+		bodyBytes, err = afero.ReadAll(resp.Body)
 	} else {
 		err = errors.New("Download failed, HTTP status code : " + fmt.Sprint(resp.StatusCode))
 	}
@@ -129,7 +127,7 @@ func getCurrentFilePath() (string, bool) {
 }
 
 // Number of hours elapsed since last modified time of fileinfo.
-func fileLastModifiedHours(fileinfo fs.FileInfo) float64 {
+func fileLastModifiedHours(fileinfo os.FileInfo) float64 {
 	return time.Now().Sub(fileinfo.ModTime()).Hours()
 }
 

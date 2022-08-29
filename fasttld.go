@@ -13,8 +13,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-
-	"golang.org/x/net/idna"
 )
 
 const defaultPSLFolder string = "data"
@@ -278,8 +276,10 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 	}
 
 	if e.ConvertURLToPunyCode {
-		netloc = formatAsPunycode(unescapedNetloc)
-	} else if _, err := idna.ToUnicode(unescapedNetloc); err != nil {
+		if netloc, err = formatAsPunycode(unescapedNetloc); err != nil {
+			return urlParts, err
+		}
+	} else if _, err := formatAsPunycode(unescapedNetloc); err != nil {
 		// host is invalid if host cannot be converted to Unicode
 		//
 		// skip if host already converted to punycode
@@ -295,7 +295,7 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 		end            bool
 		previousSepIdx int
 	)
-	sepIdx, suffixStartIdx, suffixEndIdx := len(netloc), len(netloc), len(netloc)
+	sepIdx, suffixEndIdx := len(netloc), len(netloc)
 
 	for !end {
 		var label string
@@ -331,7 +331,7 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 		// check if label is part of a TLD
 		label, _ = url.QueryUnescape(label)
 		if val, ok := node.matches[label]; ok {
-			suffixStartIdx = sepIdx
+			// suffixStartIdx = sepIdx
 			if !hasSuffix {
 				// index of end of suffix without trailing label separators
 				suffixEndIdx = previousSepIdx
@@ -360,19 +360,7 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 	}
 
 	if sepIdx == -1 {
-		sepIdx, suffixStartIdx = len(netloc), len(netloc)
-	}
-
-	// Reject if invalidHostNameChars or consecutive label separators
-	// appears before Suffix
-	if hasSuffix {
-		if hasInvalidChars(netloc[0:suffixStartIdx]) {
-			return urlParts, errors.New("invalid characters in hostname")
-		}
-	} else {
-		if hasInvalidChars(netloc[0:previousSepIdx]) {
-			return urlParts, errors.New("invalid characters in hostname")
-		}
+		sepIdx = len(netloc)
 	}
 
 	var domainStartSepIdx int

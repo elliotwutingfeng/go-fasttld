@@ -1,7 +1,6 @@
 package fasttld
 
 import (
-	"log"
 	"strings"
 	"unicode/utf8"
 
@@ -232,16 +231,16 @@ func sepSize(r byte) int {
 	return 3
 }
 
-var idnaToPuny *idna.Profile = idna.New(idna.MapForLookup(), idna.Transitional(true), idna.BidiRule(), idna.CheckHyphens(true))
+var idnaToPuny *idna.Profile = idna.New(idna.MapForLookup(), idna.Transitional(true), idna.BidiRule(), idna.CheckHyphens(false), idna.ValidateLabels(false))
 
 // formatAsPunycode formats s as punycode.
-func formatAsPunycode(s string) string {
+func formatAsPunycode(s string) (string, error) {
 	asPunyCode, err := idnaToPuny.ToASCII(s)
 	if err != nil {
-		log.Println(strings.SplitAfterN(err.Error(), "idna: invalid label", 2)[0])
-		return ""
+		// log.Println(strings.SplitAfterN(err.Error(), "idna: invalid label", 2)[0])
+		return "", err
 	}
-	return asPunyCode
+	return asPunyCode, err
 }
 
 // indexLastByteBefore returns the index of the last instance of byte b

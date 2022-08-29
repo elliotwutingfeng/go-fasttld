@@ -19,7 +19,7 @@ var punyCodeTests = []punyCodeTest{
 
 func TestPunyCode(t *testing.T) {
 	for _, test := range punyCodeTests {
-		converted := formatAsPunycode(test.url)
+		converted, _ := formatAsPunycode(test.url)
 		if output := reflect.DeepEqual(converted, test.expected); !output {
 			t.Errorf("Output %q not equal to expected %q", converted, test.expected)
 		}
