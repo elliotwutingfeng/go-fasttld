@@ -120,7 +120,7 @@ var updateTests = []updateTest{
 
 func TestUpdate(t *testing.T) {
 	goodServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte{})
+		w.Write([]byte("// ===BEGIN ICANN DOMAINS===\n// ===END ICANN DOMAINS===\n// ===BEGIN PRIVATE DOMAINS===\n// ===END PRIVATE DOMAINS==="))
 		r.Header.Get("") // removes unused parameter warning
 	}))
 	defer goodServer.Close()

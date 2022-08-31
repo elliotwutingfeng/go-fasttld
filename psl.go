@@ -1,6 +1,7 @@
 package fasttld
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"log"
@@ -140,6 +141,12 @@ func update(file afero.File,
 		if bodyBytes, err := downloadFile(publicSuffixListSource); err != nil {
 			log.Println(err)
 		} else {
+			if !bytes.Contains(bodyBytes, []byte("// ===BEGIN ICANN DOMAINS===")) ||
+				!bytes.Contains(bodyBytes, []byte("// ===END ICANN DOMAINS===")) ||
+				!bytes.Contains(bodyBytes, []byte("// ===BEGIN PRIVATE DOMAINS===")) ||
+				!bytes.Contains(bodyBytes, []byte("// ===END PRIVATE DOMAINS===")) {
+				continue
+			}
 			file.Seek(0, 0)
 			file.Write(bodyBytes)
 			downloadSuccess = true
