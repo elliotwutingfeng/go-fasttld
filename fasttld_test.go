@@ -620,18 +620,18 @@ var lookoutTests = []extractTest{ // some tests from lookout.net
 	{urlParams: URLParams{URL: "http://\u03b2\u03cc\u03bb\u03bf\u03c2.com.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "\u03b2\u03cc\u03bb\u03bf\u03c2.com.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Unicode in SubDomain"},
 	{urlParams: URLParams{URL: "http://\u03b2\u03cc\u03bb\u03bf\u03c2.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "\u03b2\u03cc\u03bb\u03bf\u03c2.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Unicode in SubDomain"},
 	{urlParams: URLParams{URL: "http://\u0442(.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://"}, err: errs[8], description: "Parenthesis in SubDomain"},
-	{urlParams: URLParams{URL: "http://\u04c0.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "\u04c0.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Unicode in SubDomain"},
-	{urlParams: URLParams{URL: "http://\u06dd.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "\u06dd.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Unicode in SubDomain"},
+	{urlParams: URLParams{URL: "http://\u04c0.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://"}, err: errs[8], description: "Unicode in SubDomain"},
+	{urlParams: URLParams{URL: "http://\u06dd.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://"}, err: errs[8], description: "Unicode in SubDomain"},
 	{urlParams: URLParams{URL: "http://\u09dc.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "\u09dc.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Unicode in SubDomain"},
 	{urlParams: URLParams{URL: "http://\u15ef\u15ef\u15ef.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "\u15ef\u15ef\u15ef.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Unicode in SubDomain"},
-	{urlParams: URLParams{URL: "http://\u180e.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "\u180e.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Unicode in SubDomain"},
+	{urlParams: URLParams{URL: "http://\u180e.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://"}, err: errs[8], description: "Unicode in SubDomain"},
 	{urlParams: URLParams{URL: "http://\u1e9e.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "\u1e9e.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Unicode in SubDomain"},
-	{urlParams: URLParams{URL: "http://\u2183.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "\u2183.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Unicode in SubDomain"},
+	{urlParams: URLParams{URL: "http://\u2183.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://"}, err: errs[8], description: "Unicode in SubDomain"},
 	{urlParams: URLParams{URL: "http://\u2665.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "\u2665.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Unicode in SubDomain"},
 	{urlParams: URLParams{URL: "http://\u4f60\u597d\u4f60\u597d.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "\u4f60\u597d\u4f60\u597d.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Unicode in SubDomain"},
-	{urlParams: URLParams{URL: "http://\ufdd0zyx.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "\ufdd0zyx.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Unicode in SubDomain"},
-	{urlParams: URLParams{URL: "http://\uff05\uff10\uff10.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "\uff05\uff10\uff10.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Unicode in SubDomain"},
-	{urlParams: URLParams{URL: "http://\uff05\uff14\uff11.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "\uff05\uff14\uff11.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Unicode in SubDomain"},
+	{urlParams: URLParams{URL: "http://\ufdd0zyx.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://"}, err: errs[8], description: "Unicode in SubDomain"},
+	{urlParams: URLParams{URL: "http://\uff05\uff10\uff10.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://"}, err: errs[8], description: "Unicode in SubDomain"},
+	{urlParams: URLParams{URL: "http://\uff05\uff14\uff11.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://"}, err: errs[8], description: "Unicode in SubDomain"},
 	{urlParams: URLParams{URL: "http://\uff10\uff38\uff43\uff10\uff0e\uff10\uff12\uff15\uff10\uff0e\uff10\uff11.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "\uff10\uff38\uff43\uff10\uff0e\uff10\uff12\uff15\uff10\uff0e\uff10\uff11.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Unicode in SubDomain"},
 	{urlParams: URLParams{URL: "http://\uff27\uff4f.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "\uff27\uff4f.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Unicode in SubDomain"},
 	{urlParams: URLParams{URL: "http://ab--cd.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "ab--cd.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Bad double-hyphen in SubDomain (still accepted)"},
@@ -643,11 +643,11 @@ var lookoutTests = []extractTest{ // some tests from lookout.net
 	{urlParams: URLParams{URL: "http://look\u0341out.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "look\u0341out.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Unicode in SubDomain"},
 	{urlParams: URLParams{URL: "http://look\u034fout.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "look\u034fout.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Unicode in SubDomain"},
 	{urlParams: URLParams{URL: "http://look\u05beout.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "look\u05beout.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Unicode in SubDomain"},
-	{urlParams: URLParams{URL: "http://look\u202eout.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "look\u202eout.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Unicode in SubDomain"},
+	{urlParams: URLParams{URL: "http://look\u202eout.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://"}, err: errs[8], description: "Unicode in SubDomain"},
 	{urlParams: URLParams{URL: "http://look\u2060.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "look\u2060.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Unicode in SubDomain"},
 	{urlParams: URLParams{URL: "http://look\u206bout.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "look\u206bout.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Unicode in SubDomain"},
-	{urlParams: URLParams{URL: "http://look\u2ff0out.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "look\u2ff0out.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Unicode in SubDomain"},
-	{urlParams: URLParams{URL: "http://look\ufffaout.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "look\ufffaout.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Unicode in SubDomain"},
+	{urlParams: URLParams{URL: "http://look\u2ff0out.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://"}, err: errs[8], description: "Unicode in SubDomain"},
+	{urlParams: URLParams{URL: "http://look\ufffaout.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://"}, err: errs[8], description: "Unicode in SubDomain"},
 	{urlParams: URLParams{URL: "http://uRLTest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "uRLTest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Mixed case letters"},
 	{urlParams: URLParams{URL: "http://urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Simple SubDomain+Domain"},
 	{urlParams: URLParams{URL: "http://urltest.lookout.net/%20foo"}, expected: ExtractResult{Scheme: "http://", SubDomain: "urltest", Domain: "lookout", Suffix: "net", Path: "/%20foo", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Percentage encoded Path"},
@@ -711,7 +711,7 @@ var lookoutTests = []extractTest{ // some tests from lookout.net
 	{urlParams: URLParams{URL: "http://urltest.lookout.net::==80::==443::/"}, expected: ExtractResult{Scheme: "http://"}, err: errs[10], description: "Bad Port"},
 	{urlParams: URLParams{URL: "http://urltest.lookout.net\\\\foo\\\\bar"}, expected: ExtractResult{Scheme: "http://", SubDomain: "urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", Path: "\\\\foo\\\\bar", HostType: HostName}, description: "Multiple backslashes in Path"},
 	{urlParams: URLParams{URL: "http://urltest.lookout.net\u2a7480/"}, expected: ExtractResult{Scheme: "http://", SubDomain: "urltest.lookout", Domain: "net\u2a7480", Path: "/", HostType: HostName}, description: "Unicode in Domain"},
-	{urlParams: URLParams{URL: "http://urltest.lookout.net\uff0ffoo/"}, expected: ExtractResult{Scheme: "http://", SubDomain: "urltest.lookout", Domain: "net\uff0ffoo", Path: "/", HostType: HostName}, description: "Unicode in Domain"},
+	{urlParams: URLParams{URL: "http://urltest.lookout.net\uff0ffoo/"}, expected: ExtractResult{Scheme: "http://", Path: "/"}, err: errs[8], description: "Unicode in Domain"},
 	{urlParams: URLParams{URL: "http://www.foo\u3002bar.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "www.foo\u3002bar.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Unicode in SubDomain"},
 	{urlParams: URLParams{URL: "http://www.loo\u0138out.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "www.loo\u0138out.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Unicode in SubDomain"},
 	{urlParams: URLParams{URL: "http://www.lookout.\u0441\u043e\u043c.urltest.lookout.net"}, expected: ExtractResult{Scheme: "http://", SubDomain: "www.lookout.\u0441\u043e\u043c.urltest", Domain: "lookout", Suffix: "net", RegisteredDomain: "lookout.net", HostType: HostName}, description: "Unicode in SubDomain"},
@@ -763,8 +763,8 @@ func TestExtract(t *testing.T) {
 
 			if output := reflect.DeepEqual(res,
 				test.expected); !output {
-				t.Errorf("Output %q not equal to expected output %q | %q",
-					res, test.expected, test.description)
+				t.Errorf("%+q | Output %q not equal to expected output %q | %q",
+					test.urlParams.URL, res, test.expected, test.description)
 			}
 
 			if !(err == nil && test.err == nil) &&
@@ -772,8 +772,8 @@ func TestExtract(t *testing.T) {
 					(err != nil && test.err == nil) ||
 					!reflect.DeepEqual(err.Error(),
 						test.err.Error())) {
-				t.Errorf("Error %v not equal to expected error %v | %q",
-					err, test.err, test.description)
+				t.Errorf("%+q | Error %v not equal to expected error %v | %q",
+					test.urlParams.URL, err, test.err, test.description)
 			}
 		}
 	}
