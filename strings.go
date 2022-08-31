@@ -158,44 +158,6 @@ func indexAnyASCII(s string, as asciiSet) int {
 	return -1
 }
 
-// hasInvalidChars checks s for invalid runes
-//
-// or leading/consecutive label separators
-//
-// or leading/trailing dash
-func hasInvalidChars(s string) bool {
-	var isLabelSeparator bool
-	lastByteIdx := len(s) - 1
-	for idx, c := range s {
-		if alphaNumericSet.contains(byte(c)) {
-			// check for alphanumeric characters early to avoid expensive intset search
-			isLabelSeparator = false
-			continue
-		}
-		if idx == 0 && (c == '-' || labelSeparatorsRuneSet.Exists(c)) {
-			// starts with a dash or label separator
-			return true
-		}
-		if idx == lastByteIdx && c == '-' {
-			// ends with a dash
-			return true
-		}
-		if labelSeparatorsRuneSet.Exists(c) {
-			if isLabelSeparator {
-				// reject consecutive label separators
-				return true
-			}
-			isLabelSeparator = true
-		} else {
-			isLabelSeparator = false
-		}
-		if invalidHostNameCharsRuneSet.Exists(c) {
-			return true
-		}
-	}
-	return false
-}
-
 // lastIndexAny returns the index of the last instance of any Unicode code
 // point from chars in s, or -1 if no Unicode code point from chars is
 // present in s.

@@ -186,7 +186,34 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 	closingSquareBracketIdx := -1
 	hostEndIdx := -1
 
-	for i, r := range []byte(netloc) {
+	var hasInvalidFQDNChars bool
+	var isLabelSeparator bool
+	var hasConsecutiveLabelSeparators bool
+	lastByteIdx := len(netloc) - 1
+
+	for i, r := range netloc {
+		if alphaNumericSet.contains(byte(r)) {
+			// check for alphanumeric characters early to avoid expensive intset search
+			isLabelSeparator = false
+		}
+		if i == 0 && (r == '-' || labelSeparatorsRuneSet.Exists(r)) {
+			// starts with a dash or label separator
+			return urlParts, errors.New("invalid characters in hostname")
+		}
+		if i == lastByteIdx && r == '-' {
+			// ends with a dash
+			return urlParts, errors.New("invalid characters in hostname")
+		}
+		if labelSeparatorsRuneSet.Exists(r) {
+			if isLabelSeparator {
+				// reject consecutive label separators
+				hasConsecutiveLabelSeparators = true
+				continue
+			}
+			isLabelSeparator = true
+		} else {
+			isLabelSeparator = false
+		}
 		if r == '[' {
 			// Check for opening square bracket
 			if i > 0 {
@@ -205,22 +232,31 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 				// Reject if closing square bracket present but no opening square bracket
 				return urlParts, errors.New("closing square bracket present but no opening square bracket")
 			}
-			if endOfHostDelimitersSet.contains(r) {
+			if endOfHostDelimitersSet.contains(byte(r)) {
 				// If no square brackets
 				// Check for endOfHostDelimitersSet
+				if hasInvalidFQDNChars {
+					return urlParts, errors.New("invalid characters in hostname")
+				}
 				hostEndIdx = i
 				break
 			}
-		} else if closingSquareBracketIdx > openingSquareBracketIdx && endOfHostWithPortDelimitersSet.contains(r) {
+		} else if closingSquareBracketIdx > openingSquareBracketIdx && endOfHostWithPortDelimitersSet.contains(byte(r)) {
 			// If opening + closing square bracket are present in correct order
 			// check for endOfHostWithPortDelimitersSet
 			hostEndIdx = i
 			break
 		}
+		if hasConsecutiveLabelSeparators {
+			return urlParts, errors.New("invalid characters in hostname")
+		}
 
 		if i == len(netloc)-1 && closingSquareBracketIdx < openingSquareBracketIdx {
 			// Reject if end of netloc reached but incomplete square bracket pair
 			return urlParts, errors.New("incomplete square bracket pair")
+		}
+		if !hasInvalidFQDNChars {
+			hasInvalidFQDNChars = invalidHostNameCharsRuneSet.Exists(r)
 		}
 	}
 
@@ -247,6 +283,11 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 		urlParts.HostType = IPv6
 		urlParts.Domain = netloc[1:closingSquareBracketIdx]
 		urlParts.RegisteredDomain = netloc[1:closingSquareBracketIdx]
+		hasInvalidFQDNChars = false
+	}
+
+	if hasInvalidFQDNChars {
+		return urlParts, errors.New("invalid characters in hostname")
 	}
 
 	var afterHost string
@@ -308,7 +349,7 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 		end            bool
 		previousSepIdx int
 	)
-	sepIdx, suffixStartIdx, suffixEndIdx := len(netloc), len(netloc), len(netloc)
+	sepIdx, suffixEndIdx := len(netloc), len(netloc)
 
 	for !end {
 		var label string
@@ -344,7 +385,6 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 		// check if label is part of a TLD
 		label, _ = url.QueryUnescape(label)
 		if val, ok := node.matches.Get(label); ok {
-			suffixStartIdx = sepIdx
 			if !hasSuffix {
 				// index of end of suffix without trailing label separators
 				suffixEndIdx = previousSepIdx
@@ -373,19 +413,7 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 	}
 
 	if sepIdx == -1 {
-		sepIdx, suffixStartIdx = len(netloc), len(netloc)
-	}
-
-	// Reject if invalidHostNameChars or consecutive label separators
-	// appears before Suffix
-	if hasSuffix {
-		if hasInvalidChars(netloc[0:suffixStartIdx]) {
-			return urlParts, errors.New("invalid characters in hostname")
-		}
-	} else {
-		if hasInvalidChars(netloc[0:previousSepIdx]) {
-			return urlParts, errors.New("invalid characters in hostname")
-		}
+		sepIdx = len(netloc)
 	}
 
 	var domainStartSepIdx int

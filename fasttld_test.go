@@ -261,10 +261,10 @@ var noSchemeTests = []extractTest{
 	{urlParams: URLParams{URL: "16777215"}, expected: ExtractResult{Domain: "16777215", HostType: HostName}, description: "Number >= 0xFFFFFF"},
 	{urlParams: URLParams{URL: "org"}, expected: ExtractResult{Suffix: "org"}, err: errs[9], description: "Single TLD | Suffix Only"},
 	{urlParams: URLParams{URL: "org."}, expected: ExtractResult{Suffix: "org"}, err: errs[9], description: "Single TLD | Suffix Only with single trailing dot"}, //  RFC 1034 - allow single trailing dot
-	{urlParams: URLParams{URL: "org.."}, expected: ExtractResult{}, err: errs[8], description: "Single TLD | Suffix Only with 2 trailing dots"},
+	{urlParams: URLParams{URL: "org.."}, expected: ExtractResult{Suffix: "org"}, err: errs[9], description: "Single TLD | Suffix Only with 2 trailing dots"},
 	{urlParams: URLParams{URL: "co.th"}, expected: ExtractResult{Suffix: "co.th"}, err: errs[9], description: "Double TLD | Suffix Only"},
 	{urlParams: URLParams{URL: "co.th."}, expected: ExtractResult{Suffix: "co.th"}, err: errs[9], description: "Double TLD | Suffix Only with single trailing dot"}, //  RFC 1034 - allow single trailing dot
-	{urlParams: URLParams{URL: "co.th.."}, expected: ExtractResult{}, err: errs[8], description: "Double TLD | Suffix Only with 2 trailing dots"},
+	{urlParams: URLParams{URL: "co.th.."}, expected: ExtractResult{Suffix: "co.th"}, err: errs[9], description: "Double TLD | Suffix Only with 2 trailing dots"},
 	{urlParams: URLParams{URL: "users@example.com"}, expected: ExtractResult{UserInfo: "users", Domain: "example", Suffix: "com", RegisteredDomain: "example.com", HostType: HostName}, description: "UserInfo + Domain | No Scheme"},
 	{urlParams: URLParams{URL: "mailto:users@example.com"}, expected: ExtractResult{UserInfo: "mailto:users", Domain: "example", Suffix: "com", RegisteredDomain: "example.com", HostType: HostName}, description: "Mailto | No Scheme"},
 	{urlParams: URLParams{URL: "example.com:999"}, expected: ExtractResult{Domain: "example", Suffix: "com", RegisteredDomain: "example.com", Port: "999", HostType: HostName}, description: "Domain + Port | No Scheme"},
@@ -422,19 +422,19 @@ var invalidTests = []extractTest{
 		expected: ExtractResult{Scheme: "http://"}, err: errs[8], description: "Consecutive label separators before IPv4 address",
 	},
 	{urlParams: URLParams{URL: "http://.\u3002[aBcD:ef01:2345:6789:aBcD:ef01:2345:6789]"},
-		expected: ExtractResult{Scheme: "http://"}, err: errs[0], description: "Consecutive label separators before IPv6 address",
+		expected: ExtractResult{Scheme: "http://"}, err: errs[8], description: "Consecutive label separators before IPv6 address",
 	},
 	{urlParams: URLParams{URL: "http://[aBcD:ef01:2345:6789:aBcD:ef01:2345:6789].."},
 		expected: ExtractResult{Scheme: "http://"}, err: errs[5], description: "Consecutive label separators after IPv6 address",
 	},
 	{urlParams: URLParams{URL: "http://example.com :50"},
-		expected: ExtractResult{Scheme: "http://", Port: "50"}, err: errs[8], description: "Spaces between domain and Port/Path",
+		expected: ExtractResult{Scheme: "http://"}, err: errs[8], description: "Spaces between domain and Port/Path",
 	},
 	{urlParams: URLParams{URL: "http://  127.0.0.1"},
 		expected: ExtractResult{Scheme: "http://"}, err: errs[8], description: "Spaces before IPv4 address",
 	},
 	{urlParams: URLParams{URL: "http://127.0.0.1  :50"},
-		expected: ExtractResult{Scheme: "http://", Port: "50"}, err: errs[8], description: "Spaces between IPv4 address and Port/Path",
+		expected: ExtractResult{Scheme: "http://"}, err: errs[8], description: "Spaces between IPv4 address and Port/Path",
 	},
 	{urlParams: URLParams{URL: "http://  [aBcD:ef01:2345:6789:aBcD:ef01:2345:6789]"},
 		expected: ExtractResult{Scheme: "http://"}, err: errs[0], description: "Spaces before IPv6 address",
@@ -443,7 +443,7 @@ var invalidTests = []extractTest{
 		expected: ExtractResult{Scheme: "http://"}, err: errs[5], description: "Spaces between IPv6 address and Port/Path",
 	},
 	{urlParams: URLParams{URL: "https://brb\u002ei\u3002am\uff0egoing\uff61to\uff0ebe\u3002a\uff61\u3002fk"},
-		expected: ExtractResult{Scheme: "https://"}, err: errs[6], description: "Consecutive label separators within Suffix",
+		expected: ExtractResult{Scheme: "https://"}, err: errs[8], description: "Consecutive label separators within Suffix",
 	},
 	{urlParams: URLParams{URL: ".\u3002a\uff61fk"}, expected: ExtractResult{}, err: errs[8], description: "TLD only, multiple leading label separators"},
 	{urlParams: URLParams{URL: "https://brb\u002ei\u3002am\uff0egoing\uff61to\uff0ebe.\u3002a\uff61fk"}, expected: ExtractResult{Scheme: "https://"}, err: errs[8], description: "Consecutive label separators between Domain and Suffix"},
@@ -532,9 +532,9 @@ var invalidTests = []extractTest{
 	{urlParams: URLParams{URL: "http://[127.001.002.003]"}, expected: ExtractResult{Scheme: "http://"}, err: errs[4], description: "net/ip-test.go"},
 	{urlParams: URLParams{URL: "http://[::ffff:127.001.002.003]"}, expected: ExtractResult{Scheme: "http://"}, err: errs[4], description: "net/ip-test.go"},
 	{urlParams: URLParams{URL: "http://[123.000.000.000]"}, expected: ExtractResult{Scheme: "http://"}, err: errs[4], description: "net/ip-test.go"},
-	{urlParams: URLParams{URL: "http://[1.2..4]"}, expected: ExtractResult{Scheme: "http://"}, err: errs[4], description: "net/ip-test.go"},
+	{urlParams: URLParams{URL: "http://[1.2..4]"}, expected: ExtractResult{Scheme: "http://"}, err: errs[8], description: "net/ip-test.go"},
 	{urlParams: URLParams{URL: "http://[0123.0.0.1]"}, expected: ExtractResult{Scheme: "http://"}, err: errs[4], description: "net/ip-test.go"},
-	{urlParams: URLParams{URL: "git+ssh://www.!example.com/"}, expected: ExtractResult{Scheme: "git+ssh://", Path: "/"}, err: errs[8], description: "Full git+ssh URL with bad Domain"},
+	{urlParams: URLParams{URL: "git+ssh://www.!example.com/"}, expected: ExtractResult{Scheme: "git+ssh://"}, err: errs[8], description: "Full git+ssh URL with bad Domain"},
 }
 var internationalTLDTests = []extractTest{
 	{urlParams: URLParams{URL: "https://𝖊𝖝𝖆𝖒𝖕𝖑𝖊.𝖈𝖔𝖒.𝖘𝖌", ConvertURLToPunyCode: true}, expected: ExtractResult{Scheme: "https://", Domain: "example", Suffix: "com.sg", RegisteredDomain: "example.com.sg", HostType: HostName}},
@@ -763,8 +763,8 @@ func TestExtract(t *testing.T) {
 
 			if output := reflect.DeepEqual(res,
 				test.expected); !output {
-				t.Errorf("Output %q not equal to expected output %q | %q",
-					res, test.expected, test.description)
+				t.Errorf("%q | Output %q not equal to expected output %q | %q",
+					test.urlParams.URL, res, test.expected, test.description)
 			}
 
 			if !(err == nil && test.err == nil) &&
@@ -772,8 +772,8 @@ func TestExtract(t *testing.T) {
 					(err != nil && test.err == nil) ||
 					!reflect.DeepEqual(err.Error(),
 						test.err.Error())) {
-				t.Errorf("Error %v not equal to expected error %v | %q",
-					err, test.err, test.description)
+				t.Errorf("%q | Error %v not equal to expected error %v | %q",
+					test.urlParams.URL, err, test.err, test.description)
 			}
 		}
 	}
