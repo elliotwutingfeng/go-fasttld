@@ -1,0 +1,13 @@
+# IMPORTANT!: ALL SECTIONS ARE MANDATORY
+[licenses]
+unaccepted = ["EPL", "MPL" , "OSL", "RPL", "LGPL", "GPL", "AGPL"]
+
+[dependencies]
+# This will allow users to flag some dependencies so that Licensebat will not check for their license.
+ignored=[]
+
+[behavior]
+# False by default, if true, it will only run the checks when one of the dependency files or the .licrc file has been modified.
+run_only_on_dependency_modification = true
+# False by default, if true, it will never block the build.
+do_not_block_pr = false
