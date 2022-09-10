@@ -1,6 +1,6 @@
 # IMPORTANT!: ALL SECTIONS ARE MANDATORY
 [licenses]
-unaccepted = ["EPL", "MPL" , "OSL", "RPL", "LGPL", "GPL", "AGPL"]
+unaccepted = ["CC0", "EPL", "MPL" , "OSL", "RPL", "LGPL", "GPL", "AGPL"]
 
 [dependencies]
 # This will allow users to flag some dependencies so that Licensebat will not check for their license.
