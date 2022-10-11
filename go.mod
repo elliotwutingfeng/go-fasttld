@@ -9,12 +9,12 @@ require (
 	github.com/karlseguin/intset v1.0.3-0.20220714140613-13a569a3ba26
 	github.com/mjd2021usa/tldextract v0.9.2
 	github.com/spf13/afero v1.9.2
-	github.com/spf13/cobra v1.5.0
+	github.com/spf13/cobra v1.6.0
 	golang.org/x/net v0.0.0-20221002022538-bcab6841153b
 )
 
 require (
-	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
