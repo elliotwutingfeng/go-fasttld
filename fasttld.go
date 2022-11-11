@@ -14,7 +14,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/elliotwutingfeng/hashmap"
+	"github.com/tidwall/hashmap"
 	"golang.org/x/net/idna"
 )
 

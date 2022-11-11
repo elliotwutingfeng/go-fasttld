@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/elliotwutingfeng/hashmap"
+	"github.com/tidwall/hashmap"
 )
 
 var errs = [...]error{

@@ -3,7 +3,6 @@ module github.com/elliotwutingfeng/go-fasttld
 go 1.19
 
 require (
-	github.com/elliotwutingfeng/hashmap v0.0.0-20220826185712-388eddd7d0cc
 	github.com/fatih/color v1.13.0
 	github.com/joeguo/tldextract v0.0.0-20220507100122-d83daa6adef8
 	github.com/jpillora/go-tld v1.2.1
@@ -11,6 +10,7 @@ require (
 	github.com/mjd2021usa/tldextract v0.9.2
 	github.com/spf13/afero v1.9.2
 	github.com/spf13/cobra v1.6.1
+	github.com/tidwall/hashmap v1.7.0
 	golang.org/x/net v0.1.0
 )
 
