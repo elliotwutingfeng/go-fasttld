@@ -126,8 +126,8 @@ github.com/jpillora/go-tld v1.2.1 h1:kDKOkmXLlskqjcvNs7w5XHLep7c8WM7Xd4HQjxllVMk
 github.com/jpillora/go-tld v1.2.1/go.mod h1:plzIl7xr5UWKGy7R+giuv+L/nOjrPjsoWxy/ST9OBUk=
 github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024/go.mod h1:6v2b51hI/fHJwM22ozAgKL4VKDeJcHhJFhtBdhmNjmU=
 github.com/jstemmer/go-junit-report v0.9.1/go.mod h1:Brl9GWCQeLvo8nXZwPNNblvFj/XSXhF0NWZEnDohbsk=
-github.com/karlseguin/intset v1.0.3-0.20220714140613-13a569a3ba26 h1:AWuU0NZn55Zw94RjGTmrHb22EPQEgvH6759y2gDAumU=
-github.com/karlseguin/intset v1.0.3-0.20220714140613-13a569a3ba26/go.mod h1:hJ3siwEnJbQ92zdVj7Q2OyyMrMZ7LZAIRYDZr0IAAqc=
+github.com/karlseguin/intset v1.0.3-0.20221130142345-37ee0d7df651 h1:bTfsnv9ZwdVc7mPWBEhd+F5pBeJ4P4WYVxaPuoZwmPE=
+github.com/karlseguin/intset v1.0.3-0.20221130142345-37ee0d7df651/go.mod h1:hJ3siwEnJbQ92zdVj7Q2OyyMrMZ7LZAIRYDZr0IAAqc=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/cpuid/v2 v2.1.1 h1:t0wUqjowdm8ezddV5k0tLWVklVuvLJpoHeb4WBdydm0=
 github.com/klauspost/cpuid/v2 v2.1.1/go.mod h1:RVVoqg1df56z8g3pUjL/3lE5UfnlrJX8tyFgg4nqhuY=
