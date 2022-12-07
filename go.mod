@@ -10,7 +10,7 @@ require (
 	github.com/mjd2021usa/tldextract v0.9.2
 	github.com/spf13/afero v1.9.3
 	github.com/spf13/cobra v1.6.1
-	github.com/tidwall/hashmap v1.7.0
+	github.com/tidwall/hashmap v1.8.0
 	golang.org/x/net v0.4.0
 )
 
