@@ -24,3 +24,6 @@ build_cli:
 
 demo:
 	go run ./examples/demo.go
+
+update_psl:
+	go generate data/gen.go

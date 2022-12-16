@@ -62,15 +62,16 @@ func TestGetInlinePublicSuffixList(t *testing.T) {
 	if err != nil {
 		t.Errorf("Expected no error. Got an error.")
 	}
-	if len(suffixLists.publicSuffixes) != 7823 {
-		t.Errorf("len(suffixLists.publicSuffixes) %d not equal to expected 9883", len(suffixLists.publicSuffixes))
+	if len(suffixLists.publicSuffixes) == 0 {
+		t.Errorf("len(suffixLists.publicSuffixes) should be more than 0.")
 	}
-	if len(suffixLists.privateSuffixes) != 2060 {
-		t.Errorf("len(suffixLists.privateSuffixes) %d not equal to expected 9883", len(suffixLists.privateSuffixes))
+	if len(suffixLists.privateSuffixes) == 0 {
+		t.Errorf("len(suffixLists.privateSuffixes) should be more than 0.")
 	}
-	if len(suffixLists.allSuffixes) != 9883 {
-		t.Errorf("len(suffixLists.allSuffixes) %d not equal to expected 9883", len(suffixLists.allSuffixes))
+	if len(suffixLists.allSuffixes) == 0 {
+		t.Errorf("len(suffixLists.allSuffixes) should be more than 0.")
 	}
+
 }
 
 func TestDownloadFile(t *testing.T) {
