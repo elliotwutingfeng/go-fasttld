@@ -3,7 +3,7 @@
 //go:build ignore
 // +build ignore
 
-// This program generates contributors.go. It can be invoked by running
+// This program generates fallback.go. It can be invoked by running
 // go generate
 
 //go:generate go run gen.go
