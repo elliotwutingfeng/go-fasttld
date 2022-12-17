@@ -71,7 +71,6 @@ func TestGetInlinePublicSuffixList(t *testing.T) {
 	if len(suffixLists.allSuffixes) == 0 {
 		t.Errorf("len(suffixLists.allSuffixes) should be more than 0.")
 	}
-
 }
 
 func TestDownloadFile(t *testing.T) {
