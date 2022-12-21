@@ -12,8 +12,8 @@ var version string = ""
 var rootCmd = &cobra.Command{
 	Use:     "fasttld",
 	Version: version,
-	Short:   `fasttld is a high performance top level domains (TLD) extraction module.`,
-	Long:    `fasttld is a high performance top level domains (TLD) extraction module.`,
+	Short:   `fasttld is a high performance effective top level domains (eTLD) extraction module.`,
+	Long:    `fasttld is a high performance effective top level domains (eTLD) extraction module.`,
 	Run:     func(cmd *cobra.Command, args []string) {},
 }
 

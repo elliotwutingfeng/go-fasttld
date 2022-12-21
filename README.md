@@ -9,9 +9,9 @@
 
 ## Summary
 
-**go-fasttld** is a high performance [top level domains (TLD)](https://en.wikipedia.org/wiki/Top-level_domain) extraction module that extracts subcomponents from [URLs](https://en.wikipedia.org/wiki/URL).
+**go-fasttld** is a high performance [effective top level domains (eTLD)](https://wiki.mozilla.org/Public_Suffix_List) extraction module that extracts subcomponents from [URLs](https://en.wikipedia.org/wiki/URL).
 
-URLs can either contain hostnames, IPv4 addresses, or IPv6 addresses. TLD extraction is based on the [Mozilla Public Suffix List](http://www.publicsuffix.org). Private domains listed in the [Mozilla Public Suffix List](http://www.publicsuffix.org) like 'blogspot.co.uk' and 'sinaapp.com' are also supported.
+URLs can either contain hostnames, IPv4 addresses, or IPv6 addresses. eTLD extraction is based on the [Mozilla Public Suffix List](http://www.publicsuffix.org). Private domains listed in the [Mozilla Public Suffix List](http://www.publicsuffix.org) like 'blogspot.co.uk' and 'sinaapp.com' are also supported.
 
 ![Demo](demo.gif)
 
@@ -302,18 +302,18 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 ### Why not split on "." and take the last element instead?
 
-Splitting on "." and taking the last element only works for simple TLDs like `com`, but not more complex ones like `oseto.nagasaki.jp`.
+Splitting on "." and taking the last element only works for simple eTLDs like `com`, but not more complex ones like `oseto.nagasaki.jp`.
 
-### TLD tries
+### eTLD tries
 
 ![Trie](Trie_example.svg)
 
-**go-fasttld** stores TLDs in [compressed tries](https://en.wikipedia.org/wiki/Trie).
+**go-fasttld** stores eTLDs in [compressed tries](https://en.wikipedia.org/wiki/Trie).
 
-Valid TLDs from the [Mozilla Public Suffix List](http://www.publicsuffix.org) are appended to the compressed trie in reverse-order.
+Valid eTLDs from the [Mozilla Public Suffix List](http://www.publicsuffix.org) are appended to the compressed trie in reverse-order.
 
 ```sh
-Given the following TLDs
+Given the following eTLDs
 au
 nsw.edu.au
 com.ac
@@ -334,11 +334,11 @@ START
     ╚═ gov 🚩
 
 === Symbol meanings ===
-🚩 : path to this node is a valid TLD
+🚩 : path to this node is a valid eTLD
 ✅ : path to this node found in example URL host `example.nsw.edu.au`
 ```
 
-The URL host subcomponents are parsed from right-to-left until no more matching nodes can be found. In this example, the path of matching nodes are `au -> edu -> nsw`. Reversing the nodes gives the extracted TLD `nsw.edu.au`.
+The URL host subcomponents are parsed from right-to-left until no more matching nodes can be found. In this example, the path of matching nodes are `au -> edu -> nsw`. Reversing the nodes gives the extracted eTLD `nsw.edu.au`.
 
 ## Acknowledgements
 

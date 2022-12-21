@@ -84,7 +84,7 @@ Omitted modules
 
 github.com/M507/tlde | Almost exactly the same as github.com/joeguo/tldextract
 
-github.com/ImVexed/fasturl | Fast, but cannot extract TLDs
+github.com/ImVexed/fasturl | Fast, but cannot extract eTLDs
 
 github.com/weppos/publicsuffix-go | Cannot handle full URLs with scheme (i.e. https:// ftp:// etc.)
 

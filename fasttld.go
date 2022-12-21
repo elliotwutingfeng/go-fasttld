@@ -1,4 +1,4 @@
-// Package fasttld is a high performance top level domains (TLD)
+// Package fasttld is a high performance effective top level domains (eTLD)
 // extraction module implemented with compressed tries.
 //
 // This module is a port of the Python fasttld module,
@@ -72,7 +72,7 @@ type URLParams struct {
 }
 
 // trie is a node of the compressed trie
-// used to store Public Suffix List TLDs.
+// used to store Public Suffix List eTLDs.
 type trie struct {
 	matches     hashmap.Map[string, *trie]
 	end         bool
@@ -115,7 +115,7 @@ func nestedDict(dic *trie, keys []string) {
 	}
 }
 
-// trieConstruct constructs a compressed trie to store Public Suffix List TLDs split at "." in reverse-order.
+// trieConstruct constructs a compressed trie to store Public Suffix List eTLDs split at "." in reverse-order.
 //
 // For example: "us.gov.pl" will be stored in the order {"pl", "gov", "us"}.
 func trieConstruct(includePrivateSuffix bool, cacheFilePath string) (*trie, error) {
@@ -300,7 +300,7 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 		return urlParts, err
 	}
 
-	// Check for TLD Suffix
+	// Check for eTLD Suffix
 	node := f.tldTrie
 
 	var (
@@ -341,7 +341,7 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 			break
 		}
 
-		// check if label is part of a TLD
+		// check if label is part of an eTLD
 		label, _ = url.QueryUnescape(label)
 		if val, ok := node.matches.Get(label); ok {
 			suffixStartIdx = sepIdx
