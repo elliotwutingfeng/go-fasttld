@@ -160,17 +160,6 @@ func update(file afero.File,
 	return nil
 }
 
-func getDefaultCachePaths() (string, string, error) {
-	currentFilePath, ok := getCurrentFilePath()
-	if !ok {
-		return "", "", errors.New("Cannot get path to current module file")
-	}
-	defaultCacheFolderPath := currentFilePath + string(os.PathSeparator) + defaultPSLFolder
-	defaultCacheFilePath := defaultCacheFolderPath + string(os.PathSeparator) + defaultPSLFileName
-
-	return defaultCacheFolderPath, defaultCacheFilePath, nil
-}
-
 func checkCacheFile(cacheFilePath string) (bool, float64) {
 	cacheFilePath, pathValidErr := filepath.Abs(strings.TrimSpace(cacheFilePath))
 	stat, fileinfoErr := os.Stat(cacheFilePath)
@@ -193,10 +182,10 @@ func checkCacheFile(cacheFilePath string) (bool, float64) {
 // Update updates the default Public Suffix list file and updates its suffix trie using the updated file.
 // If cache file path is not the same as the default cache file path, this will be a no-op.
 func (f *FastTLD) Update() error {
-	defaultCacheFolderPath, defaultCacheFilePath, err := getDefaultCachePaths()
-	if err := os.MkdirAll(defaultCacheFolderPath, 0644); err != nil {
-		return err
-	}
+	filesystem := new(afero.OsFs)
+	defaultCacheFolderPath := afero.GetTempDir(filesystem, "")
+	defaultCacheFilePath := defaultCacheFolderPath + defaultPSLFileName
+
 	if f.cacheFilePath != defaultCacheFilePath {
 		return errors.New("No-op. Only default Public Suffix list file can be updated")
 	}

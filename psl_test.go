@@ -167,9 +167,3 @@ func TestFileLastModifiedHours(t *testing.T) {
 	}
 	defer file.Close()
 }
-
-func TestGetDefaultCachePaths(t *testing.T) {
-	if _, _, err := getDefaultCachePaths(); err != nil {
-		t.Errorf("Expected no error, got %v", err)
-	}
-}

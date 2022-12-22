@@ -10,10 +10,10 @@ import (
 	"errors"
 	"log"
 	"net/url"
-	"os"
 	"strconv"
 	"strings"
 
+	"github.com/spf13/afero"
 	"github.com/tidwall/hashmap"
 	"golang.org/x/net/idna"
 )
@@ -431,31 +431,34 @@ func New(n SuffixListParams) (*FastTLD, error) {
 		tldTrie, err := trieConstruct(n.IncludePrivateSuffix, "")
 		return &FastTLD{cacheFilePath: "", tldTrie: tldTrie, includePrivateSuffix: n.IncludePrivateSuffix}, err
 	}
-	// If cacheFilePath is unreachable, use default Public Suffix List file.
-	if isValid, _ := checkCacheFile(n.CacheFilePath); !isValid {
-		defaultCacheFolderPath, defaultCacheFilePath, err := getDefaultCachePaths()
-		if err != nil || os.MkdirAll(defaultCacheFolderPath, 0644) != nil {
-			// default Public Suffix List file cannot be opened
+	extractor := &FastTLD{cacheFilePath: n.CacheFilePath, tldTrie: &trie{}, includePrivateSuffix: n.IncludePrivateSuffix}
+	// If cacheFilePath is unreachable, use temporary folder
+	if isValid, _ := checkCacheFile(extractor.cacheFilePath); !isValid {
+		filesystem := new(afero.OsFs)
+		defaultCacheFolderPath := afero.GetTempDir(filesystem, "")
+		defaultCacheFilePath := defaultCacheFolderPath + defaultPSLFileName
+		defaultCacheFolder, err := filesystem.Open(defaultCacheFolderPath)
+		if err != nil {
+			// temporary folder not accessible, fallback to inline Public Suffix list
 			return inlinePSL(err, n)
 		}
-		n.CacheFilePath = defaultCacheFilePath
-		if isValid, lastModifiedHours := checkCacheFile(n.CacheFilePath); !isValid || lastModifiedHours > pslMaxAgeHours {
-			if file, err := os.OpenFile(n.CacheFilePath, os.O_CREATE|os.O_WRONLY, 0644); err == nil {
-				if err := update(file, publicSuffixListSources); err != nil {
-					log.Println(err)
-				}
-				defer file.Close()
+		defer defaultCacheFolder.Close()
+		extractor.cacheFilePath = defaultCacheFilePath
+		isValid, lastModifiedHours := checkCacheFile(extractor.cacheFilePath)
+		if !isValid || lastModifiedHours > pslMaxAgeHours {
+			// update Public Suffix list cache if it is outdated
+			if updateErr := extractor.Update(); updateErr != nil {
+				// update failed, fallback to inline Public Suffix list
+				return inlinePSL(err, n)
 			}
-		}
-		if isValid, _ := checkCacheFile(n.CacheFilePath); !isValid {
-			return inlinePSL(err, n)
+			return extractor, err
 		}
 	}
 
-	tldTrie, err := trieConstruct(n.IncludePrivateSuffix, n.CacheFilePath)
+	tldTrie, err := trieConstruct(n.IncludePrivateSuffix, extractor.cacheFilePath)
 	if err != nil {
 		return inlinePSL(err, n)
 	}
-
-	return &FastTLD{cacheFilePath: n.CacheFilePath, tldTrie: tldTrie, includePrivateSuffix: n.IncludePrivateSuffix}, err
+	extractor.tldTrie = tldTrie
+	return extractor, err
 }
