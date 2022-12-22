@@ -263,12 +263,12 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 <code>https://iupac.org/iupac-announces-the-2021-top-ten-emerging-technologies-in-chemistry/</code>
 
-| Benchmark Name       | Iterations | ns/op       | B/op      | allocs/op   | Fastest            |
-|----------------------|------------|-------------|-----------|-------------|--------------------|
-| GoFastTld            | 8413669    | 133.7 ns/op | 0 B/op    | 0 allocs/op | :heavy_check_mark: |
-| JPilloraGoTld        | 1795345    | 666.6 ns/op | 224 B/op  | 2 allocs/op |                    |
-| JoeGuoTldExtract     | 1536376    | 767.9 ns/op | 288 B/op  | 6 allocs/op |                    |
-| Mjd2021USATldExtract | 1698982    | 709.6 ns/op | 288 B/op  | 6 allocs/op |                    |
+| Benchmark Name       | Iterations | ns/op       | B/op     | allocs/op   | Fastest            |
+|----------------------|------------|-------------|----------|-------------|--------------------|
+| GoFastTld            | 8037906    | 150.8 ns/op | 0 B/op   | 0 allocs/op | :heavy_check_mark: |
+| JPilloraGoTld        | 1675113    | 716.1 ns/op | 224 B/op | 2 allocs/op |                    |
+| JoeGuoTldExtract     | 2204854    | 515.1 ns/op | 272 B/op | 5 allocs/op |                    |
+| Mjd2021USATldExtract | 1676722    | 712.0 ns/op | 288 B/op | 6 allocs/op |                    |
 
 ---
 
@@ -278,23 +278,23 @@ Benchmarks performed on AMD Ryzen 7 5800X, Manjaro Linux.
 
 | Benchmark Name       | Iterations | ns/op       | B/op      | allocs/op   | Fastest            |
 |----------------------|------------|-------------|-----------|-------------|--------------------|
-| GoFastTld            | 6514398    | 168.5 ns/op | 0 B/op    | 0 allocs/op | :heavy_check_mark: |
-| JPilloraGoTld        | 400324     | 2595 ns/op  | 928 B/op  | 4 allocs/op |                    |
-| JoeGuoTldExtract     | 1016998    | 1174 ns/op  | 1120 B/op | 6 allocs/op |                    |
-| Mjd2021USATldExtract | 941970     | 1175 ns/op  | 1120 B/op | 6 allocs/op |                    |
+| GoFastTld            | 6381516    | 181.9 ns/op | 0 B/op    | 0 allocs/op | :heavy_check_mark: |
+| JPilloraGoTld        | 431671     | 2603 ns/op  | 928 B/op  | 4 allocs/op |                    |
+| JoeGuoTldExtract     | 893347     | 1176 ns/op  | 1120 B/op | 6 allocs/op |                    |
+| Mjd2021USATldExtract | 1030250    | 1165 ns/op  | 1120 B/op | 6 allocs/op |                    |
 
 ---
 
 #### #3
 
-<code>https://a.b.c.d.e.f.g.h.i.j.k.l.m.n.oo.pp.qqq.rrrr.ssssss.tttttttt.uuuuuuuuuuu.vvvvvvvvvvvvvvv.wwwwwwwwwwwwwwwwwwwwww.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy.zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz.me</code>
+<code>https://a.b.c.d.e.f.g.h.i.j.k.l.m.n.oo.pp.qqq.rrrr.ssssss.tttttttt.uuuuuuuuuuu.vvvvvvvvvvvvvvv.wwwwwwwwwwwwwwwwwwwwww.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy.zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz.cc</code>
 
-| Benchmark Name       | Iterations | ns/op       | B/op      | allocs/op   | Fastest            |
-|----------------------|------------|-------------|-----------|-------------|--------------------|
-| GoFastTld            | 695120     | 1726 ns/op  | 0 B/op    | 0 allocs/op |                    |
-| JPilloraGoTld        | 756147     | 1594 ns/op  | 304 B/op  | 3 allocs/op |                    |
-| JoeGuoTldExtract     | 827254     | 1425 ns/op  | 1040 B/op | 5 allocs/op | :heavy_check_mark: |
-| Mjd2021USATldExtract | 284080     | 3575 ns/op  | 1904 B/op | 8 allocs/op |                    |
+| Benchmark Name       | Iterations | ns/op      | B/op      | allocs/op   | Fastest            |
+|----------------------|------------|------------|-----------|-------------|--------------------|
+| GoFastTld            | 833682     | 1424 ns/op | 0 B/op    | 0 allocs/op | :heavy_check_mark: |
+| JPilloraGoTld        | 734790     | 1640 ns/op | 304 B/op  | 3 allocs/op |                    |
+| JoeGuoTldExtract     | 695475     | 1452 ns/op | 1040 B/op | 5 allocs/op |                    |
+| Mjd2021USATldExtract | 330717     | 3628 ns/op | 1904 B/op | 8 allocs/op |                    |
 
 ---
 
