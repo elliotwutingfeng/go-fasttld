@@ -4,6 +4,8 @@ This application uses code from other open-source projects. The copyright statem
 
 ## Go
 
+Source: <https://github.com/golang/go>
+
 ```markdown
 Copyright (c) 2009 The Go Authors. All rights reserved.
 
