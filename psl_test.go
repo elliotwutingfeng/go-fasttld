@@ -119,11 +119,17 @@ var updateTests = []updateTest{
 }
 
 func TestUpdate(t *testing.T) {
+	requiredComments := "// ===BEGIN ICANN DOMAINS===\n// ===END ICANN DOMAINS===\n// ===BEGIN PRIVATE DOMAINS===\n// ===END PRIVATE DOMAINS==="
 	goodServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("// ===BEGIN ICANN DOMAINS===\n// ===END ICANN DOMAINS===\n// ===BEGIN PRIVATE DOMAINS===\n// ===END PRIVATE DOMAINS==="))
+		w.Write([]byte(requiredComments))
 		r.Header.Get("") // removes unused parameter warning
 	}))
 	defer goodServer.Close()
+	emptyServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(""))
+		r.Header.Get("") // removes unused parameter warning
+	}))
+	defer emptyServer.Close()
 	badServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(404)
 		r.Header.Get("") // removes unused parameter warning
@@ -133,6 +139,7 @@ func TestUpdate(t *testing.T) {
 	filesystem := new(afero.MemMapFs)
 	file, _ := afero.TempFile(filesystem, "", "ioutil-test")
 	defer file.Close()
+
 	for _, test := range updateTests {
 		var primarySource, fallbackSource string
 		if test.mainServerAvailable {
@@ -146,7 +153,7 @@ func TestUpdate(t *testing.T) {
 			fallbackSource = badServer.URL
 		}
 
-		// error should only be returned if Public Suffix List cannot
+		// error should only be returned if Public Suffix List with requiredComments cannot
 		// be downloaded from any of the sources.
 		err := update(file, []string{primarySource, fallbackSource})
 		if test.expectError && err == nil {
@@ -155,6 +162,11 @@ func TestUpdate(t *testing.T) {
 		if !test.expectError && err != nil {
 			t.Errorf("Expected no update() error, got an error.")
 		}
+	}
+
+	// None of the servers return content with requiredComments
+	if err := update(file, []string{emptyServer.URL, emptyServer.URL}); err == nil {
+		t.Errorf("Expected update() error, got no error.")
 	}
 }
 
