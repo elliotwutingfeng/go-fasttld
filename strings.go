@@ -48,13 +48,13 @@ var slashes asciiSet = makeASCIISet(`/\`)
 // is unused to avoid bounds checks in asciiSet.contains.
 type asciiSet [8]uint32
 
-// makeASCIISet creates a set of ASCII characters.
-//
-// Similar to strings.makeASCIISet but skips input validation.
+// makeASCIISet creates a set of ASCII characters from runes in chars.
+// Non-ASCII runes are skipped. Similar to strings.makeASCIISet.
 func makeASCIISet(chars string) (as asciiSet) {
-	// all characters in chars are expected to be valid ASCII characters
 	for _, c := range chars {
-		as[c/32] |= 1 << (c % 32)
+		if c < utf8.RuneSelf {
+			as[c/32] |= 1 << (c % 32)
+		}
 	}
 	return as
 }
