@@ -4,6 +4,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/karlseguin/intset"
 )
 
 type punyCodeTest struct {
@@ -48,22 +50,31 @@ func TestReverse(t *testing.T) {
 }
 
 func TestFastTrim(t *testing.T) {
-	ss := []string{".abc\u002e", "\u002eabc.", ".abc", "abc\u002e",
-		"..abc\u002e", "\u002e.abc\u002e.",
-	}
-	expected := "abc"
+	const charsToTrim string = ".@新"
+	var charsToTrimRuneSet *intset.Rune = makeRuneSet(charsToTrim)
+
+	ss := []string{".abc.", ".abc", "abc.", "..abc.", ".abc..", "..abc..",
+		"@abc@", "@abc", "abc@", "@@abc@", "@abc@@", "@@abc@@",
+		"新abc新", "新abc", "abc新", "新新abc新", "新abc新新", "新新abc新新",
+		"新@abc新.", "新.abc", "abc@新", "新新.abc新", "新abc新@新", "新新.abc.新新",
+		".", "..",
+		".@", "@.",
+		".@新", "新@.",
+		" ", " .@ ", ". .@ ", " .@ 新",
+		"abc"}
+
 	for _, s := range ss {
-		if output := fastTrim(s, labelSeparatorsRuneSet, trimBoth); output != expected {
-			t.Errorf("Output %q not equal to expected %q", output, expected)
+		expectedTrimBoth := strings.Trim(s, charsToTrim)
+		if output := fastTrim(s, charsToTrimRuneSet, trimBoth); output != expectedTrimBoth {
+			t.Errorf("Output %q not equal to expected %q", output, expectedTrimBoth)
 		}
-	}
-	if output := fastTrim(".", labelSeparatorsRuneSet, trimBoth); output != "" {
-		t.Errorf("Output %q not equal to expected %q", output, "")
-	}
-	if output := fastTrim(".", labelSeparatorsRuneSet, trimLeft); output != "" {
-		t.Errorf("Output %q not equal to expected %q", output, "")
-	}
-	if output := fastTrim(".", labelSeparatorsRuneSet, trimRight); output != "" {
-		t.Errorf("Output %q not equal to expected %q", output, "")
+		expectedTrimLeft := strings.TrimLeft(s, charsToTrim)
+		if output := fastTrim(s, charsToTrimRuneSet, trimLeft); output != expectedTrimLeft {
+			t.Errorf("Output %q not equal to expected %q", output, expectedTrimLeft)
+		}
+		expectedTrimRight := strings.TrimRight(s, charsToTrim)
+		if output := fastTrim(s, charsToTrimRuneSet, trimRight); output != expectedTrimRight {
+			t.Errorf("Output %q not equal to expected %q", output, expectedTrimRight)
+		}
 	}
 }

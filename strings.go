@@ -300,6 +300,8 @@ func fastTrim(s string, charsToTrim *intset.Rune, mode trimMode) string {
 			// Return empty string if every character in s exists in charsToTrim
 			return ""
 		}
+	} else {
+		endIdx = len(s)
 	}
 	return s[startIdx:endIdx]
 }
