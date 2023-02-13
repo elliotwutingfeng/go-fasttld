@@ -57,8 +57,8 @@ func TestGetPublicSuffixList(t *testing.T) {
 	}
 }
 
-func TestGetInlinePublicSuffixList(t *testing.T) {
-	suffixLists, err := getInlinePublicSuffixList()
+func TestGetHardcodedPublicSuffixList(t *testing.T) {
+	suffixLists, err := getHardcodedPublicSuffixList()
 	if err != nil {
 		t.Errorf("Expected no error. Got an error.")
 	}
@@ -70,6 +70,16 @@ func TestGetInlinePublicSuffixList(t *testing.T) {
 	}
 	if len(suffixLists.allSuffixes) == 0 {
 		t.Errorf("len(suffixLists.allSuffixes) should be more than 0.")
+	}
+}
+
+func TestNewHardcodedPSL(t *testing.T) {
+	f, err := newHardcodedPSL(nil, SuffixListParams{})
+	if err != nil {
+		t.Errorf("newHardcodedPSL error: %q", err)
+	}
+	if f.tldTrie.matches.Len() == 0 {
+		t.Errorf("tldTrie should not be empty")
 	}
 }
 

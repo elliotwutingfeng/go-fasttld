@@ -83,20 +83,27 @@ func getPublicSuffixList(cacheFilePath string) (suffixes, error) {
 	return psl, nil
 }
 
-// getInlinePublicSuffixList retrieves Public Suffixes and Private Suffixes from inline Public Suffix list.
+// getHardcodedPublicSuffixList retrieves Public Suffixes and Private Suffixes from hardcoded Public Suffix list.
 //
 // publicSuffixes: ICANN domains. Example: com, net, org etc.
 //
 // privateSuffixes: PRIVATE domains. Example: blogspot.co.uk, appspot.com etc.
 //
 // allSuffixes: Both ICANN and PRIVATE domains.
-func getInlinePublicSuffixList() (suffixes, error) {
+func getHardcodedPublicSuffixList() (suffixes, error) {
 	var psl suffixes
 	var isPrivateSuffix bool
-	for _, line := range strings.Split(inlinePSL, "\n") {
+	for _, line := range strings.Split(hardcodedPSL, "\n") {
 		psl, isPrivateSuffix = processLine(line, psl, isPrivateSuffix)
 	}
 	return psl, nil
+}
+
+// newHardcodedPSL creates a new *FastTLD using data from a hardcoded Public Suffix List file.
+func newHardcodedPSL(err error, n SuffixListParams) (*FastTLD, error) {
+	log.Println(err, "Fallback to hardcoded Public Suffix List")
+	tldTrie, err := trieConstruct(n.IncludePrivateSuffix, "")
+	return &FastTLD{cacheFilePath: "", tldTrie: tldTrie, includePrivateSuffix: n.IncludePrivateSuffix}, err
 }
 
 // downloadFile downloads file from url as byte slice
@@ -135,29 +142,34 @@ func fileLastModifiedHours(fileinfo os.FileInfo) float64 {
 // update updates the local cache of Public Suffix List
 func update(file afero.File,
 	publicSuffixListSources []string) error {
-	var downloadSuccess bool
 	for _, publicSuffixListSource := range publicSuffixListSources {
 		// Write GET request body to local file
 		if bodyBytes, err := downloadFile(publicSuffixListSource); err != nil {
 			log.Println(err)
 		} else {
-			if !bytes.Contains(bodyBytes, []byte("// ===BEGIN ICANN DOMAINS===")) ||
-				!bytes.Contains(bodyBytes, []byte("// ===END ICANN DOMAINS===")) ||
-				!bytes.Contains(bodyBytes, []byte("// ===BEGIN PRIVATE DOMAINS===")) ||
-				!bytes.Contains(bodyBytes, []byte("// ===END PRIVATE DOMAINS===")) {
+			if !validPSLDelimiters(bodyBytes) {
 				continue
 			}
-			file.Seek(0, 0)
-			file.Write(bodyBytes)
-			downloadSuccess = true
-			break
+			if _, err := file.Seek(0, 0); err != nil {
+				log.Println(err)
+				continue
+			}
+			if _, err := file.Write(bodyBytes); err != nil {
+				log.Println(err)
+				continue
+			}
+			log.Println("Public Suffix List updated.")
+			return nil
 		}
 	}
-	if !downloadSuccess {
-		return errors.New("failed to fetch any Public Suffix List from all mirrors")
-	}
-	log.Println("Public Suffix List updated.")
-	return nil
+	return errors.New("failed to fetch any Public Suffix List from all mirrors")
+}
+
+func validPSLDelimiters(contents []byte) bool {
+	return bytes.Contains(contents, []byte("// ===BEGIN ICANN DOMAINS===")) &&
+		bytes.Contains(contents, []byte("// ===END ICANN DOMAINS===")) &&
+		bytes.Contains(contents, []byte("// ===BEGIN PRIVATE DOMAINS===")) &&
+		bytes.Contains(contents, []byte("// ===END PRIVATE DOMAINS==="))
 }
 
 func checkCacheFile(cacheFilePath string) (bool, float64) {
@@ -169,12 +181,8 @@ func checkCacheFile(cacheFilePath string) (bool, float64) {
 	}
 
 	var validDelimiters bool
-	if b, err := os.ReadFile(cacheFilePath); err == nil {
-		contents := string(b)
-		validDelimiters = strings.Contains(contents, "// ===BEGIN ICANN DOMAINS===") &&
-			strings.Contains(contents, "// ===END ICANN DOMAINS===") &&
-			strings.Contains(contents, "// ===BEGIN PRIVATE DOMAINS===") &&
-			strings.Contains(contents, "// ===END PRIVATE DOMAINS===")
+	if contents, err := os.ReadFile(cacheFilePath); err == nil {
+		validDelimiters = validPSLDelimiters(contents)
 	}
 	return pathValidErr == nil && fileinfoErr == nil && !stat.IsDir() && validDelimiters, lastModifiedHours
 }
@@ -183,8 +191,7 @@ func checkCacheFile(cacheFilePath string) (bool, float64) {
 // If cache file path is not the same as the default cache file path, this will be a no-op.
 func (f *FastTLD) Update() error {
 	filesystem := new(afero.OsFs)
-	defaultCacheFolderPath := afero.GetTempDir(filesystem, "")
-	defaultCacheFilePath := defaultCacheFolderPath + defaultPSLFileName
+	defaultCacheFilePath := afero.GetTempDir(filesystem, "") + defaultPSLFileName
 
 	if f.cacheFilePath != defaultCacheFilePath {
 		return errors.New("No-op. Only default Public Suffix list file can be updated")

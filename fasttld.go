@@ -127,7 +127,7 @@ func trieConstruct(includePrivateSuffix bool, cacheFilePath string) (*trie, erro
 	if cacheFilePath != "" {
 		suffixLists, err = getPublicSuffixList(cacheFilePath)
 	} else {
-		suffixLists, err = getInlinePublicSuffixList()
+		suffixLists, err = getHardcodedPublicSuffixList()
 	}
 
 	if err != nil {
@@ -426,11 +426,6 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 
 // New creates a new *FastTLD using data from a Public Suffix List file.
 func New(n SuffixListParams) (*FastTLD, error) {
-	inlinePSL := func(err error, n SuffixListParams) (*FastTLD, error) {
-		log.Println(err, "Fallback to inline Public Suffix List")
-		tldTrie, err := trieConstruct(n.IncludePrivateSuffix, "")
-		return &FastTLD{cacheFilePath: "", tldTrie: tldTrie, includePrivateSuffix: n.IncludePrivateSuffix}, err
-	}
 	extractor := &FastTLD{cacheFilePath: n.CacheFilePath, tldTrie: &trie{}, includePrivateSuffix: n.IncludePrivateSuffix}
 	// If cacheFilePath is unreachable, use temporary folder
 	if isValid, _ := checkCacheFile(extractor.cacheFilePath); !isValid {
@@ -439,8 +434,8 @@ func New(n SuffixListParams) (*FastTLD, error) {
 		defaultCacheFilePath := defaultCacheFolderPath + defaultPSLFileName
 		defaultCacheFolder, err := filesystem.Open(defaultCacheFolderPath)
 		if err != nil {
-			// temporary folder not accessible, fallback to inline Public Suffix list
-			return inlinePSL(err, n)
+			// temporary folder not accessible, fallback to hardcoded Public Suffix list
+			return newHardcodedPSL(err, n)
 		}
 		defer defaultCacheFolder.Close()
 		extractor.cacheFilePath = defaultCacheFilePath
@@ -448,8 +443,8 @@ func New(n SuffixListParams) (*FastTLD, error) {
 		if !isValid || lastModifiedHours > pslMaxAgeHours {
 			// update Public Suffix list cache if it is outdated
 			if updateErr := extractor.Update(); updateErr != nil {
-				// update failed, fallback to inline Public Suffix list
-				return inlinePSL(err, n)
+				// update failed, fallback to hardcoded Public Suffix list
+				return newHardcodedPSL(err, n)
 			}
 			return extractor, err
 		}
@@ -457,7 +452,7 @@ func New(n SuffixListParams) (*FastTLD, error) {
 
 	tldTrie, err := trieConstruct(n.IncludePrivateSuffix, extractor.cacheFilePath)
 	if err != nil {
-		return inlinePSL(err, n)
+		return newHardcodedPSL(err, n)
 	}
 	extractor.tldTrie = tldTrie
 	return extractor, err

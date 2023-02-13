@@ -60,4 +60,4 @@ var pslTemplate = template.Must(template.New("").Parse(`package fasttld
 // using data from
 // {{ .URL }}
 
-const inlinePSL string = ` + "`{{ .Content }}`\n"))
+const hardcodedPSL string = ` + "`{{ .Content }}`\n"))
