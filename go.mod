@@ -11,7 +11,7 @@ require (
 	github.com/spf13/afero v1.9.3
 	github.com/spf13/cobra v1.6.1
 	github.com/tidwall/hashmap v1.8.0
-	golang.org/x/net v0.6.0
+	golang.org/x/net v0.7.0
 )
 
 require (
