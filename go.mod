@@ -8,7 +8,7 @@ require (
 	github.com/jpillora/go-tld v1.2.1
 	github.com/karlseguin/intset v1.0.3-0.20221130142345-37ee0d7df651
 	github.com/mjd2021usa/tldextract v0.9.2
-	github.com/spf13/afero v1.9.4
+	github.com/spf13/afero v1.9.5
 	github.com/spf13/cobra v1.6.1
 	github.com/tidwall/hashmap v1.8.0
 	golang.org/x/net v0.8.0
