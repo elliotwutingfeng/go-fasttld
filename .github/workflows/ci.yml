@@ -12,7 +12,7 @@ jobs:
       with:
         fetch-depth: 0 # to support `git describe`
     - name: Setup go
-      uses: actions/setup-go@v3
+      uses: actions/setup-go@v4
       with:
         go-version-file: './go.mod'
     - name: Test
