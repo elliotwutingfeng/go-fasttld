@@ -20,7 +20,7 @@ mem_report:
 	go tool pprof mem.prof
 
 build_cli:
-	go build -o ./dist/fasttld -ldflags "-X 'github.com/elliotwutingfeng/go-fasttld/cmd/fasttld.version=v0.4.4'" ./cmd/main.go
+	go build -o ./dist/fasttld -ldflags "-X 'github.com/elliotwutingfeng/go-fasttld/cmd/fasttld.version=v0.4.5'" ./cmd/main.go
 
 demo:
 	go run ./examples/demo.go
