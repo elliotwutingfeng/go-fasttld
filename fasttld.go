@@ -335,7 +335,6 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 			// check if label falls under any wildcard exception rule
 			// e.g. !www.ck
 			if _, ok := node.matches.Get("!" + label); ok {
-				label, _ = url.QueryUnescape(label)
 				sepIdx = previousSepIdx
 			}
 			break
