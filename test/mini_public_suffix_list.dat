@@ -1,3 +1,4 @@
+// ===BEGIN ICANN DOMAINS===
 ac
 com.ac
 edu.ac
@@ -7,7 +8,10 @@ mil.ac
 org.ac
 *.ck
 !www.ck
+org.sg
+// ===END ICANN DOMAINS===
 // ===BEGIN PRIVATE DOMAINS===
 blogspot.com
 // the following line is invalid punycode
 xn--0.com
+// ===END PRIVATE DOMAINS===

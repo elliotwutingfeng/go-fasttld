@@ -18,7 +18,7 @@ var errs = [...]error{
 	errors.New("incomplete square bracket pair"),
 	errors.New("invalid IPv6 address"),
 	errors.New("invalid trailing characters after IPv6 address"),
-	errors.New("invalid consecutive label separators on left-hand side of partial or full suffix"),
+	errors.New("invalid consecutive label separators on left-hand side of a label"),
 	errors.New("invalid characters in hostname before suffix"),
 	errors.New("invalid characters in hostname"),
 	errors.New("empty domain"),
@@ -39,71 +39,104 @@ func getTestPSLFilePath() (string, bool) {
 	return sb.String(), ok
 }
 
+// Perm calls f with each permutation of a.
+//
+// Source: https://yourbasic.org/golang/generate-permutation-slice-string
+//
+// License: CC-BY-3.0
+func Perm(a []([]string), f func([][]string)) {
+	perm(a, f, 0)
+}
+
+// perm permutes the values at index i to len(a)-1.
+//
+// Source: https://yourbasic.org/golang/generate-permutation-slice-string
+//
+// License: CC-BY-3.0
+func perm(a []([]string), f func([][]string), i int) {
+	if i > len(a) {
+		f(a)
+		return
+	}
+	perm(a, f, i+1)
+	for j := i + 1; j < len(a); j++ {
+		a[i], a[j] = a[j], a[i]
+		perm(a, f, i+1)
+		a[i], a[j] = a[j], a[i]
+	}
+}
+
 func TestNestedDict(t *testing.T) {
-	var m hashmap.Map[string, *trie]
-	originalDict := &trie{matches: m}
-	keysSequence := []([]string){{"a"}, {"a", "d"}, {"a", "b"}, {"a", "b", "c"}, {"c"}, {"c", "b"}, {"d", "f"}}
-	for _, keys := range keysSequence {
-		nestedDict(originalDict, keys)
-	}
-	// check each nested value
-	//Top level c
-	c, _ := originalDict.matches.Get("c")
-	if c.matches.Len() != 1 {
-		t.Errorf("Top level c must have matches map of length 1")
-	}
-	if _, ok := c.matches.Get("b"); !ok {
-		t.Errorf("Top level c must have b in matches map")
-	}
-	if !c.end {
-		t.Errorf("Top level c must have end = true")
-	}
-	// Top level a
-	a, _ := originalDict.matches.Get("a")
-	if a.matches.Len() != 2 {
-		t.Errorf("Top level a must have matches map of length 2")
-	}
-	// a -> d
-	aToD, ok := a.matches.Get("d")
-	if !ok {
-		t.Errorf("Top level a must have d in matches map")
-	}
-	if aToD.matches.Len() != 0 {
-		t.Errorf("a -> d must have empty matches map")
-	}
-	// a -> b
-	aToB, ok := a.matches.Get("b")
-	if !ok {
-		t.Errorf("Top level a must have b in matches map")
-	}
-	if !aToB.end {
-		t.Errorf("a -> b must have end = true")
-	}
-	if aToB.matches.Len() != 1 {
-		t.Errorf("a -> b must have matches map of length 1")
-	}
-	// a -> b -> c
-	aToBToC, ok := aToB.matches.Get("c")
-	if !ok {
-		t.Errorf("a -> b must have c in matches map")
-	}
-	if aToBToC.matches.Len() != 0 {
-		t.Errorf("a -> b -> c must have empty matches map")
-	}
-	if !a.end {
-		t.Errorf("Top level a must have end = true")
-	}
-	// d -> f
-	d, _ := originalDict.matches.Get("d")
-	if d.end {
-		t.Errorf("Top level d must have end = false")
-	}
-	dToF, _ := d.matches.Get("f")
-	if dToF.end {
-		t.Errorf("d -> f must have end = false")
-	}
-	if dToF.matches.Len() != 0 {
-		t.Errorf("d -> f must have empty matches map")
+	originalKeySequence := []([]string){{"a"}, {"a", "d"}, {"a", "b"}, {"a", "b", "c"}, {"c"}, {"c", "b"}, {"d", "f"}}
+	keysSequences := make([][]([]string), 0)
+	Perm(originalKeySequence, func(a [][]string) {
+		keysSequences = append(keysSequences, a)
+	})
+	for _, keysSequence := range keysSequences {
+		var m hashmap.Map[string, *trie]
+		originalDict := &trie{matches: m}
+		for _, keys := range keysSequence {
+			nestedDict(originalDict, keys)
+		}
+		// check each nested value
+		//Top level c
+		c, _ := originalDict.matches.Get("c")
+		if c.matches.Len() != 1 {
+			t.Errorf("Top level c must have matches map of length 1")
+		}
+		if _, ok := c.matches.Get("b"); !ok {
+			t.Errorf("Top level c must have b in matches map")
+		}
+		if !c.end {
+			t.Errorf("Top level c must have end = true")
+		}
+		// Top level a
+		a, _ := originalDict.matches.Get("a")
+		if a.matches.Len() != 2 {
+			t.Errorf("Top level a must have matches map of length 2")
+		}
+		// a -> d
+		aToD, ok := a.matches.Get("d")
+		if !ok {
+			t.Errorf("Top level a must have d in matches map")
+		}
+		if aToD.matches.Len() != 0 {
+			t.Errorf("a -> d must have empty matches map")
+		}
+		// a -> b
+		aToB, ok := a.matches.Get("b")
+		if !ok {
+			t.Errorf("Top level a must have b in matches map")
+		}
+		if !aToB.end {
+			t.Errorf("a -> b must have end = true")
+		}
+		if aToB.matches.Len() != 1 {
+			t.Errorf("a -> b must have matches map of length 1")
+		}
+		// a -> b -> c
+		aToBToC, ok := aToB.matches.Get("c")
+		if !ok {
+			t.Errorf("a -> b must have c in matches map")
+		}
+		if aToBToC.matches.Len() != 0 {
+			t.Errorf("a -> b -> c must have empty matches map")
+		}
+		if !a.end {
+			t.Errorf("Top level a must have end = true")
+		}
+		// d -> f
+		d, _ := originalDict.matches.Get("d")
+		if d.end {
+			t.Errorf("Top level d must have end = false")
+		}
+		dToF, _ := d.matches.Get("f")
+		if !dToF.end {
+			t.Errorf("d -> f must have end = true")
+		}
+		if dToF.matches.Len() != 0 {
+			t.Errorf("d -> f must have empty matches map")
+		}
 	}
 }
 
@@ -121,8 +154,8 @@ func TestTrie(t *testing.T) {
 	if err != nil {
 		t.Errorf("trieConstruct failed | %q", err)
 	}
-	if lenTrieMatches := trie.matches.Len(); lenTrieMatches != 2 {
-		t.Errorf("Expected top level Trie matches map length of 2. Got %d.", lenTrieMatches)
+	if lenTrieMatches := trie.matches.Len(); lenTrieMatches != 3 {
+		t.Errorf("Expected top level Trie matches map length of 3. Got %d.", lenTrieMatches)
 	}
 	for _, tld := range []string{"ac", "ck"} {
 		if _, ok := trie.matches.Get(tld); !ok {
@@ -134,8 +167,8 @@ func TestTrie(t *testing.T) {
 		t.Errorf("Top level ac must have end = true")
 	}
 	ck, _ := trie.matches.Get("ck")
-	if ck.end {
-		t.Errorf("Top level ck must have end = false")
+	if !ck.end {
+		t.Errorf("Top level ck must have end = true")
 	}
 	if ck.matches.Len() != 2 {
 		t.Errorf("Top level ck must have matches map of length 2")
@@ -175,6 +208,7 @@ type newTest struct {
 var newTests = []newTest{
 	{cacheFilePath: fmt.Sprintf("test%spublic_suffix_list.dat", string(os.PathSeparator)), includePrivateSuffix: false, expected: 1656},
 	{cacheFilePath: fmt.Sprintf("test%spublic_suffix_list.dat", string(os.PathSeparator)), includePrivateSuffix: true, expected: 1674},
+	{cacheFilePath: fmt.Sprintf("test%smini_public_suffix_list.dat", string(os.PathSeparator)), includePrivateSuffix: true, expected: 4},
 }
 
 func TestNew(t *testing.T) {
@@ -348,6 +382,21 @@ var ignoreSubDomainsTests = []extractTest{
 			RegisteredDomain: "google.com.sg", HostType: HostName,
 		}, description: "Ignore SubDomain",
 	},
+	{urlParams: URLParams{URL: "example.za/en",
+		IgnoreSubDomains: true},
+		expected: ExtractResult{
+			Domain: "za", Path: "/en",
+			HostType: HostName},
+		description: "za has no 1st-level TLD | IgnoreSubDomains",
+	},
+	{urlParams: URLParams{URL: "https://example.za/en",
+		IgnoreSubDomains: true},
+		expected: ExtractResult{
+			Scheme: "https://",
+			Domain: "za", Path: "/en",
+			HostType: HostName},
+		description: "za has no 1st-level TLD | Scheme + IgnoreSubDomains",
+	},
 }
 var privateSuffixTests = []extractTest{
 	{includePrivateSuffix: true,
@@ -409,6 +458,14 @@ var periodsAndWhiteSpacesTests = []extractTest{
 			Scheme: "http://", UserInfo: "1.1.1.1 &", Domain: "2.2.2.2",
 			RegisteredDomain: "2.2.2.2", Port: "33", Path: "/4.4.4.4?1.1.1.1# @3.3.3.3/", HostType: IPv4,
 		}, description: "Whitespace in UserInfo"},
+	{urlParams: URLParams{URL: "example.za./en"},
+		expected:    ExtractResult{SubDomain: "example", Domain: "za", Path: "/en", HostType: HostName},
+		description: "za has no 1st-level TLD | One trailing label separator",
+	},
+	{urlParams: URLParams{URL: "example.za.\u3002/en"},
+		expected:    ExtractResult{SubDomain: "example", Domain: "za", Path: "/en", HostType: HostName},
+		description: "za has no 1st-level TLD | 2 trailing label separators",
+	},
 }
 var invalidTests = []extractTest{
 	{urlParams: URLParams{URL: "localhost!"}, expected: ExtractResult{}, err: errs[8], description: "localhost + invalid character !"},
@@ -444,6 +501,10 @@ var invalidTests = []extractTest{
 	},
 	{urlParams: URLParams{URL: "https://brb\u002ei\u3002am\uff0egoing\uff61to\uff0ebe\u3002a\uff61\u3002fk"},
 		expected: ExtractResult{Scheme: "https://"}, err: errs[6], description: "Consecutive label separators within Suffix",
+	},
+	{urlParams: URLParams{URL: "example.\u3002za/en"},
+		expected: ExtractResult{Path: "/en"}, err: errs[6],
+		description: "za has no 1st-level TLD | Consecutive label separators between labels",
 	},
 	{urlParams: URLParams{URL: ".\u3002a\uff61fk"}, expected: ExtractResult{}, err: errs[8], description: "eTLD only, multiple leading label separators"},
 	{urlParams: URLParams{URL: "https://brb\u002ei\u3002am\uff0egoing\uff61to\uff0ebe.\u3002a\uff61fk"}, expected: ExtractResult{Scheme: "https://"}, err: errs[8], description: "Consecutive label separators between Domain and Suffix"},
@@ -555,6 +616,7 @@ var domainOnlySingleTLDTests = []extractTest{
 	{urlParams: URLParams{URL: "https://example.sg/en"}, expected: ExtractResult{Scheme: "https://", Domain: "example", Suffix: "sg", RegisteredDomain: "example.sg", Path: "/en", HostType: HostName}, description: "Domain only + sg"},
 	{urlParams: URLParams{URL: "https://example.tv/en"}, expected: ExtractResult{Scheme: "https://", Domain: "example", Suffix: "tv", RegisteredDomain: "example.tv", Path: "/en", HostType: HostName}, description: "Domain only + tv"},
 	{urlParams: URLParams{URL: "https://example.%63om/en"}, expected: ExtractResult{Scheme: "https://", Domain: "example", Suffix: "%63om", RegisteredDomain: "example.%63om", Path: "/en", HostType: HostName}, description: "Domain only + %63om"},
+	{urlParams: URLParams{URL: "https://example.za/en"}, expected: ExtractResult{Scheme: "https://", SubDomain: "example", Domain: "za", Path: "/en", HostType: HostName}, description: "Domain only + za | za has no 1st-level TLD"},
 }
 var pathTests = []extractTest{
 	{urlParams: URLParams{URL: "http://www.example.com/this:that"}, expected: ExtractResult{Scheme: "http://", SubDomain: "www", Domain: "example", Suffix: "com", RegisteredDomain: "example.com", Path: "/this:that", HostType: HostName}, description: "Colon in Path"},

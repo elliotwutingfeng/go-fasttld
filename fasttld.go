@@ -111,7 +111,7 @@ func nestedDict(dic *trie, keys []string) {
 	}
 	if !end {
 		var m hashmap.Map[string, *trie]
-		dic.matches.Set(keys[lenKeys-1], &trie{matches: m})
+		dic.matches.Set(keys[lenKeys-1], &trie{end: true, matches: m})
 	}
 }
 
@@ -154,9 +154,8 @@ func trieConstruct(includePrivateSuffix bool, cacheFilePath string) (*trie, erro
 	}
 
 	tldTrie.matches.Scan(func(key string, value *trie) bool {
-		if value.matches.Len() == 0 && value.end {
-			var m hashmap.Map[string, *trie]
-			tldTrie.matches.Set(key, &trie{matches: m})
+		if _, ok := value.matches.Get("*"); ok {
+			value.end = true
 		}
 		return true
 	})
@@ -305,6 +304,7 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 
 	var (
 		hasSuffix      bool
+		hasLabels      bool
 		end            bool
 		previousSepIdx int
 	)
@@ -318,14 +318,14 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 			label = netloc[sepIdx+sepSize(netloc[sepIdx]) : previousSepIdx]
 			if len(label) == 0 {
 				// allow consecutive label separators if suffix not found yet
-				if !hasSuffix {
-					suffixEndIdx = previousSepIdx
+				if !hasLabels {
+					suffixEndIdx = sepIdx
 					continue
 				}
-				// any occurrences of consecutive label separators on left-hand side of
-				// partial or full suffix are illegal.
-				return urlParts, errors.New("invalid consecutive label separators on left-hand side of partial or full suffix")
+				// any occurrences of consecutive label separators on left-hand side of a label are illegal.
+				return urlParts, errors.New("invalid consecutive label separators on left-hand side of a label")
 			}
+			hasLabels = true
 		} else {
 			label = netloc[0:previousSepIdx]
 			end = true
@@ -344,7 +344,7 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 		label, _ = url.QueryUnescape(label)
 		if val, ok := node.matches.Get(label); ok {
 			suffixStartIdx = sepIdx
-			if !hasSuffix {
+			if !hasSuffix && val.end {
 				// index of end of suffix without trailing label separators
 				suffixEndIdx = previousSepIdx
 				hasSuffix = true
@@ -405,12 +405,12 @@ func (f *FastTLD) Extract(e URLParams) (ExtractResult, error) {
 			urlParts.Suffix = netloc[0:suffixEndIdx]
 		}
 	} else {
-		domainStartSepIdx = lastIndexAny(netloc[0:previousSepIdx], labelSeparatorsRuneSet)
+		domainStartSepIdx = lastIndexAny(netloc[0:suffixEndIdx], labelSeparatorsRuneSet)
 		var domainStartIdx int
 		if domainStartSepIdx != -1 { // If there is a SubDomain
 			domainStartIdx = domainStartSepIdx + sepSize(netloc[domainStartSepIdx])
 		}
-		urlParts.Domain = netloc[domainStartIdx:previousSepIdx]
+		urlParts.Domain = netloc[domainStartIdx:suffixEndIdx]
 	}
 	if !e.IgnoreSubDomains && domainStartSepIdx != -1 { // If SubDomain is to be included
 		urlParts.SubDomain = netloc[0:domainStartSepIdx]
