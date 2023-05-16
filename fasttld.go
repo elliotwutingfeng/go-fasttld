@@ -74,9 +74,8 @@ type URLParams struct {
 // trie is a node of the compressed trie
 // used to store Public Suffix List eTLDs.
 type trie struct {
-	matches     hashmap.Map[string, *trie]
-	end         bool
-	hasChildren bool
+	matches hashmap.Map[string, *trie]
+	end     bool
 }
 
 // nestedDict stores a slice of keys in the trie, by traversing the trie using the keys as a "path",
@@ -84,34 +83,22 @@ type trie struct {
 //
 // If a new path overlaps an existing path, flag the previous path's trie node as end = true.
 func nestedDict(dic *trie, keys []string) {
-	// credits: https://stackoverflow.com/questions/13687924 and https://github.com/jophy/fasttld
-	var end bool
-	var dicBk *trie
-
 	keysExceptLast := keys[0 : len(keys)-1]
-	lenKeys := len(keys)
-
 	for _, key := range keysExceptLast {
-		dicBk = dic
 		if _, ok := dic.matches.Get(key); !ok {
+			// key doesn't exist; add new node
 			var m hashmap.Map[string, *trie]
-			dic.matches.Set(key, &trie{hasChildren: true, matches: m})
+			dic.matches.Set(key, &trie{matches: m})
 		}
-		temp, _ := dic.matches.Get(key)
-		dic = temp
-		if dic.matches.Len() == 0 && !dic.hasChildren {
-			end = true
-			dic = dicBk
-			var m hashmap.Map[string, *trie]
-			dic.matches.Set(keys[lenKeys-2], &trie{end: true, matches: m})
-			var m2 hashmap.Map[string, *trie]
-			temp, _ := dic.matches.Get(keys[lenKeys-2])
-			temp.matches.Set(keys[lenKeys-1], &trie{matches: m2})
-		}
+		dic, _ = dic.matches.Get(key)
 	}
-	if !end {
+	lastKey := keys[len(keys)-1]
+	if val, ok := dic.matches.Get(lastKey); !ok {
+		// key doesn't exist; add new node with end = true
 		var m hashmap.Map[string, *trie]
-		dic.matches.Set(keys[lenKeys-1], &trie{end: true, matches: m})
+		dic.matches.Set(lastKey, &trie{end: true, matches: m})
+	} else {
+		val.end = true
 	}
 }
 
@@ -143,14 +130,9 @@ func trieConstruct(includePrivateSuffix bool, cacheFilePath string) (*trie, erro
 	}
 
 	for _, suffix := range suffixList {
-		if strings.ContainsRune(suffix, '.') {
-			sp := strings.Split(suffix, ".")
-			reverse(sp)
-			nestedDict(tldTrie, sp)
-		} else {
-			var m hashmap.Map[string, *trie]
-			tldTrie.matches.Set(suffix, &trie{end: true, matches: m})
-		}
+		sp := strings.Split(suffix, ".")
+		reverse(sp)
+		nestedDict(tldTrie, sp)
 	}
 
 	tldTrie.matches.Scan(func(key string, value *trie) bool {

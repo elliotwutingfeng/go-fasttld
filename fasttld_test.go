@@ -39,39 +39,24 @@ func getTestPSLFilePath() (string, bool) {
 	return sb.String(), ok
 }
 
-// Perm calls f with each permutation of a.
-//
-// Source: https://yourbasic.org/golang/generate-permutation-slice-string
-//
-// License: CC-BY-3.0
-func Perm(a []([]string), f func([][]string)) {
-	perm(a, f, 0)
-}
-
-// perm permutes the values at index i to len(a)-1.
-//
-// Source: https://yourbasic.org/golang/generate-permutation-slice-string
-//
-// License: CC-BY-3.0
-func perm(a []([]string), f func([][]string), i int) {
-	if i > len(a) {
-		f(a)
-		return
-	}
-	perm(a, f, i+1)
-	for j := i + 1; j < len(a); j++ {
-		a[i], a[j] = a[j], a[i]
-		perm(a, f, i+1)
-		a[i], a[j] = a[j], a[i]
-	}
-}
-
 func TestNestedDict(t *testing.T) {
-	originalKeySequence := []([]string){{"a"}, {"a", "d"}, {"a", "b"}, {"a", "b", "c"}, {"c"}, {"c", "b"}, {"d", "f"}}
-	keysSequences := make([][]([]string), 0)
-	Perm(originalKeySequence, func(a [][]string) {
-		keysSequences = append(keysSequences, a)
-	})
+	keysSequences := [][][]string{
+		{{"a"}, {"a", "d"}, {"a", "b"}, {"a", "b", "c"}, {"c"}, {"c", "b"}, {"d", "f"}},
+		{{"a"}, {"a", "d"}, {"a", "b"}, {"a", "b", "c"}, {"c"}, {"d", "f"}, {"c", "b"}},
+		{{"a"}, {"a", "d"}, {"a", "b"}, {"a", "b", "c"}, {"c", "b"}, {"c"}, {"d", "f"}},
+		{{"c"}, {"a", "d"}, {"c", "b"}, {"d", "f"}, {"a"}, {"a", "b", "c"}, {"a", "b"}},
+		{{"c"}, {"a", "d"}, {"c", "b"}, {"d", "f"}, {"a", "b"}, {"a"}, {"a", "b", "c"}},
+		{{"c"}, {"a", "d"}, {"c", "b"}, {"d", "f"}, {"a", "b"}, {"a", "b", "c"}, {"a"}},
+		{{"c"}, {"a", "d"}, {"c", "b"}, {"d", "f"}, {"a", "b", "c"}, {"a"}, {"a", "b"}},
+		{{"c"}, {"a", "d"}, {"c", "b"}, {"d", "f"}, {"a", "b", "c"}, {"a", "b"}, {"a"}},
+		{{"d", "f"}, {"c", "b"}, {"a", "d"}, {"a", "b"}, {"a"}, {"c"}, {"a", "b", "c"}},
+		{{"d", "f"}, {"c", "b"}, {"a", "d"}, {"a", "b"}, {"a", "b", "c"}, {"a"}, {"c"}},
+		{{"d", "f"}, {"c", "b"}, {"a", "d"}, {"a", "b"}, {"a", "b", "c"}, {"c"}, {"a"}},
+		{{"d", "f"}, {"c", "b"}, {"a", "d"}, {"a", "b"}, {"c"}, {"a"}, {"a", "b", "c"}},
+		{{"d", "f"}, {"c", "b"}, {"a", "d"}, {"a", "b"}, {"c"}, {"a", "b", "c"}, {"a"}},
+		{{"d", "f"}, {"c", "b"}, {"a", "d"}, {"a", "b", "c"}, {"a"}, {"a", "b"}, {"c"}},
+		{{"d", "f"}, {"c", "b"}, {"a", "d"}, {"a", "b", "c"}, {"a"}, {"c"}, {"a", "b"}},
+	}
 	for _, keysSequence := range keysSequences {
 		var m hashmap.Map[string, *trie]
 		originalDict := &trie{matches: m}
@@ -207,7 +192,7 @@ type newTest struct {
 
 var newTests = []newTest{
 	{cacheFilePath: fmt.Sprintf("test%spublic_suffix_list.dat", string(os.PathSeparator)), includePrivateSuffix: false, expected: 1656},
-	{cacheFilePath: fmt.Sprintf("test%spublic_suffix_list.dat", string(os.PathSeparator)), includePrivateSuffix: true, expected: 1674},
+	{cacheFilePath: fmt.Sprintf("test%spublic_suffix_list.dat", string(os.PathSeparator)), includePrivateSuffix: true, expected: 1656},
 	{cacheFilePath: fmt.Sprintf("test%smini_public_suffix_list.dat", string(os.PathSeparator)), includePrivateSuffix: true, expected: 4},
 }
 
