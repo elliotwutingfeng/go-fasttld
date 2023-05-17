@@ -83,8 +83,7 @@ type trie struct {
 //
 // If a new path overlaps an existing path, flag the previous path's trie node as end = true.
 func nestedDict(dic *trie, keys []string) {
-	keysExceptLast := keys[0 : len(keys)-1]
-	for _, key := range keysExceptLast {
+	for _, key := range keys {
 		if _, ok := dic.matches.Get(key); !ok {
 			// key doesn't exist; add new node
 			var m hashmap.Map[string, *trie]
@@ -92,14 +91,8 @@ func nestedDict(dic *trie, keys []string) {
 		}
 		dic, _ = dic.matches.Get(key)
 	}
-	lastKey := keys[len(keys)-1]
-	if val, ok := dic.matches.Get(lastKey); !ok {
-		// key doesn't exist; add new node with end = true
-		var m hashmap.Map[string, *trie]
-		dic.matches.Set(lastKey, &trie{end: true, matches: m})
-	} else {
-		val.end = true
-	}
+	// set last node to end = true
+	dic.end = true
 }
 
 // trieConstruct constructs a compressed trie to store Public Suffix List eTLDs split at "." in reverse-order.
