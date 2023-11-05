@@ -9,7 +9,7 @@ require (
 	github.com/karlseguin/intset v1.0.3-0.20221130142345-37ee0d7df651
 	github.com/mjd2021usa/tldextract v0.9.2
 	github.com/spf13/afero v1.10.0
-	github.com/spf13/cobra v1.7.0
+	github.com/spf13/cobra v1.8.0
 	github.com/tidwall/hashmap v1.8.1
 	golang.org/x/net v0.17.0
 )
