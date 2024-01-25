@@ -56,6 +56,11 @@ jobs:
             exit 1
           fi
         fi
-    - name: Upload coverage to Codecov (ubuntu-latest only)
+    - name: Convert Go coverage to lcov
       if: matrix.os == 'ubuntu-latest'
-      uses: codecov/codecov-action@v3
+      run: |
+        go install github.com/jandelgado/gcov2lcov@latest
+        gcov2lcov -infile=coverage.out -outfile=coverage.lcov
+    - name: Upload coverage to Coveralls
+      if: matrix.os == 'ubuntu-latest'
+      uses: coverallsapp/github-action@v2
