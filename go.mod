@@ -3,7 +3,7 @@ module github.com/elliotwutingfeng/go-fasttld
 go 1.19
 
 require (
-	github.com/fatih/color v1.17.0
+	github.com/fatih/color v1.18.0
 	github.com/joeguo/tldextract v0.0.0-20220507100122-d83daa6adef8
 	github.com/jpillora/go-tld v1.2.1
 	github.com/karlseguin/intset v1.0.3-0.20221130142345-37ee0d7df651
