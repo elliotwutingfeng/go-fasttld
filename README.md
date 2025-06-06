@@ -15,7 +15,7 @@ URLs can either contain hostnames, IPv4 addresses, or IPv6 addresses. eTLD extra
 
 ![Demo](demo.gif)
 
-Spot any bugs? Report them [here](https://github.com/elliotwutingfeng/go-fasttld/issues)
+Spot any bugs? [Report them](https://github.com/elliotwutingfeng/go-fasttld/issues).
 
 ## Installation
 
