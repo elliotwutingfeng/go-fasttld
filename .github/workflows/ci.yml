@@ -27,7 +27,7 @@ jobs:
       with:
         fetch-depth: 0 # to support `git describe`
     - name: Setup go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@v6
       with:
         go-version-file: './go.mod'
     - name: Test
