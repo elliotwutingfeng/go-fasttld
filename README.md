@@ -96,7 +96,7 @@ res, _ := extractor.Extract(fasttld.URLParams{URL: url})
 
 | Full Stop  | Ideographic Full Stop | Fullwidth Full Stop | Halfwidth Ideographic Full Stop |
 |------------|-----------------------|---------------------|---------------------------------|
-| U+002E `.` | U+3002 `。`            | U+FF0E `．`          | U+FF61 `｡`                       |
+| U+002E `.` | U+3002 `。`           | U+FF0E `．`         | U+FF61 `｡`                      |
 
 ```go
 extractor, _ := fasttld.New(fasttld.SuffixListParams{})
@@ -190,7 +190,7 @@ res, _ := extractor.Extract(fasttld.URLParams{URL: url})
 
 | Scheme   | UserInfo | SubDomain | Domain | Suffix | RegisteredDomain | Port | Path | HostType |
 |----------|----------|-----------|--------|--------|------------------|------|------|----------|
-| https:// |          | hello     | 世界   | com    | 世界.com         |      |      | hostname |
+| https:// |          | hello     | 世界     | com    | 世界.com           |      |      | hostname |
 
 You can convert internationalised URLs to [punycode](https://en.wikipedia.org/wiki/Punycode) before extraction by setting `ConvertURLToPunyCode = true`.
 
