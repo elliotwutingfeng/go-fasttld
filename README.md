@@ -96,7 +96,7 @@ res, _ := extractor.Extract(fasttld.URLParams{URL: url})
 
 | Full Stop  | Ideographic Full Stop | Fullwidth Full Stop | Halfwidth Ideographic Full Stop |
 |------------|-----------------------|---------------------|---------------------------------|
-| U+002E `.` | U+3002 `。`            | U+FF0E `．`          | U+FF61 `｡`                       |
+| U+002E `.` | U+3002 `。`            | U+FF0E `．`          | U+FF61 `｡`                      |
 
 ```go
 extractor, _ := fasttld.New(fasttld.SuffixListParams{})
