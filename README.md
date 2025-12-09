@@ -62,9 +62,9 @@ res, _ := extractor.Extract(fasttld.URLParams{URL: url})
 fasttld.PrintRes(url, res) // Pretty-prints res.Scheme, res.UserInfo, res.SubDomain etc.
 ```
 
-| Scheme   | UserInfo | SubDomain   | Domain  | Suffix | RegisteredDomain | Port | Path       | HostType     |
-|----------|----------|-------------|---------|--------|------------------|------|------------|--------------|
-| https:// | user     | a.subdomain | example | a%63.uk  | example.a%63.uk    | 5000 | /a/b?id=42 | hostname     |
+| Scheme   | UserInfo | SubDomain   | Domain  | Suffix  | RegisteredDomain | Port | Path       | HostType |
+|----------|----------|-------------|---------|---------|------------------|------|------------|----------|
+| https:// | user     | a.subdomain | example | a%63.uk | example.a%63.uk  | 5000 | /a/b?id=42 | hostname |
 
 ### IPv4 Address
 
@@ -96,7 +96,7 @@ res, _ := extractor.Extract(fasttld.URLParams{URL: url})
 
 | Full Stop  | Ideographic Full Stop | Fullwidth Full Stop | Halfwidth Ideographic Full Stop |
 |------------|-----------------------|---------------------|---------------------------------|
-| U+002E `.` | U+3002 `。`           | U+FF0E `．`         | U+FF61 `｡`                      |
+| U+002E `.` | U+3002 `。`            | U+FF0E `．`          | U+FF61 `｡`                       |
 
 ```go
 extractor, _ := fasttld.New(fasttld.SuffixListParams{})
@@ -104,9 +104,9 @@ url := "https://brb\u002ei\u3002am\uff0egoing\uff61to\uff0ebe\u3002a\uff61fk"
 res, _ := extractor.Extract(fasttld.URLParams{URL: url})
 ```
 
-| Scheme   | UserInfo | SubDomain                             | Domain | Suffix    | RegisteredDomain  | Port | Path | HostType     |
-|----------|----------|---------------------------------------|--------|-----------|-------------------|------|------|--------------|
-| https:// |          | brb\u002ei\u3002am\uff0egoing\uff61to | be     | a\uff61fk | be\u3002a\uff61fk |      |      | hostname     |
+| Scheme   | UserInfo | SubDomain                             | Domain | Suffix    | RegisteredDomain  | Port | Path | HostType |
+|----------|----------|---------------------------------------|--------|-----------|-------------------|------|------|----------|
+| https:// |          | brb\u002ei\u3002am\uff0egoing\uff61to | be     | a\uff61fk | be\u3002a\uff61fk |      |      | hostname |
 
 ## Public Suffix List options
 
@@ -146,9 +146,9 @@ url := "https://google.blogspot.com"
 res, _ := extractor.Extract(fasttld.URLParams{URL: url})
 ```
 
-| Scheme   | UserInfo | SubDomain | Domain   | Suffix | RegisteredDomain | Port | Path | HostType     |
-|----------|----------|-----------|----------|--------|------------------|------|------|--------------|
-| https:// |          | google    | blogspot | com    | blogspot.com     |      |      | hostname     |
+| Scheme   | UserInfo | SubDomain | Domain   | Suffix | RegisteredDomain | Port | Path | HostType |
+|----------|----------|-----------|----------|--------|------------------|------|------|----------|
+| https:// |          | google    | blogspot | com    | blogspot.com     |      |      | hostname |
 
 You can _include_ private domains by setting `IncludePrivateSuffix = true`
 
@@ -158,9 +158,9 @@ url := "https://google.blogspot.com"
 res, _ := extractor.Extract(fasttld.URLParams{URL: url})
 ```
 
-| Scheme   | UserInfo | SubDomain | Domain | Suffix       | RegisteredDomain    | Port | Path | HostType     |
-|----------|----------|-----------|--------|--------------|---------------------|------|------|--------------|
-| https:// |          |           | google | blogspot.com | google.blogspot.com |      |      | hostname     |
+| Scheme   | UserInfo | SubDomain | Domain | Suffix       | RegisteredDomain    | Port | Path | HostType |
+|----------|----------|-----------|--------|--------------|---------------------|------|------|----------|
+| https:// |          |           | google | blogspot.com | google.blogspot.com |      |      | hostname |
 
 ## Extraction options
 
@@ -174,9 +174,9 @@ url := "https://maps.google.com"
 res, _ := extractor.Extract(fasttld.URLParams{URL: url, IgnoreSubDomains: true})
 ```
 
-| Scheme   | UserInfo | SubDomain | Domain | Suffix | RegisteredDomain | Port | Path | HostType     |
-|----------|----------|-----------|--------|--------|------------------|------|------|--------------|
-| https:// |          |           | google | com    | google.com       |      |      | hostname     |
+| Scheme   | UserInfo | SubDomain | Domain | Suffix | RegisteredDomain | Port | Path | HostType |
+|----------|----------|-----------|--------|--------|------------------|------|------|----------|
+| https:// |          |           | google | com    | google.com       |      |      | hostname |
 
 ### Punycode
 
@@ -188,9 +188,9 @@ url := "https://hello.世界.com"
 res, _ := extractor.Extract(fasttld.URLParams{URL: url})
 ```
 
-| Scheme   | UserInfo | SubDomain | Domain | Suffix | RegisteredDomain | Port | Path | HostType     |
-|----------|----------|-----------|--------|--------|------------------|------|------|--------------|
-| https:// |          | hello     | 世界   | com    | 世界.com         |      |      | hostname     |
+| Scheme   | UserInfo | SubDomain | Domain | Suffix | RegisteredDomain | Port | Path | HostType |
+|----------|----------|-----------|--------|--------|------------------|------|------|----------|
+| https:// |          | hello     | 世界   | com    | 世界.com         |      |      | hostname |
 
 You can convert internationalised URLs to [punycode](https://en.wikipedia.org/wiki/Punycode) before extraction by setting `ConvertURLToPunyCode = true`.
 
@@ -200,9 +200,9 @@ url := "https://hello.世界.com"
 res, _ := extractor.Extract(fasttld.URLParams{URL: url, ConvertURLToPunyCode: true})
 ```
 
-| Scheme   | UserInfo | SubDomain | Domain      | Suffix | RegisteredDomain | Port | Path | HostType     |
-|----------|----------|-----------|-------------|--------|------------------|------|------|--------------|
-| https:// |          | hello     | xn--rhqv96g | com    | xn--rhqv96g.com  |      |      | hostname     |
+| Scheme   | UserInfo | SubDomain | Domain      | Suffix | RegisteredDomain | Port | Path | HostType |
+|----------|----------|-----------|-------------|--------|------------------|------|------|----------|
+| https:// |          | hello     | xn--rhqv96g | com    | xn--rhqv96g.com  |      |      | hostname |
 
 ## Parsing errors
 

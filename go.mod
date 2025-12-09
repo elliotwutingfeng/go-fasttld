@@ -1,6 +1,6 @@
 module github.com/elliotwutingfeng/go-fasttld
 
-go 1.24.0
+go 1.25
 
 toolchain go1.25.4
 
@@ -11,18 +11,18 @@ require (
 	github.com/karlseguin/intset v1.0.3-0.20221130142345-37ee0d7df651
 	github.com/mjd2021usa/tldextract v0.9.2
 	github.com/spf13/afero v1.15.0
-	github.com/spf13/cobra v1.10.1
+	github.com/spf13/cobra v1.10.2
 	github.com/tidwall/hashmap v1.8.1
-	golang.org/x/net v0.47.0
+	golang.org/x/net v0.48.0
 )
 
 require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/klauspost/cpuid/v2 v2.2.9 // indirect
+	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/spf13/pflag v1.0.9 // indirect
+	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/zeebo/xxh3 v1.0.2 // indirect
-	golang.org/x/sys v0.38.0 // indirect
-	golang.org/x/text v0.31.0 // indirect
+	golang.org/x/sys v0.39.0 // indirect
+	golang.org/x/text v0.32.0 // indirect
 )
