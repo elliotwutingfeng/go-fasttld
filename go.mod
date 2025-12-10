@@ -2,7 +2,7 @@ module github.com/elliotwutingfeng/go-fasttld
 
 go 1.25
 
-toolchain go1.25.4
+toolchain go1.25.5
 
 require (
 	github.com/fatih/color v1.18.0
