@@ -3,7 +3,7 @@
     "ignoreTests": false,
     "packageRules": [
         {
-            "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+            "matchUpdateTypes": ["major", "minor", "patch", "pin", "digest", "lockFileMaintenance"],
             "automerge": true
         },
         {
